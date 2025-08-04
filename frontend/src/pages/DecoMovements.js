@@ -215,7 +215,213 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) =>
   );
 };
 
-// Disbursement Order Modal
+// Project Creation Modal Component
+const ProjectCreateModal = ({ isOpen, onClose, onSubmit, loading }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    project_type: 'Deco',
+    start_date: '',
+    end_date: '',
+    budget_usd: '',
+    budget_ars: '',
+    client_name: '',
+    location: '',
+    notes: ''
+  });
+
+  const projectTypes = ['Deco', 'Event', 'Mixed'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const submitData = {
+      ...formData,
+      budget_usd: formData.budget_usd ? parseFloat(formData.budget_usd) : null,
+      budget_ars: formData.budget_ars ? parseFloat(formData.budget_ars) : null,
+      start_date: formData.start_date || null,
+      end_date: formData.end_date || null,
+    };
+    onSubmit(submitData);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      project_type: 'Deco',
+      start_date: '',
+      end_date: '',
+      budget_usd: '',
+      budget_ars: '',
+      client_name: '',
+      location: '',
+      notes: ''
+    });
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="card max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold theme-text">Create New Project</h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Project Name *</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Enter project name"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Project Type</label>
+              <select
+                className="form-input w-full"
+                value={formData.project_type}
+                onChange={(e) => setFormData({...formData, project_type: e.target.value})}
+              >
+                {projectTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Description</label>
+            <textarea
+              className="form-input w-full"
+              rows="3"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              placeholder="Project description"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Client Name</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.client_name}
+                onChange={(e) => setFormData({...formData, client_name: e.target.value})}
+                placeholder="Client name"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Location</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.location}
+                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                placeholder="Project location"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Start Date</label>
+              <input
+                type="date"
+                className="form-input w-full"
+                value={formData.start_date}
+                onChange={(e) => setFormData({...formData, start_date: e.target.value})}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">End Date</label>
+              <input
+                type="date"
+                className="form-input w-full"
+                value={formData.end_date}
+                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Budget USD</label>
+              <input
+                type="number"
+                step="0.01"
+                className="form-input w-full"
+                value={formData.budget_usd}
+                onChange={(e) => setFormData({...formData, budget_usd: e.target.value})}
+                placeholder="0.00"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Budget ARS</label>
+              <input
+                type="number"
+                step="0.01"
+                className="form-input w-full"
+                value={formData.budget_ars}
+                onChange={(e) => setFormData({...formData, budget_ars: e.target.value})}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Notes</label>
+            <textarea
+              className="form-input w-full"
+              rows="3"
+              value={formData.notes}
+              onChange={(e) => setFormData({...formData, notes: e.target.value})}
+              placeholder="Additional project notes"
+            />
+          </div>
+
+          <div className="flex space-x-4 pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex-1 disabled:opacity-50"
+            >
+              {loading ? 'Creating...' : 'Create Project'}
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="btn-secondary flex-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
   const [formData, setFormData] = useState({
     project_name: '',
