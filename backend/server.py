@@ -461,11 +461,8 @@ async def add_ledger_entry(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
-    # Fix ID field mapping
-    if "_id" in event and "id" not in event:
-        event["id"] = event["_id"]
-    
-    event_obj = EventsCash(**event)
+    # Use from_mongo method to properly handle ID field
+    event_obj = EventsCash.from_mongo(event)
     new_entry = EventsLedgerEntry(**entry_data.dict())
     event_obj.ledger_entries.append(new_entry)
     event_obj.recalculate_balances()
