@@ -2086,10 +2086,11 @@ def main():
     print("1. Provider Management System Tests")
     print("2. Deco Movements Module Tests (Legacy)")
     print("3. Deco Cash-Count (Arqueo) Module Tests")
-    print("4. Run All Test Suites")
+    print("4. Twilio WhatsApp Notification Integration Tests")
+    print("5. Run All Test Suites")
     
-    # For automated testing, default to Cash Count tests as requested
-    choice = "3"  # Default to cash count tests as requested
+    # For automated testing, default to Twilio tests as requested
+    choice = "4"  # Default to Twilio tests as requested
     
     if choice == "1":
         print("\n🏪 Running Provider Management System Tests...")
