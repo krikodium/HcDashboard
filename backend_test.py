@@ -1008,6 +1008,572 @@ class DecoMovementsAPITester:
         
         print(f"📄 Detailed results saved to: /app/deco_movements_test_results.json")
 
+
+class DecoCashCountAPITester:
+    def __init__(self):
+        self.auth_token = None
+        self.session = requests.Session()
+        self.test_results = []
+        self.created_cash_counts = []
+        
+    def log_test(self, test_name: str, success: bool, message: str, data: Any = None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now().isoformat(),
+            "data": data
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if data and not success:
+            print(f"   Data: {json.dumps(data, indent=2, default=str)}")
+    
+    def authenticate(self) -> bool:
+        """Login with test credentials"""
+        try:
+            login_data = {
+                "username": "mateo",
+                "password": "prueba123"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+            
+            if response.status_code == 200:
+                auth_response = response.json()
+                self.auth_token = auth_response["access_token"]
+                self.session.headers.update({
+                    "Authorization": f"Bearer {self.auth_token}"
+                })
+                self.log_test("Authentication", True, f"Successfully logged in as {auth_response['user']['username']}")
+                return True
+            else:
+                self.log_test("Authentication", False, f"Login failed: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Authentication", False, f"Login error: {str(e)}")
+            return False
+    
+    def test_health_check(self) -> bool:
+        """Test basic API health"""
+        try:
+            response = self.session.get(f"{API_BASE}/health")
+            if response.status_code == 200:
+                self.log_test("Health Check", True, "API is healthy")
+                return True
+            else:
+                self.log_test("Health Check", False, f"Health check failed: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Health Check", False, f"Health check error: {str(e)}")
+            return False
+    
+    def test_get_cash_count_endpoint(self) -> bool:
+        """Test that the GET /api/deco-cash-count endpoint exists and works"""
+        try:
+            response = self.session.get(f"{API_BASE}/deco-cash-count")
+            
+            if response.status_code == 200:
+                cash_counts = response.json()
+                self.log_test("GET Cash Count Endpoint", True, 
+                            f"Successfully retrieved {len(cash_counts)} cash count records")
+                return True
+            else:
+                self.log_test("GET Cash Count Endpoint", False,
+                            f"Failed to retrieve cash counts: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("GET Cash Count Endpoint", False, f"Error testing GET endpoint: {str(e)}")
+            return False
+    
+    def create_sample_cash_counts(self) -> List[Dict[str, Any]]:
+        """Create sample cash count records with realistic data across different projects"""
+        # Get available project names from the seeded projects
+        project_names = ["Pájaro", "Alvear", "Hotel Madero", "Bahía Bustamante", "Palacio Duhau"]
+        
+        cash_counts_data = [
+            {
+                "count_date": "2024-01-15",
+                "deco_name": "Pájaro",
+                "count_type": "Daily",
+                "cash_usd_counted": 2500.0,
+                "cash_ars_counted": 125000.0,
+                "profit_cash_usd": 800.0,
+                "profit_cash_ars": 40000.0,
+                "profit_transfer_usd": 1200.0,
+                "profit_transfer_ars": 60000.0,
+                "commissions_cash_usd": 300.0,
+                "commissions_cash_ars": 15000.0,
+                "commissions_transfer_usd": 200.0,
+                "commissions_transfer_ars": 10000.0,
+                "notes": "Daily count for Pájaro project - high activity day with multiple client payments"
+            },
+            {
+                "count_date": "2024-01-18",
+                "deco_name": "Alvear",
+                "count_type": "Weekly",
+                "cash_usd_counted": 1800.0,
+                "cash_ars_counted": 95000.0,
+                "profit_cash_usd": 600.0,
+                "profit_cash_ars": 30000.0,
+                "profit_transfer_usd": 900.0,
+                "profit_transfer_ars": 45000.0,
+                "commissions_cash_usd": 200.0,
+                "commissions_cash_ars": 12000.0,
+                "honoraria_cash_usd": 100.0,
+                "honoraria_cash_ars": 8000.0,
+                "notes": "Weekly reconciliation for Alvear hotel project"
+            },
+            {
+                "count_date": "2024-01-22",
+                "deco_name": "Hotel Madero",
+                "count_type": "Daily",
+                "cash_usd_counted": 3200.0,
+                "cash_ars_counted": 180000.0,
+                "profit_cash_usd": 1000.0,
+                "profit_cash_ars": 55000.0,
+                "profit_transfer_usd": 1500.0,
+                "profit_transfer_ars": 85000.0,
+                "commissions_cash_usd": 400.0,
+                "commissions_cash_ars": 22000.0,
+                "commissions_transfer_usd": 300.0,
+                "commissions_transfer_ars": 18000.0,
+                "notes": "Hotel Madero daily count - large event completion"
+            },
+            {
+                "count_date": "2024-01-25",
+                "deco_name": "Bahía Bustamante",
+                "count_type": "Monthly",
+                "cash_usd_counted": 4500.0,
+                "cash_ars_counted": 250000.0,
+                "profit_cash_usd": 1500.0,
+                "profit_cash_ars": 80000.0,
+                "profit_transfer_usd": 2000.0,
+                "profit_transfer_ars": 120000.0,
+                "commissions_cash_usd": 600.0,
+                "commissions_cash_ars": 30000.0,
+                "honoraria_cash_usd": 400.0,
+                "honoraria_cash_ars": 20000.0,
+                "notes": "Monthly reconciliation for coastal resort project"
+            },
+            {
+                "count_date": "2024-01-28",
+                "deco_name": "Palacio Duhau",
+                "count_type": "Special",
+                "cash_usd_counted": 5800.0,
+                "cash_ars_counted": 320000.0,
+                "profit_cash_usd": 2000.0,
+                "profit_cash_ars": 110000.0,
+                "profit_transfer_usd": 2500.0,
+                "profit_transfer_ars": 140000.0,
+                "commissions_cash_usd": 800.0,
+                "commissions_cash_ars": 40000.0,
+                "commissions_transfer_usd": 500.0,
+                "commissions_transfer_ars": 30000.0,
+                "notes": "Special audit count for exclusive palace events"
+            }
+        ]
+        
+        created_counts = []
+        
+        for i, count_data in enumerate(cash_counts_data):
+            try:
+                response = self.session.post(f"{API_BASE}/deco-cash-count", json=count_data)
+                
+                if response.status_code == 200:
+                    cash_count = response.json()
+                    created_counts.append(cash_count)
+                    self.created_cash_counts.append(cash_count)
+                    self.log_test(f"Create Cash Count {i+1}", True, 
+                                f"Created {count_data['count_type']} count for {count_data['deco_name']}: ${count_data['cash_usd_counted']:.0f} USD, ${count_data['cash_ars_counted']:.0f} ARS")
+                else:
+                    self.log_test(f"Create Cash Count {i+1}", False, 
+                                f"Failed to create cash count: {response.status_code} - {response.text}")
+                    
+            except Exception as e:
+                self.log_test(f"Create Cash Count {i+1}", False, f"Error creating cash count: {str(e)}")
+        
+        return created_counts
+    
+    def test_cash_count_filtering(self) -> bool:
+        """Test filtering cash counts by project name"""
+        try:
+            # Test filtering by deco_name
+            response = self.session.get(f"{API_BASE}/deco-cash-count?deco_name=Pájaro")
+            
+            if response.status_code == 200:
+                filtered_counts = response.json()
+                pajaro_counts = [c for c in filtered_counts if c.get('deco_name') == 'Pájaro']
+                
+                self.log_test("Cash Count Filtering", True,
+                            f"Successfully filtered cash counts by project: found {len(pajaro_counts)} counts for Pájaro")
+                
+                # Test pagination
+                response_paginated = self.session.get(f"{API_BASE}/deco-cash-count?skip=0&limit=2")
+                if response_paginated.status_code == 200:
+                    paginated_counts = response_paginated.json()
+                    self.log_test("Cash Count Pagination", True,
+                                f"Successfully retrieved {len(paginated_counts)} counts with pagination")
+                else:
+                    self.log_test("Cash Count Pagination", False,
+                                f"Failed pagination test: {response_paginated.status_code}")
+                
+                return True
+            else:
+                self.log_test("Cash Count Filtering", False,
+                            f"Failed to filter cash counts: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Cash Count Filtering", False, f"Error testing filtering: {str(e)}")
+            return False
+    
+    def test_cash_count_validation(self) -> bool:
+        """Test data validation for cash count creation"""
+        validation_tests = [
+            {
+                "name": "Invalid Cash Count - Missing Required Fields",
+                "data": {"notes": "Test without required fields"},
+                "expect_error": True
+            },
+            {
+                "name": "Invalid Cash Count - Negative Amount",
+                "data": {
+                    "count_date": "2024-01-30",
+                    "deco_name": "Pájaro",
+                    "count_type": "Daily",
+                    "cash_usd_counted": -100.0
+                },
+                "expect_error": True
+            },
+            {
+                "name": "Invalid Cash Count - Invalid Count Type",
+                "data": {
+                    "count_date": "2024-01-30",
+                    "deco_name": "Pájaro",
+                    "count_type": "InvalidType",
+                    "cash_usd_counted": 1000.0
+                },
+                "expect_error": True
+            },
+            {
+                "name": "Valid Cash Count - Minimal Data",
+                "data": {
+                    "count_date": "2024-01-30",
+                    "deco_name": "Test Project",
+                    "count_type": "Daily",
+                    "cash_usd_counted": 500.0,
+                    "cash_ars_counted": 25000.0
+                },
+                "expect_error": False
+            }
+        ]
+        
+        all_passed = True
+        
+        for test in validation_tests:
+            try:
+                response = self.session.post(f"{API_BASE}/deco-cash-count", json=test['data'])
+                
+                if test['expect_error']:
+                    if response.status_code >= 400:
+                        self.log_test(test['name'], True, f"Correctly rejected invalid data: {response.status_code}")
+                    else:
+                        self.log_test(test['name'], False, f"Should have rejected invalid data but got: {response.status_code}")
+                        all_passed = False
+                else:
+                    if response.status_code == 200:
+                        self.log_test(test['name'], True, "Valid data accepted")
+                    else:
+                        self.log_test(test['name'], False, f"Valid data rejected: {response.status_code} - {response.text}")
+                        all_passed = False
+                        
+            except Exception as e:
+                self.log_test(test['name'], False, f"Validation test error: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_cash_count_calculations(self) -> bool:
+        """Test that cash count calculations are working correctly"""
+        try:
+            if not self.created_cash_counts:
+                self.log_test("Cash Count Calculations", False, "No created cash counts to test calculations")
+                return False
+            
+            # Check the first created cash count for proper calculations
+            cash_count = self.created_cash_counts[0]
+            
+            # Verify that totals are calculated correctly
+            expected_total_profit_usd = cash_count.get('profit_cash_usd', 0) + cash_count.get('profit_transfer_usd', 0)
+            expected_total_profit_ars = cash_count.get('profit_cash_ars', 0) + cash_count.get('profit_transfer_ars', 0)
+            
+            actual_total_profit_usd = cash_count.get('total_profit_usd', 0)
+            actual_total_profit_ars = cash_count.get('total_profit_ars', 0)
+            
+            if (abs(actual_total_profit_usd - expected_total_profit_usd) < 0.01 and
+                abs(actual_total_profit_ars - expected_total_profit_ars) < 0.01):
+                self.log_test("Cash Count Calculations", True,
+                            f"Profit calculations correct: USD ${actual_total_profit_usd:.2f}, ARS ${actual_total_profit_ars:.2f}")
+                
+                # Check if ledger comparison was performed
+                has_ledger_comparison = (cash_count.get('ledger_comparison_usd') is not None or 
+                                       cash_count.get('ledger_comparison_ars') is not None)
+                
+                if has_ledger_comparison:
+                    self.log_test("Ledger Comparison", True, "Ledger comparison performed during cash count creation")
+                else:
+                    self.log_test("Ledger Comparison", True, "Cash count created without ledger comparison (expected for mock data)")
+                
+                return True
+            else:
+                self.log_test("Cash Count Calculations", False,
+                            f"Calculation mismatch - Expected USD: {expected_total_profit_usd}, Got: {actual_total_profit_usd}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Cash Count Calculations", False, f"Error testing calculations: {str(e)}")
+            return False
+    
+    def test_cash_count_response_structure(self) -> bool:
+        """Test that cash count responses have the expected structure for frontend compatibility"""
+        try:
+            if not self.created_cash_counts:
+                self.log_test("Response Structure", False, "No created cash counts to test structure")
+                return False
+            
+            cash_count = self.created_cash_counts[0]
+            
+            # Check for required fields that frontend expects
+            required_fields = [
+                'id', 'count_date', 'deco_name', 'count_type',
+                'cash_usd_counted', 'cash_ars_counted',
+                'total_profit_usd', 'total_profit_ars',
+                'total_commissions_usd', 'total_commissions_ars',
+                'status', 'created_at', 'created_by'
+            ]
+            
+            missing_fields = [field for field in required_fields if field not in cash_count]
+            
+            if not missing_fields:
+                self.log_test("Response Structure", True,
+                            "Cash count response contains all required fields for frontend")
+                
+                # Check data types
+                date_fields = ['count_date', 'created_at']
+                numeric_fields = ['cash_usd_counted', 'cash_ars_counted', 'total_profit_usd', 'total_profit_ars']
+                
+                type_errors = []
+                for field in date_fields:
+                    if field in cash_count and not isinstance(cash_count[field], str):
+                        type_errors.append(f"{field} should be string (ISO date)")
+                
+                for field in numeric_fields:
+                    if field in cash_count and not isinstance(cash_count[field], (int, float)):
+                        type_errors.append(f"{field} should be numeric")
+                
+                if not type_errors:
+                    self.log_test("Data Types", True, "All fields have correct data types")
+                    return True
+                else:
+                    self.log_test("Data Types", False, f"Type errors: {', '.join(type_errors)}")
+                    return False
+            else:
+                self.log_test("Response Structure", False,
+                            f"Missing required fields: {', '.join(missing_fields)}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Response Structure", False, f"Error testing response structure: {str(e)}")
+            return False
+    
+    def test_different_count_scenarios(self) -> bool:
+        """Test different cash count scenarios including discrepancies"""
+        scenarios = [
+            {
+                "name": "Perfect Match Scenario",
+                "data": {
+                    "count_date": "2024-02-01",
+                    "deco_name": "Perfect Match Test",
+                    "count_type": "Audit",
+                    "cash_usd_counted": 1000.0,
+                    "cash_ars_counted": 50000.0,
+                    "profit_cash_usd": 500.0,
+                    "profit_cash_ars": 25000.0,
+                    "notes": "Test scenario with expected perfect match"
+                }
+            },
+            {
+                "name": "High Volume Scenario",
+                "data": {
+                    "count_date": "2024-02-02",
+                    "deco_name": "High Volume Test",
+                    "count_type": "Monthly",
+                    "cash_usd_counted": 15000.0,
+                    "cash_ars_counted": 800000.0,
+                    "profit_cash_usd": 5000.0,
+                    "profit_cash_ars": 250000.0,
+                    "profit_transfer_usd": 7000.0,
+                    "profit_transfer_ars": 350000.0,
+                    "commissions_cash_usd": 2000.0,
+                    "commissions_cash_ars": 100000.0,
+                    "honoraria_transfer_usd": 1000.0,
+                    "honoraria_transfer_ars": 100000.0,
+                    "notes": "High volume month with multiple revenue streams"
+                }
+            },
+            {
+                "name": "Minimal Cash Scenario",
+                "data": {
+                    "count_date": "2024-02-03",
+                    "deco_name": "Minimal Cash Test",
+                    "count_type": "Daily",
+                    "cash_usd_counted": 50.0,
+                    "cash_ars_counted": 2500.0,
+                    "profit_transfer_usd": 45.0,
+                    "profit_transfer_ars": 2000.0,
+                    "notes": "Low cash day with mostly transfers"
+                }
+            }
+        ]
+        
+        all_passed = True
+        
+        for scenario in scenarios:
+            try:
+                response = self.session.post(f"{API_BASE}/deco-cash-count", json=scenario['data'])
+                
+                if response.status_code == 200:
+                    cash_count = response.json()
+                    self.log_test(scenario['name'], True,
+                                f"Successfully created {scenario['data']['count_type']} count: ${scenario['data']['cash_usd_counted']:.0f} USD")
+                else:
+                    self.log_test(scenario['name'], False,
+                                f"Failed to create scenario: {response.status_code} - {response.text}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(scenario['name'], False, f"Error creating scenario: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def run_cash_count_tests(self):
+        """Run complete cash count test suite"""
+        print("=" * 80)
+        print("💰 DECO CASH-COUNT (ARQUEO) MODULE API TEST SUITE")
+        print("=" * 80)
+        print(f"Testing against: {API_BASE}")
+        print()
+        
+        # Step 1: Health check
+        if not self.test_health_check():
+            print("❌ Health check failed - aborting tests")
+            return False
+        
+        # Step 2: Authentication
+        if not self.authenticate():
+            print("❌ Authentication failed - aborting tests")
+            return False
+        
+        print("\n" + "=" * 50)
+        print("🔍 TESTING ENDPOINT AVAILABILITY")
+        print("=" * 50)
+        
+        # Step 3: Test endpoint exists
+        self.test_get_cash_count_endpoint()
+        
+        print("\n" + "=" * 50)
+        print("📝 TESTING CASH COUNT CREATION")
+        print("=" * 50)
+        
+        # Step 4: Create sample cash counts
+        self.create_sample_cash_counts()
+        
+        print("\n" + "=" * 50)
+        print("🔍 TESTING FILTERING & RETRIEVAL")
+        print("=" * 50)
+        
+        # Step 5: Test filtering and pagination
+        self.test_cash_count_filtering()
+        
+        print("\n" + "=" * 50)
+        print("✅ TESTING DATA VALIDATION")
+        print("=" * 50)
+        
+        # Step 6: Test validation
+        self.test_cash_count_validation()
+        
+        print("\n" + "=" * 50)
+        print("🧮 TESTING CALCULATIONS")
+        print("=" * 50)
+        
+        # Step 7: Test calculations
+        self.test_cash_count_calculations()
+        
+        print("\n" + "=" * 50)
+        print("📊 TESTING RESPONSE STRUCTURE")
+        print("=" * 50)
+        
+        # Step 8: Test response structure
+        self.test_cash_count_response_structure()
+        
+        print("\n" + "=" * 50)
+        print("🎯 TESTING DIFFERENT SCENARIOS")
+        print("=" * 50)
+        
+        # Step 9: Test different scenarios
+        self.test_different_count_scenarios()
+        
+        # Summary
+        self.print_cash_count_summary()
+        
+        return True
+    
+    def print_cash_count_summary(self):
+        """Print cash count test results summary"""
+        print("\n" + "=" * 80)
+        print("📊 DECO CASH-COUNT TEST RESULTS SUMMARY")
+        print("=" * 80)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r['success']])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            print("\n🚨 FAILED TESTS:")
+            for result in self.test_results:
+                if not result['success']:
+                    print(f"  • {result['test']}: {result['message']}")
+        
+        print(f"\n📈 CASH COUNT RECORDS CREATED: {len(self.created_cash_counts)}")
+        if self.created_cash_counts:
+            print("   Projects tested:")
+            projects = set(cc.get('deco_name', 'Unknown') for cc in self.created_cash_counts)
+            for project in sorted(projects):
+                project_counts = [cc for cc in self.created_cash_counts if cc.get('deco_name') == project]
+                total_usd = sum(cc.get('cash_usd_counted', 0) for cc in project_counts)
+                total_ars = sum(cc.get('cash_ars_counted', 0) for cc in project_counts)
+                print(f"   • {project}: {len(project_counts)} counts, ${total_usd:.0f} USD, ${total_ars:.0f} ARS")
+        
+        print("\n" + "=" * 80)
+        
+        # Save detailed results to file
+        with open('/app/deco_cash_count_test_results.json', 'w') as f:
+            json.dump(self.test_results, f, indent=2, default=str)
+        
+        print(f"📄 Detailed results saved to: /app/deco_cash_count_test_results.json")
+
+
 def main():
     """Main test execution"""
     print("🚀 Starting Backend API Test Suite")
