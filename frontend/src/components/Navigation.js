@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 
 const Navigation = () => {
   const modules = [
+    { id: 'dashboard', name: 'Dashboard', path: '/dashboard', icon: '🏠' },
     { id: 'general-cash', name: 'General Cash', path: '/general-cash', icon: '💰' },
     { id: 'events', name: 'Events Cash', path: '/events', icon: '🎉' },
     { id: 'shop', name: 'Shop Cash', path: '/shop', icon: '🛍️' },
