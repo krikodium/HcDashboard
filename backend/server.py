@@ -528,7 +528,9 @@ async def create_deco_movement(
     movement_dict["id"] = str(__import__('uuid').uuid4())
     
     movement = DecoMovement(**movement_dict)
-    await db.deco_movements.insert_one(movement.dict(by_alias=True))
+    # Convert dates for MongoDB storage
+    movement_doc = convert_dates_for_mongo(movement.dict(by_alias=True))
+    await db.deco_movements.insert_one(movement_doc)
     return movement
 
 @app.get("/api/deco-movements", response_model=List[DecoMovement])
