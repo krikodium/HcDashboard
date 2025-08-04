@@ -446,12 +446,8 @@ async def get_events_cash(
     cursor = db.events_cash.find(query).skip(skip).limit(limit).sort("header.event_date", -1)
     events = await cursor.to_list(length=limit)
     
-    # Fix ID field mapping issue
-    for event in events:
-        if "_id" in event and "id" not in event:
-            event["id"] = event["_id"]
-    
-    return [EventsCash(**event) for event in events]
+    # Use the new from_mongo method to properly handle ID field
+    return [EventsCash.from_mongo(event) for event in events]
 
 @app.post("/api/events-cash/{event_id}/ledger", response_model=EventsCash)
 async def add_ledger_entry(
