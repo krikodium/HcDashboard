@@ -94,7 +94,7 @@ class EventsCashBugTester:
                     "payment_terms": "30% anticipo, 40% 15 días antes del evento, 30% día del evento"
                 },
                 "initial_payment": {
-                    "payment_method": "Bank Transfer",
+                    "payment_method": "Transferencia",
                     "date": "2024-02-01",
                     "detail": "Anticipo inicial - 30% del presupuesto",
                     "income_ars": 135000.0
