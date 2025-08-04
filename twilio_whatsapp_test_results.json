@@ -1,0 +1,115 @@
+[
+  {
+    "test": "Health Check",
+    "success": true,
+    "message": "API is healthy",
+    "timestamp": "2025-08-04T20:04:31.493472",
+    "data": null
+  },
+  {
+    "test": "Authentication",
+    "success": true,
+    "message": "Successfully logged in as mateo",
+    "timestamp": "2025-08-04T20:04:31.736302",
+    "data": null
+  },
+  {
+    "test": "Twilio Credentials Loading",
+    "success": false,
+    "message": "Twilio client not initialized - credentials may be missing or invalid",
+    "timestamp": "2025-08-04T20:04:31.762769",
+    "data": null
+  },
+  {
+    "test": "Notification Service Initialization",
+    "success": true,
+    "message": "Notification service initialized successfully",
+    "timestamp": "2025-08-04T20:04:31.762806",
+    "data": {
+      "environment": "development",
+      "twilio_initialized": false,
+      "sendgrid_initialized": false
+    }
+  },
+  {
+    "test": "Twilio Connection Validation",
+    "success": false,
+    "message": "Twilio client not initialized",
+    "timestamp": "2025-08-04T20:04:31.762817",
+    "data": null
+  },
+  {
+    "test": "WhatsApp Message Sending",
+    "success": true,
+    "message": "WhatsApp message sent successfully: mock_wa_1754337871.794458",
+    "timestamp": "2025-08-04T20:04:31.794543",
+    "data": {
+      "success": true,
+      "message_id": "mock_wa_1754337871.794458",
+      "status": "mock_sent"
+    }
+  },
+  {
+    "test": "Payment Approval Notification Trigger",
+    "success": false,
+    "message": "Failed to create cash entry: 422 - {\"detail\":[{\"type\":\"enum\",\"loc\":[\"body\",\"application\"],\"msg\":\"Input should be 'Aportes Socias', 'Sueldos Admin.', 'Venta USD', 'Gastos Generales', 'Vi\u00e1ticos', 'Honorarios', 'Impuestos' or 'Otros'\",\"input\":\"Deco\",\"ctx\":{\"expected\":\"'Aportes Socias', 'Sueldos Admin.', 'Venta USD', 'Gastos Generales', 'Vi\u00e1ticos', 'Honorarios', 'Impuestos' or 'Otros'\"}},{\"type\":\"missing\",\"loc\":[\"body\",\"provider\"],\"msg\":\"Field required\",\"input\":{\"date\":\"2024-01-30\",\"application\":\"Deco\",\"description\":\"Test payment requiring approval - Twilio integration test\",\"expense_usd\":2500.0,\"supplier\":\"Test Supplier for Twilio\",\"reference_number\":\"TWILIO-TEST-001\",\"notes\":\"Testing Twilio WhatsApp notification for payment approval\"},\"url\":\"https://errors.pydantic.dev/2.5/v/missing\"}]}",
+    "timestamp": "2025-08-04T20:04:31.809771",
+    "data": null
+  },
+  {
+    "test": "Reconciliation Discrepancy Notification",
+    "success": true,
+    "message": "Discrepancy notification sent via 2 channels",
+    "timestamp": "2025-08-04T20:04:31.810345",
+    "data": {
+      "notification_type": "reconciliation_discrepancy",
+      "sent_at": "2025-08-04T20:04:31.810256",
+      "results": [
+        {
+          "channel": "whatsapp",
+          "result": {
+            "success": true,
+            "message_id": "mock_wa_1754337871.810161",
+            "status": "mock_sent"
+          }
+        },
+        {
+          "channel": "email",
+          "result": {
+            "success": true,
+            "message_id": "mock_email_1754337871.810252",
+            "method": "mock"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "test": "Notification Type - payment_approval",
+    "success": true,
+    "message": "Successfully sent payment_approval notification",
+    "timestamp": "2025-08-04T20:04:31.810715",
+    "data": null
+  },
+  {
+    "test": "Notification Type - low_stock",
+    "success": true,
+    "message": "Successfully sent low_stock notification",
+    "timestamp": "2025-08-04T20:04:31.811089",
+    "data": null
+  },
+  {
+    "test": "Notification Type - project_update",
+    "success": true,
+    "message": "Successfully sent project_update notification",
+    "timestamp": "2025-08-04T20:04:31.811365",
+    "data": null
+  },
+  {
+    "test": "Different Notification Types",
+    "success": true,
+    "message": "Successfully tested 3/3 notification types",
+    "timestamp": "2025-08-04T20:04:31.811377",
+    "data": null
+  }
+]
