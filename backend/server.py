@@ -25,6 +25,7 @@ def convert_dates_for_mongo(data):
 
 # Import all models
 from models import *
+from models.deco_movements import DisbursementStatus
 from services.notification_service import notification_service, notify_payment_approval_needed, notify_payment_approved
 
 # Setup logging
