@@ -122,5 +122,9 @@ __all__ = [
     
     # Projects
     "ProjectStatus", "ProjectType", "Project", "ProjectCreate", 
-    "ProjectUpdate", "ProjectSummary"
+    "ProjectUpdate", "ProjectSummary",
+    
+    # Providers
+    "ProviderType", "ProviderStatus", "Provider", "ProviderCreate",
+    "ProviderUpdate", "ProviderSummary", "ProviderAutocomplete"
 ]
