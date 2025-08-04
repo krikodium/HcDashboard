@@ -1613,7 +1613,20 @@ def main():
             return 1
     
     elif choice == "3":
-        print("\n🔄 Running Both Test Suites...")
+        print("\n💰 Running Deco Cash-Count (Arqueo) Module Tests...")
+        tester = DecoCashCountAPITester()
+        try:
+            success = tester.run_cash_count_tests()
+            return 0 if success else 1
+        except KeyboardInterrupt:
+            print("\n⚠️  Tests interrupted by user")
+            return 1
+        except Exception as e:
+            print(f"\n💥 Unexpected error: {str(e)}")
+            return 1
+    
+    elif choice == "4":
+        print("\n🔄 Running All Test Suites...")
         
         # Run Provider Management tests first
         print("\n" + "="*80)
@@ -1629,6 +1642,13 @@ def main():
         deco_tester = DecoMovementsAPITester()
         deco_success = deco_tester.run_all_tests()
         
+        # Run Cash Count tests
+        print("\n" + "="*80)
+        print("💰 DECO CASH-COUNT (ARQUEO) MODULE TESTS")
+        print("="*80)
+        cash_count_tester = DecoCashCountAPITester()
+        cash_count_success = cash_count_tester.run_cash_count_tests()
+        
         # Combined summary
         print("\n" + "="*80)
         print("🎯 COMBINED TEST RESULTS")
@@ -1637,15 +1657,18 @@ def main():
         provider_passed = len([r for r in provider_tester.test_results if r['success']])
         deco_total = len(deco_tester.test_results)
         deco_passed = len([r for r in deco_tester.test_results if r['success']])
+        cash_count_total = len(cash_count_tester.test_results)
+        cash_count_passed = len([r for r in cash_count_tester.test_results if r['success']])
         
-        total_tests = provider_total + deco_total
-        total_passed = provider_passed + deco_passed
+        total_tests = provider_total + deco_total + cash_count_total
+        total_passed = provider_passed + deco_passed + cash_count_passed
         
         print(f"Provider Management: {provider_passed}/{provider_total} passed")
         print(f"Deco Movements: {deco_passed}/{deco_total} passed")
+        print(f"Deco Cash-Count: {cash_count_passed}/{cash_count_total} passed")
         print(f"Overall: {total_passed}/{total_tests} passed ({(total_passed/total_tests)*100:.1f}%)")
         
-        return 0 if (provider_success and deco_success) else 1
+        return 0 if (provider_success and deco_success and cash_count_success) else 1
     
     else:
         print("Invalid choice. Defaulting to Provider Management tests...")
