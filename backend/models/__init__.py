@@ -93,7 +93,7 @@ __all__ = [
     "InventoryItem", "ShopCashSummary",
     
     # Deco Movements
-    "DecoProject", "DisbursementType", "DisbursementStatus", "DecoMovement",
+    "DisbursementType", "DisbursementStatus", "DecoMovement",
     "DecoMovementCreate", "DecoMovementUpdate", "DisbursementOrder", 
     "DisbursementOrderCreate", "ProjectBalance", "DecoProject_v2", "DecoMovementsSummary",
     
