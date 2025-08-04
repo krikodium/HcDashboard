@@ -93,7 +93,7 @@ const LoginForm = () => {
           
           <div className="text-center mt-4">
             <p className="text-sm theme-text-secondary">
-              Test credentials: <strong>mateo</strong> / <strong>prueba123</strong>
+              For demo purposes, please contact your administrator for login credentials.
             </p>
           </div>
         </form>
