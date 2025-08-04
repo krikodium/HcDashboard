@@ -665,12 +665,10 @@ const SaleEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
               
               <div>
                 <label className="block text-sm font-medium theme-text mb-2">Provider</label>
-                <input
-                  type="text"
-                  className="form-input w-full"
+                <ProviderAutocomplete
                   value={formData.provider}
-                  onChange={(e) => setFormData({...formData, provider: e.target.value})}
-                  placeholder="Provider name"
+                  onChange={(value) => setFormData({...formData, provider: value})}
+                  onCreateNew={() => setShowProviderModal(true)}
                   required
                 />
               </div>
