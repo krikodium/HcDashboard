@@ -701,8 +701,8 @@ const CashCount = () => {
               onChange={(e) => setSelectedDeco(e.target.value)}
             >
               <option value="">All Decos</option>
-              {decos.slice(1).map(deco => (
-                <option key={deco} value={deco}>{deco}</option>
+              {projectOptions.slice(1).map(project => (
+                <option key={project} value={project}>{project}</option>
               ))}
             </select>
             {selectedDeco && (
