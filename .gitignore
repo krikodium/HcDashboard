@@ -1,0 +1,21 @@
+# Environment variables - DO NOT COMMIT
+.env
+**/.env
+backend/.env
+frontend/.env
+
+# Dependencies and cache folders
+/node_modules
+/frontend/node_modules
+/build
+/frontend/build
+/dist
+/frontend/dist
+.DS_Store
+*.pem
+*.log
+
+# Python specific
+__pycache__/
+venv/
+*.pyc
