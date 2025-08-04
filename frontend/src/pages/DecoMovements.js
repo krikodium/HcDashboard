@@ -19,10 +19,10 @@ const TableSkeleton = () => (
 );
 
 // Movement Entry Form Modal
-const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
+const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    project_name: 'Pájaro',
+    project_name: '',
     description: '',
     income_usd: '',
     expense_usd: '',
@@ -33,10 +33,12 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
     notes: ''
   });
 
-  const projects = [
-    'Pájaro', 'Alvear', 'Bahía Bustamante', 'Hotel Madero', 
-    'Palacio Duhau', 'Four Seasons', 'Alvear Palace', 'Other'
-  ];
+  // Set default project when projects are loaded
+  useEffect(() => {
+    if (projects.length > 0 && !formData.project_name) {
+      setFormData(prev => ({...prev, project_name: projects[0].name}));
+    }
+  }, [projects, formData.project_name]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -86,8 +88,9 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 onChange={(e) => setFormData({...formData, project_name: e.target.value})}
                 required
               >
+                <option value="">Select a project</option>
                 {projects.map(project => (
-                  <option key={project} value={project}>{project}</option>
+                  <option key={project.id} value={project.name}>{project.name}</option>
                 ))}
               </select>
             </div>
