@@ -599,6 +599,23 @@ const SaleEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
     setIsInventoryModalOpen(false);
   };
 
+  const handleCreateProvider = async (providerData) => {
+    try {
+      setIsCreatingProvider(true);
+      const response = await axios.post('/api/providers', providerData);
+      setFormData(prev => ({
+        ...prev,
+        provider: response.data.name
+      }));
+      setShowProviderModal(false);
+    } catch (error) {
+      console.error('Error creating provider:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setIsCreatingProvider(false);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const submitData = {
