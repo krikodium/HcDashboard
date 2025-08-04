@@ -1769,7 +1769,9 @@ class TwilioWhatsAppNotificationTester:
             
             if response.status_code == 200:
                 cash_entry = response.json()
-                entry_id = cash_entry.get('id')
+                entry_id = cash_entry.get('id') or cash_entry.get('_id')  # Try both id and _id
+                
+                self.log_test("Debug Cash Entry", True, f"Cash entry created", {"entry_id": entry_id, "approval_status": cash_entry.get('approval_status')})
                 
                 # Check if approval is needed
                 if cash_entry.get('approval_status') == 'Pending':
@@ -1778,17 +1780,22 @@ class TwilioWhatsAppNotificationTester:
                     
                     # The notification should have been sent automatically during creation
                     # Let's also test the approval process which should send another notification
-                    approval_response = self.session.post(
-                        f"{API_BASE}/general-cash/{entry_id}/approve?approval_type=fede"
-                    )
-                    
-                    if approval_response.status_code == 200:
-                        self.log_test("Payment Approval Process", True, 
-                                    "Payment approval process completed - notifications should have been sent")
-                        return True
+                    if entry_id:
+                        approval_response = self.session.post(
+                            f"{API_BASE}/general-cash/{entry_id}/approve?approval_type=fede"
+                        )
+                        
+                        if approval_response.status_code == 200:
+                            self.log_test("Payment Approval Process", True, 
+                                        "Payment approval process completed - notifications should have been sent")
+                            return True
+                        else:
+                            self.log_test("Payment Approval Process", False, 
+                                        f"Approval failed: {approval_response.status_code} - {approval_response.text}")
+                            return False
                     else:
                         self.log_test("Payment Approval Process", False, 
-                                    f"Approval failed: {approval_response.status_code} - {approval_response.text}")
+                                    "No entry ID found for approval")
                         return False
                 else:
                     self.log_test("Payment Approval Notification Trigger", False, 
