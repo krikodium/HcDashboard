@@ -1,0 +1,156 @@
+[
+  {
+    "test": "Health Check",
+    "success": true,
+    "message": "API is healthy",
+    "timestamp": "2025-08-04T17:18:49.200680",
+    "data": null
+  },
+  {
+    "test": "Authentication",
+    "success": true,
+    "message": "Successfully logged in as mateo",
+    "timestamp": "2025-08-04T17:18:49.440648",
+    "data": null
+  },
+  {
+    "test": "Create Movement 1",
+    "success": false,
+    "message": "Failed to create movement: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.477822",
+    "data": null
+  },
+  {
+    "test": "Create Movement 2",
+    "success": false,
+    "message": "Failed to create movement: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.493256",
+    "data": null
+  },
+  {
+    "test": "Create Movement 3",
+    "success": false,
+    "message": "Failed to create movement: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.506445",
+    "data": null
+  },
+  {
+    "test": "Create Movement 4",
+    "success": false,
+    "message": "Failed to create movement: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.521316",
+    "data": null
+  },
+  {
+    "test": "Create Movement 5",
+    "success": false,
+    "message": "Failed to create movement: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.536584",
+    "data": null
+  },
+  {
+    "test": "Create Movement 6",
+    "success": false,
+    "message": "Failed to create movement: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.549674",
+    "data": null
+  },
+  {
+    "test": "Create Disbursement Order 1",
+    "success": false,
+    "message": "Failed to create order: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.562195",
+    "data": null
+  },
+  {
+    "test": "Create Disbursement Order 2",
+    "success": false,
+    "message": "Failed to create order: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.578486",
+    "data": null
+  },
+  {
+    "test": "Create Disbursement Order 3",
+    "success": false,
+    "message": "Failed to create order: 500 - Internal Server Error",
+    "timestamp": "2025-08-04T17:18:49.592026",
+    "data": null
+  },
+  {
+    "test": "Get Deco Movements",
+    "success": true,
+    "message": "Retrieved 0 movements",
+    "timestamp": "2025-08-04T17:18:49.603228",
+    "data": null
+  },
+  {
+    "test": "Get Movements - Project Filter",
+    "success": true,
+    "message": "Retrieved 0 movements for P\u00e1jaro project",
+    "timestamp": "2025-08-04T17:18:49.612140",
+    "data": null
+  },
+  {
+    "test": "Get Movements - Pagination",
+    "success": true,
+    "message": "Retrieved 0 movements with pagination",
+    "timestamp": "2025-08-04T17:18:49.621110",
+    "data": null
+  },
+  {
+    "test": "Get Disbursement Orders",
+    "success": true,
+    "message": "Retrieved 0 disbursement orders",
+    "timestamp": "2025-08-04T17:18:49.630614",
+    "data": null
+  },
+  {
+    "test": "Get Orders - Project Filter",
+    "success": true,
+    "message": "Retrieved 0 orders for Alvear project",
+    "timestamp": "2025-08-04T17:18:49.641820",
+    "data": null
+  },
+  {
+    "test": "Get Orders - Status Filter",
+    "success": true,
+    "message": "Retrieved 0 orders with 'Requested' status",
+    "timestamp": "2025-08-04T17:18:49.651724",
+    "data": null
+  },
+  {
+    "test": "Invalid Movement - Missing Required Fields",
+    "success": true,
+    "message": "Correctly rejected invalid data: 422",
+    "timestamp": "2025-08-04T17:18:49.661330",
+    "data": null
+  },
+  {
+    "test": "Invalid Movement - Negative Amount",
+    "success": true,
+    "message": "Correctly rejected invalid data: 422",
+    "timestamp": "2025-08-04T17:18:49.669841",
+    "data": null
+  },
+  {
+    "test": "Invalid Disbursement - Missing Supplier",
+    "success": true,
+    "message": "Correctly rejected invalid data: 422",
+    "timestamp": "2025-08-04T17:18:49.679443",
+    "data": null
+  },
+  {
+    "test": "Invalid Disbursement - Invalid Priority",
+    "success": true,
+    "message": "Correctly rejected invalid data: 422",
+    "timestamp": "2025-08-04T17:18:49.689316",
+    "data": null
+  },
+  {
+    "test": "Balance Calculations",
+    "success": true,
+    "message": "Calculated balances for 0 projects",
+    "timestamp": "2025-08-04T17:18:49.689371",
+    "data": {}
+  }
+]
