@@ -1757,10 +1757,10 @@ class TwilioWhatsAppNotificationTester:
             # Create a general cash entry that requires approval
             cash_entry_data = {
                 "date": "2024-01-30",
-                "application": "Deco",
+                "application": "Gastos Generales",  # Use valid enum value
                 "description": "Test payment requiring approval - Twilio integration test",
                 "expense_usd": 2500.0,  # High amount to trigger approval
-                "supplier": "Test Supplier for Twilio",
+                "provider": "Test Supplier for Twilio",  # Required field
                 "reference_number": "TWILIO-TEST-001",
                 "notes": "Testing Twilio WhatsApp notification for payment approval"
             }
