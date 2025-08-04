@@ -422,7 +422,10 @@ async def create_events_cash(
         event.ledger_entries.append(event_data.initial_payment)
         event.recalculate_balances()
     
-    await db.events_cash.insert_one(event.dict(by_alias=True))
+    # Convert dates for MongoDB storage
+    event_doc = convert_dates_for_mongo(event.dict(by_alias=True))
+    
+    await db.events_cash.insert_one(event_doc)
     return event
 
 @app.get("/api/events-cash", response_model=List[EventsCash])
