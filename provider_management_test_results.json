@@ -3,21 +3,21 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T18:41:24.629153",
+    "timestamp": "2025-08-04T18:41:48.323824",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T18:41:24.867856",
+    "timestamp": "2025-08-04T18:41:48.564160",
     "data": null
   },
   {
     "test": "Get Initial Providers",
     "success": true,
     "message": "Retrieved 7 providers, found 6/6 expected initial providers",
-    "timestamp": "2025-08-04T18:41:24.884624",
+    "timestamp": "2025-08-04T18:41:48.575922",
     "data": {
       "total_providers": 7,
       "found_initial": [
@@ -34,87 +34,94 @@
     "test": "Autocomplete - 'Flores'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:41:24.900185",
+    "timestamp": "2025-08-04T18:41:48.587818",
     "data": null
   },
   {
     "test": "Autocomplete - 'Telas'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:41:24.911104",
+    "timestamp": "2025-08-04T18:41:48.598778",
     "data": null
   },
   {
     "test": "Autocomplete - 'Ilum'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:41:24.922177",
+    "timestamp": "2025-08-04T18:41:48.609407",
     "data": null
   },
   {
     "test": "Autocomplete - 'Muebles'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:41:24.936698",
+    "timestamp": "2025-08-04T18:41:48.620515",
     "data": null
   },
   {
     "test": "Autocomplete - 'Transport'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:41:24.947712",
+    "timestamp": "2025-08-04T18:41:48.631020",
     "data": null
   },
   {
     "test": "Autocomplete - 'Cristal'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:41:24.959179",
+    "timestamp": "2025-08-04T18:41:48.641729",
     "data": null
   },
   {
     "test": "Autocomplete - 'xyz123'",
     "success": true,
     "message": "Correctly returned no results for non-existent query",
-    "timestamp": "2025-08-04T18:41:24.970997",
+    "timestamp": "2025-08-04T18:41:48.652401",
     "data": null
   },
   {
     "test": "Create New Provider",
-    "success": false,
-    "message": "Failed to create provider: 400 - {\"detail\":\"Provider name already exists\"}",
-    "timestamp": "2025-08-04T18:41:24.981875",
+    "success": true,
+    "message": "Successfully created provider: Proveedores Especiales Test SA 20250804_184148",
+    "timestamp": "2025-08-04T18:41:48.662921",
+    "data": null
+  },
+  {
+    "test": "Verify Created Provider Data",
+    "success": true,
+    "message": "Provider data matches input",
+    "timestamp": "2025-08-04T18:41:48.662957",
     "data": null
   },
   {
     "test": "Duplicate Provider Validation",
     "success": true,
     "message": "Correctly rejected duplicate provider name: 400",
-    "timestamp": "2025-08-04T18:41:24.993307",
+    "timestamp": "2025-08-04T18:41:48.673541",
     "data": null
   },
   {
     "test": "Update Provider",
     "success": false,
-    "message": "No created providers to update",
-    "timestamp": "2025-08-04T18:41:24.993374",
+    "message": "Failed to update provider: 404 - {\"detail\":\"Provider not found\"}",
+    "timestamp": "2025-08-04T18:41:48.683446",
     "data": null
   },
   {
     "test": "Get Specific Provider",
     "success": false,
-    "message": "No created providers to retrieve",
-    "timestamp": "2025-08-04T18:41:24.993388",
+    "message": "Failed to retrieve provider: 404 - {\"detail\":\"Provider not found\"}",
+    "timestamp": "2025-08-04T18:41:48.693334",
     "data": null
   },
   {
     "test": "Provider Summary",
     "success": true,
-    "message": "Retrieved provider summary with 7 total providers",
-    "timestamp": "2025-08-04T18:41:25.006712",
+    "message": "Retrieved provider summary with 8 total providers",
+    "timestamp": "2025-08-04T18:41:48.702935",
     "data": {
-      "total_providers": 7,
-      "active_providers": 7,
+      "total_providers": 8,
+      "active_providers": 8,
       "inactive_providers": 0,
       "preferred_providers": 2,
       "high_volume_providers": 0,
@@ -128,14 +135,14 @@
     "test": "Shop Cash Integration - Create Entry",
     "success": true,
     "message": "Created shop cash entry with provider: Flores & Decoraciones SRL",
-    "timestamp": "2025-08-04T18:41:25.047870",
+    "timestamp": "2025-08-04T18:41:48.713909",
     "data": null
   },
   {
     "test": "Shop Cash Integration - Provider Financials",
     "success": false,
     "message": "Failed to retrieve provider with financials: 404",
-    "timestamp": "2025-08-04T18:41:25.069758",
+    "timestamp": "2025-08-04T18:41:48.734328",
     "data": null
   }
 ]
