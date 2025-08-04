@@ -2168,6 +2168,13 @@ def main():
         cash_count_tester = DecoCashCountAPITester()
         cash_count_success = cash_count_tester.run_cash_count_tests()
         
+        # Run Twilio WhatsApp tests
+        print("\n" + "="*80)
+        print("📱 TWILIO WHATSAPP NOTIFICATION INTEGRATION TESTS")
+        print("="*80)
+        twilio_tester = TwilioWhatsAppNotificationTester()
+        twilio_success = twilio_tester.run_twilio_whatsapp_tests()
+        
         # Combined summary
         print("\n" + "="*80)
         print("🎯 COMBINED TEST RESULTS")
@@ -2178,16 +2185,19 @@ def main():
         deco_passed = len([r for r in deco_tester.test_results if r['success']])
         cash_count_total = len(cash_count_tester.test_results)
         cash_count_passed = len([r for r in cash_count_tester.test_results if r['success']])
+        twilio_total = len(twilio_tester.test_results)
+        twilio_passed = len([r for r in twilio_tester.test_results if r['success']])
         
-        total_tests = provider_total + deco_total + cash_count_total
-        total_passed = provider_passed + deco_passed + cash_count_passed
+        total_tests = provider_total + deco_total + cash_count_total + twilio_total
+        total_passed = provider_passed + deco_passed + cash_count_passed + twilio_passed
         
         print(f"Provider Management: {provider_passed}/{provider_total} passed")
         print(f"Deco Movements: {deco_passed}/{deco_total} passed")
         print(f"Deco Cash-Count: {cash_count_passed}/{cash_count_total} passed")
+        print(f"Twilio WhatsApp: {twilio_passed}/{twilio_total} passed")
         print(f"Overall: {total_passed}/{total_tests} passed ({(total_passed/total_tests)*100:.1f}%)")
         
-        return 0 if (provider_success and deco_success and cash_count_success) else 1
+        return 0 if (provider_success and deco_success and cash_count_success and twilio_success) else 1
     
     else:
         print("Invalid choice. Defaulting to Deco Cash-Count tests...")
