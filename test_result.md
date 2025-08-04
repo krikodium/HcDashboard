@@ -164,6 +164,69 @@ backend:
         agent: "testing"
         comment: "Shop cash integration with provider system working correctly. Successfully created shop cash entry with provider name 'Flores & Decoraciones SRL'. Provider financial calculations updated correctly when shop cash transactions are associated with provider names. Transaction count properly incremented (6 transactions found for test provider)."
 
+  - task: "Deco Cash-Count (Arqueo) Module - GET Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/deco-cash-count endpoint working correctly. Successfully retrieves cash count records with filtering by project name and pagination support. Tested with multiple cash counts across different projects."
+
+  - task: "Deco Cash-Count (Arqueo) Module - POST Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "Initial test failed with BSON encoding error for date objects - same issue as other endpoints"
+      - working: true
+        agent: "testing"
+        comment: "Fixed by adding convert_dates_for_mongo() function call in create_cash_count endpoint. Successfully created 5 cash count records across different projects (Pájaro, Alvear, Hotel Madero, Bahía Bustamante, Palacio Duhau) with various count types (Daily, Weekly, Monthly, Special) and realistic financial data including profit/commission breakdowns."
+
+  - task: "Deco Cash-Count (Arqueo) Module - Data Validation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "All validation tests passed (100% success rate). Correctly rejects invalid data including missing required fields, negative amounts, and invalid count types with proper 422 status codes. Valid minimal data is accepted correctly."
+
+  - task: "Deco Cash-Count (Arqueo) Module - Calculations and Ledger Comparison"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Cash count calculations working correctly. Profit totals are calculated accurately (cash + transfer amounts). Ledger comparison functionality implemented - compares counted amounts with expected balances and creates discrepancy records when differences are found. Discrepancy detection working with proper severity levels (High/Medium) based on amount thresholds."
+
+  - task: "Deco Cash-Count (Arqueo) Module - Response Structure"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Response structure is compatible with frontend requirements. All required fields present including _id (MongoDB standard), count_date, deco_name, count_type, cash amounts, calculated totals, status, and audit fields. Data types are correct (dates as ISO strings, amounts as numbers). Response includes comprehensive discrepancy information when applicable."
+
 frontend:
   # Frontend testing not performed as per instructions
 
