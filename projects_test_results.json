@@ -3,77 +3,124 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T18:07:34.379510",
+    "timestamp": "2025-08-04T18:09:06.388052",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T18:07:34.620470",
+    "timestamp": "2025-08-04T18:09:06.633447",
     "data": null
   },
   {
     "test": "Initial Projects Verification",
+    "success": true,
+    "message": "All 5 initial projects found: P\u00e1jaro, Alvear, Hotel Madero, Bah\u00eda Bustamante, Palacio Duhau",
+    "timestamp": "2025-08-04T18:09:06.646115",
+    "data": null
+  },
+  {
+    "test": "Project P\u00e1jaro Structure",
     "success": false,
-    "message": "Failed to retrieve projects: 500 - Internal Server Error",
-    "timestamp": "2025-08-04T18:07:34.641103",
+    "message": "Missing required fields: ['id']",
+    "timestamp": "2025-08-04T18:09:06.646154",
+    "data": null
+  },
+  {
+    "test": "Project Alvear Structure",
+    "success": false,
+    "message": "Missing required fields: ['id']",
+    "timestamp": "2025-08-04T18:09:06.646163",
+    "data": null
+  },
+  {
+    "test": "Project Hotel Madero Structure",
+    "success": false,
+    "message": "Missing required fields: ['id']",
+    "timestamp": "2025-08-04T18:09:06.646169",
+    "data": null
+  },
+  {
+    "test": "Project Bah\u00eda Bustamante Structure",
+    "success": false,
+    "message": "Missing required fields: ['id']",
+    "timestamp": "2025-08-04T18:09:06.646176",
+    "data": null
+  },
+  {
+    "test": "Project Palacio Duhau Structure",
+    "success": false,
+    "message": "Missing required fields: ['id']",
+    "timestamp": "2025-08-04T18:09:06.646184",
     "data": null
   },
   {
     "test": "Create New Project",
     "success": false,
-    "message": "Error creating project: 'id'",
-    "timestamp": "2025-08-04T18:07:34.653582",
+    "message": "Failed to create project: 400 - {\"detail\":\"Project name already exists\"}",
+    "timestamp": "2025-08-04T18:09:06.656122",
     "data": null
   },
   {
     "test": "Get Specific Project",
     "success": false,
     "message": "No project ID available for testing",
-    "timestamp": "2025-08-04T18:07:34.653631",
+    "timestamp": "2025-08-04T18:09:06.656173",
     "data": null
   },
   {
     "test": "Update Project",
     "success": false,
     "message": "No project ID available for testing",
-    "timestamp": "2025-08-04T18:07:34.653644",
+    "timestamp": "2025-08-04T18:09:06.656187",
     "data": null
   },
   {
     "test": "Integration with Movements",
     "success": false,
     "message": "No project name available for testing",
-    "timestamp": "2025-08-04T18:07:34.653657",
+    "timestamp": "2025-08-04T18:09:06.656197",
     "data": null
   },
   {
     "test": "Duplicate Project Name",
     "success": true,
     "message": "Correctly rejected invalid data: 400",
-    "timestamp": "2025-08-04T18:07:34.666616",
+    "timestamp": "2025-08-04T18:09:06.664212",
     "data": null
   },
   {
     "test": "Missing Required Fields",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T18:07:34.677791",
+    "timestamp": "2025-08-04T18:09:06.678992",
     "data": null
   },
   {
     "test": "Movement with Non-existent Project",
     "success": true,
     "message": "Valid data accepted: 200",
-    "timestamp": "2025-08-04T18:07:34.689289",
+    "timestamp": "2025-08-04T18:09:06.693811",
     "data": null
   },
   {
     "test": "Projects Summary",
-    "success": false,
-    "message": "Failed to retrieve summary: 404 - {\"detail\":\"Project not found\"}",
-    "timestamp": "2025-08-04T18:07:34.699997",
+    "success": true,
+    "message": "Summary retrieved successfully - Total projects: 6",
+    "timestamp": "2025-08-04T18:09:06.702610",
     "data": null
+  },
+  {
+    "test": "Summary Metrics",
+    "success": true,
+    "message": "Key metrics calculated",
+    "timestamp": "2025-08-04T18:09:06.702642",
+    "data": {
+      "total_projects": 6,
+      "active_projects": 6,
+      "total_budget_usd": 200000.0,
+      "projects_over_budget": 0
+    }
   }
 ]
