@@ -3,28 +3,28 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T20:05:45.862047",
+    "timestamp": "2025-08-04T20:06:22.318725",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T20:05:46.104579",
+    "timestamp": "2025-08-04T20:06:22.556609",
     "data": null
   },
   {
     "test": "Twilio Credentials Loading",
     "success": false,
     "message": "Twilio client not initialized - credentials may be missing or invalid",
-    "timestamp": "2025-08-04T20:05:46.131048",
+    "timestamp": "2025-08-04T20:06:22.581913",
     "data": null
   },
   {
     "test": "Notification Service Initialization",
     "success": true,
     "message": "Notification service initialized successfully",
-    "timestamp": "2025-08-04T20:05:46.131075",
+    "timestamp": "2025-08-04T20:06:22.581940",
     "data": {
       "environment": "development",
       "twilio_initialized": false,
@@ -35,48 +35,58 @@
     "test": "Twilio Connection Validation",
     "success": false,
     "message": "Twilio client not initialized",
-    "timestamp": "2025-08-04T20:05:46.131084",
+    "timestamp": "2025-08-04T20:06:22.581949",
     "data": null
   },
   {
     "test": "WhatsApp Message Sending",
     "success": true,
-    "message": "WhatsApp message sent successfully: mock_wa_1754337946.159457",
-    "timestamp": "2025-08-04T20:05:46.159545",
+    "message": "WhatsApp message sent successfully: mock_wa_1754337982.608083",
+    "timestamp": "2025-08-04T20:06:22.608165",
     "data": {
       "success": true,
-      "message_id": "mock_wa_1754337946.159457",
+      "message_id": "mock_wa_1754337982.608083",
       "status": "mock_sent"
+    }
+  },
+  {
+    "test": "Debug Cash Entry",
+    "success": true,
+    "message": "Cash entry created",
+    "timestamp": "2025-08-04T20:06:22.816045",
+    "data": {
+      "entry_id": "c34268bd-90c1-4065-bf66-c5b4c088b6b9",
+      "approval_status": "Pending"
     }
   },
   {
     "test": "Payment Approval Notification Trigger",
     "success": true,
-    "message": "Created cash entry requiring approval: None",
-    "timestamp": "2025-08-04T20:05:46.522294",
+    "message": "Created cash entry requiring approval: c34268bd-90c1-4065-bf66-c5b4c088b6b9",
+    "timestamp": "2025-08-04T20:06:22.816085",
     "data": null
   },
   {
     "test": "Payment Approval Process",
-    "success": false,
-    "message": "Approval failed: 404 - {\"detail\":\"Entry not found\"}",
-    "timestamp": "2025-08-04T20:05:46.534259",
+    "success": true,
+    "message": "Payment approval process completed - notifications should have been sent",
+    "timestamp": "2025-08-04T20:06:22.919814",
     "data": null
   },
   {
     "test": "Reconciliation Discrepancy Notification",
     "success": true,
     "message": "Discrepancy notification sent via 2 channels",
-    "timestamp": "2025-08-04T20:05:46.534910",
+    "timestamp": "2025-08-04T20:06:22.920449",
     "data": {
       "notification_type": "reconciliation_discrepancy",
-      "sent_at": "2025-08-04T20:05:46.534806",
+      "sent_at": "2025-08-04T20:06:22.920344",
       "results": [
         {
           "channel": "whatsapp",
           "result": {
             "success": true,
-            "message_id": "mock_wa_1754337946.534681",
+            "message_id": "mock_wa_1754337982.920248",
             "status": "mock_sent"
           }
         },
@@ -84,7 +94,7 @@
           "channel": "email",
           "result": {
             "success": true,
-            "message_id": "mock_email_1754337946.5348",
+            "message_id": "mock_email_1754337982.920338",
             "method": "mock"
           }
         }
@@ -95,28 +105,28 @@
     "test": "Notification Type - payment_approval",
     "success": true,
     "message": "Successfully sent payment_approval notification",
-    "timestamp": "2025-08-04T20:05:46.535273",
+    "timestamp": "2025-08-04T20:06:22.920829",
     "data": null
   },
   {
     "test": "Notification Type - low_stock",
     "success": true,
     "message": "Successfully sent low_stock notification",
-    "timestamp": "2025-08-04T20:05:46.535570",
+    "timestamp": "2025-08-04T20:06:22.921138",
     "data": null
   },
   {
     "test": "Notification Type - project_update",
     "success": true,
     "message": "Successfully sent project_update notification",
-    "timestamp": "2025-08-04T20:05:46.535860",
+    "timestamp": "2025-08-04T20:06:22.921464",
     "data": null
   },
   {
     "test": "Different Notification Types",
     "success": true,
     "message": "Successfully tested 3/3 notification types",
-    "timestamp": "2025-08-04T20:05:46.535874",
+    "timestamp": "2025-08-04T20:06:22.921479",
     "data": null
   }
 ]
