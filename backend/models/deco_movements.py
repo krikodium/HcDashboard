@@ -4,16 +4,7 @@ from datetime import datetime, date
 from .base import BaseDocument, ApprovalStatus, Currency
 from enum import Enum
 
-class DecoProject(str, Enum):
-    PAJARO = "Pájaro"
-    ALVEAR = "Alvear"
-    BAHIA_BUSTAMANTE = "Bahía Bustamante"
-    HOTEL_MADERO = "Hotel Madero"
-    PALACIO_DUHAU = "Palacio Duhau"
-    FOUR_SEASONS = "Four Seasons"
-    ALVEAR_PALACE = "Alvear Palace"
-    OTHER = "Other"
-
+# Remove the hardcoded DecoProject enum - now projects will be dynamic
 class DisbursementType(str, Enum):
     SUPPLIER_PAYMENT = "Supplier Payment"
     MATERIALS = "Materials"
@@ -33,7 +24,7 @@ class DisbursementStatus(str, Enum):
 # API Models
 class DecoMovementCreate(BaseModel):
     date: date
-    project_name: DecoProject
+    project_name: str = Field(..., min_length=1, max_length=200)  # Changed to string for dynamic projects
     description: str = Field(..., min_length=1, max_length=500)
     income_usd: Optional[float] = Field(None, ge=0)
     expense_usd: Optional[float] = Field(None, ge=0)
@@ -45,7 +36,7 @@ class DecoMovementCreate(BaseModel):
 
 class DecoMovementUpdate(BaseModel):
     date: Optional[date] = None
-    project_name: Optional[DecoProject] = None
+    project_name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, min_length=1, max_length=500)
     income_usd: Optional[float] = Field(None, ge=0)
     expense_usd: Optional[float] = Field(None, ge=0)
@@ -56,7 +47,7 @@ class DecoMovementUpdate(BaseModel):
     notes: Optional[str] = Field(None, max_length=500)
 
 class DisbursementOrderCreate(BaseModel):
-    project_name: DecoProject
+    project_name: str = Field(..., min_length=1, max_length=200)  # Changed to string for dynamic projects
     disbursement_type: DisbursementType
     amount_usd: Optional[float] = Field(None, gt=0)
     amount_ars: Optional[float] = Field(None, gt=0)
@@ -69,7 +60,7 @@ class DisbursementOrderCreate(BaseModel):
 class DisbursementOrder(BaseModel):
     """Disbursement request/order"""
     id: str = Field(default_factory=lambda: str(__import__('uuid').uuid4()))
-    project_name: DecoProject
+    project_name: str  # Changed to string for dynamic projects
     disbursement_type: DisbursementType
     amount_usd: Optional[float] = None
     amount_ars: Optional[float] = None
@@ -109,7 +100,7 @@ class DisbursementOrder(BaseModel):
 
 class ProjectBalance(BaseModel):
     """Monthly/Project balance tracking"""
-    project_name: DecoProject
+    project_name: str  # Changed to string for dynamic projects
     month: date  # First day of the month
     starting_balance_usd: float = 0.0
     starting_balance_ars: float = 0.0
@@ -128,7 +119,7 @@ class ProjectBalance(BaseModel):
 class DecoMovement(BaseDocument):
     """Deco Movements - Main document model"""
     date: date
-    project_name: DecoProject
+    project_name: str  # Changed to string for dynamic projects
     description: str
     
     # Financial amounts
@@ -166,7 +157,7 @@ class DecoMovement(BaseDocument):
 
 class DecoProject_v2(BaseDocument):
     """Deco Project container with movements and orders"""
-    project_name: DecoProject
+    project_name: str  # Changed to string for dynamic projects
     description: Optional[str] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
