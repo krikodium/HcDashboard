@@ -366,7 +366,7 @@ async def approve_general_cash_entry(
     if not check_permission(current_user, ["super-admin", "area-admin"]):
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     
-    entry = await db.general_cash.find_one({"id": entry_id})
+    entry = await db.general_cash.find_one({"_id": entry_id})
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
     
@@ -383,7 +383,7 @@ async def approve_general_cash_entry(
         update_data["payment_order.approved_by"] = current_user.username
         update_data["payment_order.approved_at"] = datetime.utcnow()
     
-    await db.general_cash.update_one({"id": entry_id}, {"$set": update_data})
+    await db.general_cash.update_one({"_id": entry_id}, {"$set": update_data})
     
     # Send notification
     user_prefs = {
