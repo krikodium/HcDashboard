@@ -194,6 +194,11 @@ async def create_general_cash_entry(
 ):
     """Create a new general cash entry"""
     entry_dict = entry_data.dict()
+    
+    # Convert date to datetime for MongoDB storage
+    if isinstance(entry_dict.get("date"), date):
+        entry_dict["date"] = datetime.combine(entry_dict["date"], datetime.min.time())
+    
     entry_dict["created_by"] = current_user.username
     entry_dict["created_at"] = datetime.utcnow()
     entry_dict["updated_at"] = datetime.utcnow()
@@ -214,7 +219,12 @@ async def create_general_cash_entry(
             requested_by=current_user.username
         )
     
-    result = await db.general_cash.insert_one(entry.dict(by_alias=True))
+    # Convert entry to dict and handle date fields
+    entry_doc = entry.dict(by_alias=True)
+    if isinstance(entry.date, date):
+        entry_doc["date"] = datetime.combine(entry.date, datetime.min.time())
+    
+    result = await db.general_cash.insert_one(entry_doc)
     
     # Send notification if approval needed
     if entry.needs_approval() and "super-admin" in current_user.roles:
