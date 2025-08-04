@@ -3,23 +3,23 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T18:43:41.137852",
+    "timestamp": "2025-08-04T18:44:27.950362",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T18:43:41.380085",
+    "timestamp": "2025-08-04T18:44:28.194084",
     "data": null
   },
   {
     "test": "Get Initial Providers",
     "success": true,
-    "message": "Retrieved 10 providers, found 6/6 expected initial providers",
-    "timestamp": "2025-08-04T18:43:41.394903",
+    "message": "Retrieved 11 providers, found 6/6 expected initial providers",
+    "timestamp": "2025-08-04T18:44:28.209146",
     "data": {
-      "total_providers": 10,
+      "total_providers": 11,
       "found_initial": [
         "Flores & Decoraciones SRL",
         "Telas y Textiles Palermo",
@@ -34,87 +34,87 @@
     "test": "Autocomplete - 'Flores'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:43:41.409611",
+    "timestamp": "2025-08-04T18:44:28.218331",
     "data": null
   },
   {
     "test": "Autocomplete - 'Telas'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:43:41.421579",
+    "timestamp": "2025-08-04T18:44:28.227338",
     "data": null
   },
   {
     "test": "Autocomplete - 'Ilum'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:43:41.432265",
+    "timestamp": "2025-08-04T18:44:28.235954",
     "data": null
   },
   {
     "test": "Autocomplete - 'Muebles'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:43:41.446216",
+    "timestamp": "2025-08-04T18:44:28.244835",
     "data": null
   },
   {
     "test": "Autocomplete - 'Transport'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:43:41.456925",
+    "timestamp": "2025-08-04T18:44:28.254474",
     "data": null
   },
   {
     "test": "Autocomplete - 'Cristal'",
     "success": true,
     "message": "Found 1 results including expected provider",
-    "timestamp": "2025-08-04T18:43:41.468000",
+    "timestamp": "2025-08-04T18:44:28.264049",
     "data": null
   },
   {
     "test": "Autocomplete - 'xyz123'",
     "success": true,
     "message": "Correctly returned no results for non-existent query",
-    "timestamp": "2025-08-04T18:43:41.478528",
+    "timestamp": "2025-08-04T18:44:28.272574",
     "data": null
   },
   {
     "test": "Create New Provider",
     "success": true,
-    "message": "Successfully created provider: Proveedores Especiales Test SA 20250804_184341",
-    "timestamp": "2025-08-04T18:43:41.491487",
+    "message": "Successfully created provider: Proveedores Especiales Test SA 20250804_184428",
+    "timestamp": "2025-08-04T18:44:28.283093",
     "data": {
       "provider_id": null,
-      "provider_name": "Proveedores Especiales Test SA 20250804_184341"
+      "provider_name": "Proveedores Especiales Test SA 20250804_184428"
     }
   },
   {
     "test": "Verify Created Provider Data",
     "success": true,
     "message": "Provider data matches input",
-    "timestamp": "2025-08-04T18:43:41.491524",
+    "timestamp": "2025-08-04T18:44:28.283129",
     "data": null
   },
   {
     "test": "Duplicate Provider Validation",
     "success": true,
     "message": "Correctly rejected duplicate provider name: 400",
-    "timestamp": "2025-08-04T18:43:41.503343",
+    "timestamp": "2025-08-04T18:44:28.292270",
     "data": null
   },
   {
     "test": "Debug Provider ID",
     "success": true,
-    "message": "Using provider ID: aee8e827-2e5d-4a02-a51a-f0bba02a7362",
-    "timestamp": "2025-08-04T18:43:41.503396",
+    "message": "Using provider ID: 4f7c3e7d-51c2-4161-a08a-ce82f622473b",
+    "timestamp": "2025-08-04T18:44:28.292320",
     "data": {
-      "_id": "aee8e827-2e5d-4a02-a51a-f0bba02a7362",
-      "created_at": "2025-08-04T18:43:41.488178",
-      "updated_at": "2025-08-04T18:43:41.488180",
+      "_id": "4f7c3e7d-51c2-4161-a08a-ce82f622473b",
+      "created_at": "2025-08-04T18:44:28.279455",
+      "updated_at": "2025-08-04T18:44:28.279458",
       "created_by": "mateo",
       "updated_by": null,
-      "name": "Proveedores Especiales Test SA 20250804_184341",
+      "name": "Proveedores Especiales Test SA 20250804_184428",
       "provider_type": "Supplier",
       "contact_person": "Juan Carlos Testeo",
       "email": "juan@proveedorestest.com.ar",
@@ -137,14 +137,14 @@
     "test": "Debug Updated Provider",
     "success": true,
     "message": "Provider update response received",
-    "timestamp": "2025-08-04T18:43:41.515876",
+    "timestamp": "2025-08-04T18:44:28.302803",
     "data": {
-      "_id": "aee8e827-2e5d-4a02-a51a-f0bba02a7362",
-      "created_at": "2025-08-04T18:43:41.488000",
-      "updated_at": "2025-08-04T18:43:41.511000",
+      "_id": "4f7c3e7d-51c2-4161-a08a-ce82f622473b",
+      "created_at": "2025-08-04T18:44:28.279000",
+      "updated_at": "2025-08-04T18:44:28.298000",
       "created_by": "mateo",
       "updated_by": "mateo",
-      "name": "Proveedores Especiales Test SA 20250804_184341",
+      "name": "Proveedores Especiales Test SA 20250804_184428",
       "provider_type": "Supplier",
       "contact_person": "Mar\u00eda Elena Testeo Updated",
       "email": "juan@proveedorestest.com.ar",
@@ -165,26 +165,26 @@
   },
   {
     "test": "Update Provider",
-    "success": false,
-    "message": "Provider updates were not applied correctly. Expected: {'contact_person': 'Mar\u00eda Elena Testeo Updated', 'phone': '+54 11 7777-6666', 'payment_terms': '15 d\u00edas', 'preferred_supplier': True}, Got: contact_person=Mar\u00eda Elena Testeo Updated, phone=+54 11 7777-6666, preferred_supplier=False",
-    "timestamp": "2025-08-04T18:43:41.515936",
+    "success": true,
+    "message": "Successfully updated provider: Proveedores Especiales Test SA 20250804_184428",
+    "timestamp": "2025-08-04T18:44:28.302833",
     "data": null
   },
   {
     "test": "Get Specific Provider",
     "success": true,
-    "message": "Successfully retrieved provider with financials: Proveedores Especiales Test SA 20250804_184341",
-    "timestamp": "2025-08-04T18:43:41.528166",
+    "message": "Successfully retrieved provider with financials: Proveedores Especiales Test SA 20250804_184428",
+    "timestamp": "2025-08-04T18:44:28.314493",
     "data": null
   },
   {
     "test": "Provider Summary",
     "success": true,
-    "message": "Retrieved provider summary with 11 total providers",
-    "timestamp": "2025-08-04T18:43:41.539661",
+    "message": "Retrieved provider summary with 12 total providers",
+    "timestamp": "2025-08-04T18:44:28.324327",
     "data": {
-      "total_providers": 11,
-      "active_providers": 11,
+      "total_providers": 12,
+      "active_providers": 12,
       "inactive_providers": 0,
       "preferred_providers": 2,
       "high_volume_providers": 0,
@@ -198,14 +198,14 @@
     "test": "Shop Cash Integration - Create Entry",
     "success": true,
     "message": "Created shop cash entry with provider: Flores & Decoraciones SRL",
-    "timestamp": "2025-08-04T18:43:41.549951",
+    "timestamp": "2025-08-04T18:44:28.333896",
     "data": null
   },
   {
     "test": "Shop Cash Integration - Provider Financials",
-    "success": false,
-    "message": "Failed to retrieve provider with financials: 404",
-    "timestamp": "2025-08-04T18:43:41.572940",
+    "success": true,
+    "message": "Provider financials calculated: transactions=6",
+    "timestamp": "2025-08-04T18:44:28.354360",
     "data": null
   }
 ]
