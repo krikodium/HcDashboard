@@ -460,9 +460,14 @@ async def add_ledger_entry(
     current_user: User = Depends(get_current_user)
 ):
     """Add a ledger entry to an event"""
-    event = await db.events_cash.find_one({"_id": event_id})
+    # Try both _id and id fields for compatibility
+    event = await db.events_cash.find_one({"$or": [{"_id": event_id}, {"id": event_id}]})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Fix ID field mapping
+    if "_id" in event and "id" not in event:
+        event["id"] = event["_id"]
     
     event_obj = EventsCash(**event)
     new_entry = EventsLedgerEntry(**entry_data.dict())
@@ -470,8 +475,9 @@ async def add_ledger_entry(
     event_obj.recalculate_balances()
     
     # Convert dates for MongoDB storage
-    event_doc = convert_dates_for_mongo(event_obj.dict(by_alias=True, exclude={"id", "created_at"}))
+    event_doc = convert_dates_for_mongo(event_obj.dict(by_alias=True))
     
+    # Update using the correct ID field
     await db.events_cash.update_one(
         {"_id": event_id},
         {"$set": event_doc}
