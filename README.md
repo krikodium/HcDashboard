@@ -70,14 +70,14 @@ Use Docker Compose for production deployment:
 docker-compose up -d
 ```
 
-## Default Credentials
+## Authentication
 
-**Test User:**
-- Username: `mateo`
-- Password: `prueba123`
+**Default Admin User:**
+- A seeded admin user is created automatically during startup
+- Contact your system administrator for login credentials
 - Role: Super Admin
 
-*⚠️ Change these credentials before production deployment*
+*⚠️ Ensure secure credentials are configured before production deployment*
 
 ## API Documentation
 
