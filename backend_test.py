@@ -272,6 +272,9 @@ class ProviderManagementAPITester:
             if response.status_code == 200:
                 updated_provider = response.json()
                 
+                # Log the updated provider for debugging
+                self.log_test("Debug Updated Provider", True, "Provider update response received", updated_provider)
+                
                 # Verify updates were applied
                 if (updated_provider.get('contact_person') == update_data['contact_person'] and
                     updated_provider.get('phone') == update_data['phone'] and
@@ -281,7 +284,7 @@ class ProviderManagementAPITester:
                     return True
                 else:
                     self.log_test("Update Provider", False,
-                                "Provider updates were not applied correctly")
+                                f"Provider updates were not applied correctly. Expected: {update_data}, Got: contact_person={updated_provider.get('contact_person')}, phone={updated_provider.get('phone')}, preferred_supplier={updated_provider.get('preferred_supplier')}")
                     return False
             else:
                 self.log_test("Update Provider", False,
