@@ -63,7 +63,7 @@ class DisbursementOrderCreate(BaseModel):
     supplier: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1, max_length=500)
     due_date: Optional[date] = None
-    priority: Optional[str] = Field("Normal", regex="^(Low|Normal|High|Urgent)$")
+    priority: Optional[str] = Field("Normal", pattern="^(Low|Normal|High|Urgent)$")
     supporting_documents: List[str] = Field(default_factory=list)
 
 class DisbursementOrder(BaseModel):
