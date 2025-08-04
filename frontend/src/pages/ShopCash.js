@@ -550,6 +550,8 @@ const SaleEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
   });
 
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [isCreatingProvider, setIsCreatingProvider] = useState(false);
   const [calculatedAmounts, setCalculatedAmounts] = useState({
     net_sale_ars: 0,
     net_sale_usd: 0,
