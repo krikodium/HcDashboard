@@ -136,7 +136,7 @@ class ProjectManagementAPITester:
         """Test creating a new project"""
         try:
             project_data = {
-                "name": "Test Project Automation",
+                "name": f"Test Project Automation {datetime.now().strftime('%Y%m%d_%H%M%S')}",
                 "description": "Automated test project for API validation",
                 "project_type": "Deco",
                 "status": "Active",
