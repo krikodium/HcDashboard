@@ -134,11 +134,14 @@ def check_permission(user: User, required_roles: List[str] = None):
 @app.on_event("startup")
 async def startup_event():
     # Create seed user if not exists
-    existing_user = await db.users.find_one({"username": "mateo"})
+    seed_username = os.getenv("SEED_USERNAME", "admin")
+    seed_password = os.getenv("SEED_PASSWORD", "changeme123")
+    
+    existing_user = await db.users.find_one({"username": seed_username})
     if not existing_user:
         seed_user = {
-            "username": "mateo",
-            "password": hash_password("prueba123"),
+            "username": seed_username,
+            "password": hash_password(seed_password),
             "roles": ["super-admin"],
             "created_at": datetime.utcnow()
         }
