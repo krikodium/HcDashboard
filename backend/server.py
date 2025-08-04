@@ -822,7 +822,7 @@ async def get_cash_counts(
     cursor = db.deco_cash_count.find(query).skip(skip).limit(limit).sort("count_date", -1)
     counts = await cursor.to_list(length=limit)
     
-    return [DecoCashCount(**count) for count in counts]
+    return [DecoCashCount.from_mongo(count) for count in counts]
 
 # ===============================
 # PROJECTS MODULE API
