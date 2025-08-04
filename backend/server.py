@@ -396,57 +396,7 @@ async def approve_general_cash_entry(
     
     return {"message": "Entry approved successfully"}
 
-@app.get("/api/general-cash/summary", response_model=GeneralCashSummary)
-async def get_general_cash_summary(
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
-    current_user: User = Depends(get_current_user)
-):
-    """Get general cash summary statistics"""
-    query = {}
-    if start_date or end_date:
-        date_query = {}
-        if start_date:
-            date_query["$gte"] = start_date
-        if end_date:
-            date_query["$lte"] = end_date
-        query["date"] = date_query
-    
-    # Aggregate pipeline
-    pipeline = [
-        {"$match": query},
-        {
-            "$group": {
-                "_id": None,
-                "total_entries": {"$sum": 1},
-                "pending_approvals": {
-                    "$sum": {"$cond": [{"$eq": ["$approval_status", "Pending"]}, 1, 0]}
-                },
-                "total_income_ars": {"$sum": {"$ifNull": ["$income_ars", 0]}},
-                "total_income_usd": {"$sum": {"$ifNull": ["$income_usd", 0]}},
-                "total_expense_ars": {"$sum": {"$ifNull": ["$expense_ars", 0]}},
-                "total_expense_usd": {"$sum": {"$ifNull": ["$expense_usd", 0]}}
-            }
-        }
-    ]
-    
-    result = await db.general_cash.aggregate(pipeline).to_list(1)
-    if not result:
-        return GeneralCashSummary(
-            total_entries=0, pending_approvals=0,
-            total_income_ars=0.0, total_income_usd=0.0,
-            total_expense_ars=0.0, total_expense_usd=0.0,
-            net_balance_ars=0.0, net_balance_usd=0.0,
-            by_application={}, date_range={}
-        )
-    
-    summary_data = result[0]
-    summary_data["net_balance_ars"] = summary_data["total_income_ars"] - summary_data["total_expense_ars"]
-    summary_data["net_balance_usd"] = summary_data["total_income_usd"] - summary_data["total_expense_usd"]
-    summary_data["by_application"] = {}
-    summary_data["date_range"] = {}
-    
-    return GeneralCashSummary(**summary_data)
+# Remove the duplicate summary endpoint that was at the end
 
 # ===============================
 # EVENTS CASH MODULE API
