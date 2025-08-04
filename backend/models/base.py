@@ -34,9 +34,17 @@ class BaseDocument(BaseModel):
 
     class Config:
         populate_by_name = True
+        allow_population_by_field_name = True
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
+    
+    @classmethod
+    def from_mongo(cls, data: dict):
+        """Create instance from MongoDB document, handling _id field"""
+        if "_id" in data and "id" not in data:
+            data["id"] = data["_id"]
+        return cls(**data)
 
 class UserNotificationPreferences(BaseModel):
     """User notification preferences"""
