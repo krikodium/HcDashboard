@@ -176,8 +176,10 @@ class ProviderManagementAPITester:
     def test_create_new_provider(self) -> bool:
         """Test creating a new provider"""
         try:
+            # Use timestamp to ensure unique name
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             new_provider_data = {
-                "name": "Proveedores Especiales Test SA",
+                "name": f"Proveedores Especiales Test SA {timestamp}",
                 "provider_type": "Supplier",
                 "contact_person": "Juan Carlos Testeo",
                 "email": "juan@proveedorestest.com.ar",
