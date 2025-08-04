@@ -1,0 +1,51 @@
+[
+  {
+    "test": "Authentication",
+    "success": true,
+    "message": "Successfully logged in as mateo",
+    "timestamp": "2025-08-04T17:48:41.095166",
+    "data": null
+  },
+  {
+    "test": "Create Event",
+    "success": true,
+    "message": "Created event for Familia Rodr\u00edguez - ID: None",
+    "timestamp": "2025-08-04T17:48:41.125992",
+    "data": null
+  },
+  {
+    "test": "Initial Payment Processing",
+    "success": true,
+    "message": "Initial payment of ARS 135,000 correctly processed",
+    "timestamp": "2025-08-04T17:48:41.126027",
+    "data": null
+  },
+  {
+    "test": "Add Ledger Entries",
+    "success": false,
+    "message": "No event ID available",
+    "timestamp": "2025-08-04T17:48:41.126054",
+    "data": null
+  },
+  {
+    "test": "Data Persistence Check",
+    "success": false,
+    "message": "No event ID available",
+    "timestamp": "2025-08-04T17:48:41.126065",
+    "data": null
+  },
+  {
+    "test": "Event ID Consistency",
+    "success": false,
+    "message": "No event ID available",
+    "timestamp": "2025-08-04T17:48:41.126076",
+    "data": null
+  },
+  {
+    "test": "Database Update Operation",
+    "success": false,
+    "message": "No event ID available",
+    "timestamp": "2025-08-04T17:48:41.126087",
+    "data": null
+  }
+]
