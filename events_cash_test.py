@@ -220,11 +220,15 @@ class EventsCashBugTester:
             
             if response.status_code == 200:
                 events = response.json()
+                print(f"DEBUG: Retrieved {len(events)} events")
+                for i, event in enumerate(events):
+                    print(f"DEBUG: Event {i}: ID={event.get('id')}, _ID={event.get('_id')}")
                 
                 # Find our created event
                 our_event = None
                 for event in events:
-                    if event.get("id") == self.created_event_id:
+                    event_id = event.get("id") or event.get("_id")
+                    if event_id == self.created_event_id:
                         our_event = event
                         break
                 
