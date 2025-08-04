@@ -323,7 +323,7 @@ class EventsCashBugTester:
         try:
             # Add one more entry to test update operation
             test_entry = {
-                "payment_method": "Bank Transfer",
+                "payment_method": "Transferencia",
                 "date": "2024-03-10",
                 "detail": "Test entry for update operation verification",
                 "income_ars": 50000.0
