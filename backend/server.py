@@ -285,7 +285,7 @@ async def update_general_cash_entry(
 @app.post("/api/general-cash/{entry_id}/approve")
 async def approve_general_cash_entry(
     entry_id: str,
-    approval_type: str = Query(..., regex="^(fede|sisters)$"),
+    approval_type: str = Query(..., pattern="^(fede|sisters)$"),
     current_user: User = Depends(get_current_user)
 ):
     """Approve a general cash entry"""
