@@ -1,0 +1,131 @@
+[
+  {
+    "test": "Health Check",
+    "success": true,
+    "message": "API is healthy",
+    "timestamp": "2025-08-04T18:37:32.274619",
+    "data": null
+  },
+  {
+    "test": "Authentication",
+    "success": true,
+    "message": "Successfully logged in as mateo",
+    "timestamp": "2025-08-04T18:37:32.515567",
+    "data": null
+  },
+  {
+    "test": "Get Initial Providers",
+    "success": true,
+    "message": "Retrieved 6 providers, found 6/6 expected initial providers",
+    "timestamp": "2025-08-04T18:37:32.527271",
+    "data": {
+      "total_providers": 6,
+      "found_initial": [
+        "Flores & Decoraciones SRL",
+        "Telas y Textiles Palermo",
+        "Iluminaci\u00f3n Profesional SA",
+        "Muebles & Accesorios Victoria",
+        "Servicios de Transporte L\u00f3pez",
+        "Cristaler\u00eda Fina Buenos Aires"
+      ]
+    }
+  },
+  {
+    "test": "Autocomplete - 'Flores'",
+    "success": true,
+    "message": "Found 1 results including expected provider",
+    "timestamp": "2025-08-04T18:37:32.539031",
+    "data": null
+  },
+  {
+    "test": "Autocomplete - 'Telas'",
+    "success": true,
+    "message": "Found 1 results including expected provider",
+    "timestamp": "2025-08-04T18:37:32.549358",
+    "data": null
+  },
+  {
+    "test": "Autocomplete - 'Ilum'",
+    "success": true,
+    "message": "Found 1 results including expected provider",
+    "timestamp": "2025-08-04T18:37:32.560070",
+    "data": null
+  },
+  {
+    "test": "Autocomplete - 'Muebles'",
+    "success": true,
+    "message": "Found 1 results including expected provider",
+    "timestamp": "2025-08-04T18:37:32.572602",
+    "data": null
+  },
+  {
+    "test": "Autocomplete - 'Transport'",
+    "success": true,
+    "message": "Found 1 results including expected provider",
+    "timestamp": "2025-08-04T18:37:32.583590",
+    "data": null
+  },
+  {
+    "test": "Autocomplete - 'Cristal'",
+    "success": true,
+    "message": "Found 1 results including expected provider",
+    "timestamp": "2025-08-04T18:37:32.598024",
+    "data": null
+  },
+  {
+    "test": "Autocomplete - 'xyz123'",
+    "success": true,
+    "message": "Correctly returned no results for non-existent query",
+    "timestamp": "2025-08-04T18:37:32.612788",
+    "data": null
+  },
+  {
+    "test": "Create New Provider",
+    "success": true,
+    "message": "Successfully created provider: Proveedores Especiales Test SA",
+    "timestamp": "2025-08-04T18:37:32.626023",
+    "data": null
+  },
+  {
+    "test": "Verify Created Provider Data",
+    "success": true,
+    "message": "Provider data matches input",
+    "timestamp": "2025-08-04T18:37:32.626057",
+    "data": null
+  },
+  {
+    "test": "Duplicate Provider Validation",
+    "success": true,
+    "message": "Correctly rejected duplicate provider name: 400",
+    "timestamp": "2025-08-04T18:37:32.636081",
+    "data": null
+  },
+  {
+    "test": "Update Provider",
+    "success": false,
+    "message": "Failed to update provider: 404 - {\"detail\":\"Provider not found\"}",
+    "timestamp": "2025-08-04T18:37:32.647256",
+    "data": null
+  },
+  {
+    "test": "Get Specific Provider",
+    "success": false,
+    "message": "Failed to retrieve provider: 404 - {\"detail\":\"Provider not found\"}",
+    "timestamp": "2025-08-04T18:37:32.658359",
+    "data": null
+  },
+  {
+    "test": "Provider Summary",
+    "success": false,
+    "message": "Failed to retrieve summary: 404 - {\"detail\":\"Provider not found\"}",
+    "timestamp": "2025-08-04T18:37:32.667854",
+    "data": null
+  },
+  {
+    "test": "Shop Cash Integration - Create Entry",
+    "success": false,
+    "message": "Failed to create shop cash entry: 422 - {\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"client\"],\"msg\":\"Field required\",\"input\":{\"date\":\"2024-01-30\",\"description\":\"Test purchase from provider\",\"provider\":\"Flores & Decoraciones SRL\",\"amount\":1500.0,\"currency\":\"ARS\",\"category\":\"Materials\",\"payment_method\":\"Transfer\"},\"url\":\"https://errors.pydantic.dev/2.5/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"internal_coordinator\"],\"msg\":\"Field required\",\"input\":{\"date\":\"2024-01-30\",\"description\":\"Test purchase from provider\",\"provider\":\"Flores & Decoraciones SRL\",\"amount\":1500.0,\"currency\":\"ARS\",\"category\":\"Materials\",\"payment_method\":\"Transfer\"},\"url\":\"https://errors.pydantic.dev/2.5/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"quantity\"],\"msg\":\"Field required\",\"input\":{\"date\":\"2024-01-30\",\"description\":\"Test purchase from provider\",\"provider\":\"Flores & Decoraciones SRL\",\"amount\":1500.0,\"currency\":\"ARS\",\"category\":\"Materials\",\"payment_method\":\"Transfer\"},\"url\":\"https://errors.pydantic.dev/2.5/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"item_description\"],\"msg\":\"Field required\",\"input\":{\"date\":\"2024-01-30\",\"description\":\"Test purchase from provider\",\"provider\":\"Flores & Decoraciones SRL\",\"amount\":1500.0,\"currency\":\"ARS\",\"category\":\"Materials\",\"payment_method\":\"Transfer\"},\"url\":\"https://errors.pydantic.dev/2.5/v/missing\"},{\"type\":\"enum\",\"loc\":[\"body\",\"payment_method\"],\"msg\":\"Input should be 'Efectivo', 'Transferencia' or 'Tarjeta'\",\"input\":\"Transfer\",\"ctx\":{\"expected\":\"'Efectivo', 'Transferencia' or 'Tarjeta'\"}}]}",
+    "timestamp": "2025-08-04T18:37:32.677324",
+    "data": null
+  }
+]
