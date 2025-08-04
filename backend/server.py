@@ -932,5 +932,236 @@ async def archive_project(
     
     return {"message": "Project archived successfully"}
 
+# ===============================
+# PROVIDERS MODULE API
+# ===============================
+
+@app.post("/api/providers", response_model=Provider)
+async def create_provider(
+    provider_data: ProviderCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new provider"""
+    # Check if provider name already exists
+    existing_provider = await db.providers.find_one({"name": provider_data.name, "is_archived": False})
+    if existing_provider:
+        raise HTTPException(status_code=400, detail="Provider name already exists")
+    
+    provider_dict = provider_data.dict()
+    provider_dict["created_by"] = current_user.username
+    provider_dict["created_at"] = datetime.utcnow()
+    provider_dict["updated_at"] = datetime.utcnow()
+    provider_dict["id"] = str(__import__('uuid').uuid4())
+    
+    provider = Provider(**provider_dict)
+    
+    # Convert dates for MongoDB storage
+    provider_doc = convert_dates_for_mongo(provider.dict(by_alias=True))
+    
+    await db.providers.insert_one(provider_doc)
+    return provider
+
+@app.get("/api/providers", response_model=List[Provider])
+async def get_providers(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    status: Optional[str] = None,
+    provider_type: Optional[str] = None,
+    include_archived: bool = Query(False),
+    current_user: User = Depends(get_current_user)
+):
+    """Get providers list"""
+    query = {}
+    if not include_archived:
+        query["is_archived"] = False
+    if status:
+        query["status"] = status
+    if provider_type:
+        query["provider_type"] = provider_type
+    
+    cursor = db.providers.find(query).skip(skip).limit(limit).sort("name", 1)
+    providers = await cursor.to_list(length=limit)
+    
+    return [Provider.from_mongo(provider) for provider in providers]
+
+@app.get("/api/providers/autocomplete", response_model=List[ProviderAutocomplete])
+async def get_providers_autocomplete(
+    q: str = Query(..., min_length=1, description="Search query"),
+    limit: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user)
+):
+    """Get providers for autocomplete with search"""
+    # Search in provider names (case-insensitive)
+    query = {
+        "is_archived": False,
+        "name": {"$regex": f".*{q}.*", "$options": "i"}
+    }
+    
+    cursor = db.providers.find(query).limit(limit).sort("name", 1)
+    providers = await cursor.to_list(length=limit)
+    
+    # Return simplified provider data for autocomplete
+    results = []
+    for provider in providers:
+        results.append(ProviderAutocomplete(
+            id=provider.get("id", str(provider.get("_id", ""))),
+            name=provider["name"],
+            provider_type=provider.get("provider_type", "Supplier"),
+            contact_person=provider.get("contact_person"),
+            email=provider.get("email"),
+            phone=provider.get("phone"),
+            status=provider.get("status", "Active"),
+            transaction_count=provider.get("transaction_count", 0),
+            last_transaction_date=provider.get("last_transaction_date")
+        ))
+    
+    return results
+
+@app.get("/api/providers/{provider_id}", response_model=Provider)
+async def get_provider(
+    provider_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get a specific provider with calculated financials"""
+    provider = await db.providers.find_one({"$or": [{"_id": provider_id}, {"id": provider_id}]})
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    
+    provider_obj = Provider.from_mongo(provider)
+    
+    # Get related transactions for financial calculations (from shop_cash)
+    transactions = await db.shop_cash.find({"provider": provider_obj.name}).to_list(length=1000)
+    
+    # Recalculate financials
+    provider_obj.recalculate_financials(transactions)
+    
+    # Update the database with calculated values
+    update_data = {
+        "total_purchases_usd": provider_obj.total_purchases_usd,
+        "total_purchases_ars": provider_obj.total_purchases_ars,
+        "last_transaction_date": provider_obj.last_transaction_date,
+        "transaction_count": provider_obj.transaction_count,
+        "updated_at": datetime.utcnow()
+    }
+    
+    await db.providers.update_one(
+        {"$or": [{"_id": provider_id}, {"id": provider_id}]},
+        {"$set": convert_dates_for_mongo(update_data)}
+    )
+    
+    return provider_obj
+
+@app.patch("/api/providers/{provider_id}", response_model=Provider)
+async def update_provider(
+    provider_id: str,
+    update_data: ProviderUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update a provider"""
+    provider = await db.providers.find_one({"$or": [{"_id": provider_id}, {"id": provider_id}]})
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    
+    # Check for name conflicts if name is being updated
+    if update_data.name and update_data.name != provider["name"]:
+        existing_provider = await db.providers.find_one({
+            "name": update_data.name, 
+            "is_archived": False,
+            "$nor": [{"_id": provider_id}, {"id": provider_id}]
+        })
+        if existing_provider:
+            raise HTTPException(status_code=400, detail="Provider name already exists")
+    
+    update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
+    update_dict["updated_at"] = datetime.utcnow()
+    update_dict["updated_by"] = current_user.username
+    
+    # Convert dates for MongoDB storage
+    update_dict = convert_dates_for_mongo(update_dict)
+    
+    await db.providers.update_one(
+        {"$or": [{"_id": provider_id}, {"id": provider_id}]},
+        {"$set": update_dict}
+    )
+    
+    updated_provider = await db.providers.find_one({"$or": [{"_id": provider_id}, {"id": provider_id}]})
+    return Provider.from_mongo(updated_provider)
+
+@app.delete("/api/providers/{provider_id}")
+async def archive_provider(
+    provider_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Archive a provider (soft delete)"""
+    provider = await db.providers.find_one({"$or": [{"_id": provider_id}, {"id": provider_id}]})
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    
+    await db.providers.update_one(
+        {"$or": [{"_id": provider_id}, {"id": provider_id}]},
+        {"$set": {
+            "is_archived": True,
+            "status": "Inactive",
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_user.username
+        }}
+    )
+    
+    return {"message": "Provider archived successfully"}
+
+@app.get("/api/providers/summary", response_model=ProviderSummary)
+async def get_providers_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get providers summary statistics"""
+    # Aggregate pipeline for provider statistics
+    pipeline = [
+        {"$match": {"is_archived": False}},
+        {
+            "$group": {
+                "_id": None,
+                "total_providers": {"$sum": 1},
+                "active_providers": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Active"]}, 1, 0]}
+                },
+                "inactive_providers": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Inactive"]}, 1, 0]}
+                },
+                "preferred_providers": {
+                    "$sum": {"$cond": [{"$eq": ["$preferred_supplier", True]}, 1, 0]}
+                },
+                "high_volume_providers": {
+                    "$sum": {"$cond": [{"$gte": ["$transaction_count", 50]}, 1, 0]}
+                },
+                "total_purchases_usd": {"$sum": {"$ifNull": ["$total_purchases_usd", 0]}},
+                "total_purchases_ars": {"$sum": {"$ifNull": ["$total_purchases_ars", 0]}},
+                "providers_with_recent_activity": {
+                    "$sum": {"$cond": [{"$ne": ["$last_transaction_date", None]}, 1, 0]}
+                },
+                "total_transactions": {"$sum": {"$ifNull": ["$transaction_count", 0]}}
+            }
+        }
+    ]
+    
+    result = await db.providers.aggregate(pipeline).to_list(1)
+    if not result:
+        return ProviderSummary(
+            total_providers=0, active_providers=0, inactive_providers=0,
+            preferred_providers=0, high_volume_providers=0,
+            total_purchases_usd=0.0, total_purchases_ars=0.0,
+            providers_with_recent_activity=0, average_transactions_per_provider=0.0
+        )
+    
+    summary_data = result[0]
+    
+    # Calculate average transactions per provider
+    total_providers = summary_data.get("total_providers", 0)
+    total_transactions = summary_data.get("total_transactions", 0)
+    summary_data["average_transactions_per_provider"] = (
+        total_transactions / total_providers if total_providers > 0 else 0.0
+    )
+    
+    return ProviderSummary(**summary_data)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
