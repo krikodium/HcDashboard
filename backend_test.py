@@ -1960,7 +1960,7 @@ class TwilioWhatsAppNotificationTester:
             if notification_service.twilio_client:
                 # Try to fetch account information to validate connection
                 try:
-                    account = notification_service.twilio_client.api.accounts.get()
+                    account = notification_service.twilio_client.api.accounts(notification_service.twilio_client.account_sid).fetch()
                     account_info = {
                         "account_sid": account.sid,
                         "friendly_name": account.friendly_name,
