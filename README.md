@@ -97,7 +97,7 @@ Access interactive API docs at: `http://localhost:8001/docs`
 ### Backend (.env)
 ```
 MONGO_URL=mongodb://localhost:27017
-JWT_SECRET_KEY=your-secret-key
+JWT_SECRET_KEY=your-secret-key-change-in-production
 TWILIO_ACCOUNT_SID=your-twilio-sid
 TWILIO_AUTH_TOKEN=your-twilio-token
 SENDGRID_API_KEY=your-sendgrid-key
