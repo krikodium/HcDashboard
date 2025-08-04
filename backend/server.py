@@ -768,6 +768,66 @@ async def get_projects(
     
     return [Project.from_mongo(project) for project in projects]
 
+@app.get("/api/projects/summary", response_model=ProjectSummary)
+async def get_projects_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get projects summary statistics"""
+    # Aggregate pipeline for project statistics
+    pipeline = [
+        {"$match": {"is_archived": False}},
+        {
+            "$group": {
+                "_id": None,
+                "total_projects": {"$sum": 1},
+                "active_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Active"]}, 1, 0]}
+                },
+                "completed_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Completed"]}, 1, 0]}
+                },
+                "on_hold_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "On Hold"]}, 1, 0]}
+                },
+                "cancelled_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Cancelled"]}, 1, 0]}
+                },
+                "total_budget_usd": {"$sum": {"$ifNull": ["$budget_usd", 0]}},
+                "total_budget_ars": {"$sum": {"$ifNull": ["$budget_ars", 0]}},
+                "total_expenses_usd": {"$sum": {"$ifNull": ["$total_expense_usd", 0]}},
+                "total_expenses_ars": {"$sum": {"$ifNull": ["$total_expense_ars", 0]}},
+                "projects_over_budget": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$or": [
+                                    {"$gt": ["$total_expense_usd", "$budget_usd"]},
+                                    {"$gt": ["$total_expense_ars", "$budget_ars"]}
+                                ]
+                            },
+                            1, 0
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+    
+    result = await db.projects.aggregate(pipeline).to_list(1)
+    if not result:
+        return ProjectSummary(
+            total_projects=0, active_projects=0, completed_projects=0,
+            on_hold_projects=0, cancelled_projects=0,
+            total_budget_usd=0.0, total_budget_ars=0.0,
+            total_expenses_usd=0.0, total_expenses_ars=0.0,
+            projects_over_budget=0, average_project_duration_days=None
+        )
+    
+    summary_data = result[0]
+    summary_data["average_project_duration_days"] = None  # TODO: Calculate if needed
+    
+    return ProjectSummary(**summary_data)
+
 @app.get("/api/projects/{project_id}", response_model=Project)
 async def get_project(
     project_id: str,
