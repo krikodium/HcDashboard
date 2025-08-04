@@ -42,6 +42,27 @@ A comprehensive administrative dashboard for Hermanas Caradonti, an events and d
 - Python 3.11+
 - MongoDB (local or Docker)
 
+## Setup Instructions
+
+### Environment Configuration
+
+1. **Backend Configuration:**
+   ```bash
+   cp backend/.env.example backend/.env
+   ```
+   Then edit `backend/.env` with your actual credentials:
+   - Database connection details
+   - JWT secret key
+   - Twilio credentials for WhatsApp notifications
+   - SendGrid API key for email notifications
+   - Seed user credentials
+
+2. **Frontend Configuration:**
+   ```bash
+   cp frontend/.env.example frontend/.env
+   ```
+   Then edit `frontend/.env` with your backend URL.
+
 ### Development Setup
 
 1. **Backend Setup**
