@@ -360,6 +360,7 @@ const CashCountModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
 // Main Cash Count Component
 const CashCount = () => {
   const [cashCounts, setCashCounts] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [summary, setSummary] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [discrepancyData, setDiscrepancyData] = useState([]);
@@ -376,18 +377,23 @@ const CashCount = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/deco-cash-count');
-      setCashCounts(response.data);
+      const [cashCountsResponse, projectsResponse] = await Promise.all([
+        axios.get('/api/deco-cash-count'),
+        axios.get('/api/projects').catch(() => ({ data: [] }))
+      ]);
+      
+      setCashCounts(cashCountsResponse.data);
+      setProjects(projectsResponse.data || []);
       
       // Process data for charts
-      const monthlyData = processMonthlyDiscrepancyData(response.data);
-      const discrepancyByDeco = processDiscrepancyByDeco(response.data);
+      const monthlyData = processMonthlyDiscrepancyData(cashCountsResponse.data);
+      const discrepancyByDeco = processDiscrepancyByDeco(cashCountsResponse.data);
       
       setChartData(monthlyData);
       setDiscrepancyData(discrepancyByDeco);
       
       // Calculate summary
-      const calculatedSummary = calculateSummary(response.data);
+      const calculatedSummary = calculateSummary(cashCountsResponse.data);
       setSummary(calculatedSummary);
       
       setError('');
