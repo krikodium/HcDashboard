@@ -133,6 +133,86 @@ async def startup_event():
         }
         await db.users.insert_one(seed_user)
         logger.info("✅ Seed user 'mateo' created with password 'prueba123'")
+    
+    # Create initial projects if none exist
+    existing_projects = await db.projects.count_documents({"is_archived": False})
+    if existing_projects == 0:
+        initial_projects = [
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Pájaro",
+                "description": "Luxury event venue project with premium decorations",
+                "project_type": "Deco",
+                "status": "Active",
+                "budget_usd": 50000.0,
+                "client_name": "Pájaro Venue Group",
+                "location": "Palermo, Buenos Aires",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Alvear",
+                "description": "Historic hotel renovation and decoration project",
+                "project_type": "Deco", 
+                "status": "Active",
+                "budget_ars": 2500000.0,
+                "client_name": "Hotel Alvear",
+                "location": "Recoleta, Buenos Aires",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Hotel Madero",
+                "description": "Modern hotel lobby and common areas decoration",
+                "project_type": "Deco",
+                "status": "Active", 
+                "budget_usd": 35000.0,
+                "budget_ars": 1800000.0,
+                "client_name": "Madero Hotel Group",
+                "location": "Puerto Madero, Buenos Aires",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Bahía Bustamante",
+                "description": "Coastal resort decoration and event planning",
+                "project_type": "Mixed",
+                "status": "Active",
+                "budget_usd": 25000.0,
+                "client_name": "Bahía Bustamante Resort",
+                "location": "Chubut, Argentina",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Palacio Duhau",
+                "description": "Exclusive palace events and decorations",
+                "project_type": "Event",
+                "status": "Active",
+                "budget_usd": 75000.0,
+                "client_name": "Palacio Duhau",
+                "location": "Recoleta, Buenos Aires", 
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            }
+        ]
+        
+        await db.projects.insert_many(initial_projects)
+        logger.info("✅ Initial projects created successfully")
 
 # Authentication routes
 @app.post("/api/auth/register", response_model=User)
