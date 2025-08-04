@@ -582,7 +582,9 @@ async def create_disbursement_order(
     order_dict["id"] = str(__import__('uuid').uuid4())
     
     order = DisbursementOrder(**order_dict)
-    await db.disbursement_orders.insert_one(order.dict())
+    # Convert dates for MongoDB storage
+    order_doc = convert_dates_for_mongo(order.dict())
+    await db.disbursement_orders.insert_one(order_doc)
     return order
 
 # ===============================
