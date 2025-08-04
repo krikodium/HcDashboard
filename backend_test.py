@@ -398,7 +398,7 @@ class ProviderManagementAPITester:
                     flores_provider = next((p for p in providers if "Flores & Decoraciones" in p.get('name', '')), None)
                     
                     if flores_provider:
-                        provider_id = flores_provider.get('id')
+                        provider_id = flores_provider.get('id') or flores_provider.get('_id')  # Try both id and _id
                         provider_response = self.session.get(f"{API_BASE}/providers/{provider_id}")
                         
                         if provider_response.status_code == 200:
