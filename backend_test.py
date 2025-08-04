@@ -258,6 +258,8 @@ class ProviderManagementAPITester:
             provider = self.created_providers[0]
             provider_id = provider.get('id')
             
+            self.log_test("Debug Provider ID", True, f"Using provider ID: {provider_id}", provider)
+            
             update_data = {
                 "contact_person": "María Elena Testeo Updated",
                 "phone": "+54 11 7777-6666",
