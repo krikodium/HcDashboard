@@ -12,11 +12,16 @@ import uvicorn
 import logging
 from bson import ObjectId
 
-# Custom BSON encoder for date objects
-def custom_encoder(obj):
-    if isinstance(obj, date):
-        return datetime.combine(obj, datetime.min.time())
-    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+# Utility function to convert dates to datetime for MongoDB
+def convert_dates_for_mongo(data):
+    """Recursively convert date objects to datetime for MongoDB storage"""
+    if isinstance(data, dict):
+        return {k: convert_dates_for_mongo(v) for k, v in data.items()}
+    elif isinstance(data, list):
+        return [convert_dates_for_mongo(item) for item in data]
+    elif isinstance(data, date) and not isinstance(data, datetime):
+        return datetime.combine(data, datetime.min.time())
+    return data
 
 # Import all models
 from models import *
