@@ -547,6 +547,26 @@ async def get_deco_movements(
     
     return [DecoMovement(**movement) for movement in movements]
 
+@app.get("/api/deco-movements/disbursement-order", response_model=List[DisbursementOrder])
+async def get_disbursement_orders(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    project: Optional[DecoProject] = None,
+    status: Optional[DisbursementStatus] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Get disbursement orders"""
+    query = {}
+    if project:
+        query["project_name"] = project
+    if status:
+        query["status"] = status
+    
+    cursor = db.disbursement_orders.find(query).skip(skip).limit(limit).sort("requested_at", -1)
+    orders = await cursor.to_list(length=limit)
+    
+    return [DisbursementOrder(**order) for order in orders]
+
 @app.post("/api/deco-movements/disbursement-order", response_model=DisbursementOrder)
 async def create_disbursement_order(
     order_data: DisbursementOrderCreate,
