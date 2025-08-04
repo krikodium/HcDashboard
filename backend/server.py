@@ -542,7 +542,7 @@ async def create_deco_movement(
 async def get_deco_movements(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    project: Optional[DecoProject] = None,
+    project: Optional[str] = None,  # Changed from DecoProject enum to string
     current_user: User = Depends(get_current_user)
 ):
     """Get deco movements"""
@@ -559,7 +559,7 @@ async def get_deco_movements(
 async def get_disbursement_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    project: Optional[DecoProject] = None,
+    project: Optional[str] = None,  # Changed from DecoProject enum to string
     status: Optional[DisbursementStatus] = None,
     current_user: User = Depends(get_current_user)
 ):
