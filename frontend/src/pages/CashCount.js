@@ -540,7 +540,11 @@ const CashCount = () => {
     ? cashCounts.filter(c => c.deco_name === selectedDeco)
     : cashCounts;
 
-  const decos = ['', ...new Set(cashCounts.map(c => c.deco_name))];
+  // Create project options for filter dropdown from projects and cash counts
+  const projectOptions = ['', ...new Set([
+    ...projects.map(p => p.name),
+    ...cashCounts.map(c => c.deco_name)
+  ])];
 
   return (
     <div className="p-8">
