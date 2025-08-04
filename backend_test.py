@@ -1869,6 +1869,8 @@ class TwilioWhatsAppNotificationTester:
         try:
             import sys
             sys.path.append('/app/backend')
+            from dotenv import load_dotenv
+            load_dotenv('/app/backend/.env')
             from services.notification_service import notification_service
             import asyncio
             
