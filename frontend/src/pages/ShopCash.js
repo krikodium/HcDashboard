@@ -18,7 +18,309 @@ const TableSkeleton = () => (
   </div>
 );
 
-// Inventory Item Selection Modal
+// Provider Autocomplete Component
+const ProviderAutocomplete = ({ value, onChange, onCreateNew, required = false }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const fetchProviders = async (query) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.get(`/api/providers/autocomplete?q=${encodeURIComponent(query)}&limit=10`);
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error('Error fetching providers:', error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    
+    if (newValue.length >= 2) {
+      fetchProviders(newValue);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSelectSuggestion = (provider) => {
+    onChange(provider.name);
+    setShowSuggestions(false);
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding suggestions to allow clicking on them
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  const handleInputFocus = () => {
+    if (value.length >= 2 && suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="flex space-x-2">
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            className="form-input w-full"
+            value={value}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            onFocus={handleInputFocus}
+            placeholder="Type provider name..."
+            required={required}
+          />
+          
+          {loading && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+            </div>
+          )}
+          
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border theme-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {suggestions.map((provider) => (
+                <div
+                  key={provider.id}
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer theme-text"
+                  onMouseDown={() => handleSelectSuggestion(provider)}
+                >
+                  <div className="font-medium">{provider.name}</div>
+                  {provider.contact_person && (
+                    <div className="text-sm theme-text-secondary">Contact: {provider.contact_person}</div>
+                  )}
+                  {provider.email && (
+                    <div className="text-sm theme-text-secondary">{provider.email}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <button
+          type="button"
+          onClick={onCreateNew}
+          className="btn-secondary text-sm whitespace-nowrap"
+        >
+          New Provider
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Provider Management Modal
+const ProviderModal = ({ isOpen, onClose, onSubmit, loading, provider = null }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    provider_type: 'Supplier',
+    contact_person: '',
+    email: '',
+    phone: '',
+    address: '',
+    tax_id: '',
+    payment_terms: '',
+    notes: ''
+  });
+
+  useEffect(() => {
+    if (provider) {
+      setFormData({
+        name: provider.name || '',
+        provider_type: provider.provider_type || 'Supplier',
+        contact_person: provider.contact_person || '',
+        email: provider.email || '',
+        phone: provider.phone || '',
+        address: provider.address || '',
+        tax_id: provider.tax_id || '',
+        payment_terms: provider.payment_terms || '',
+        notes: provider.notes || ''
+      });
+    } else {
+      setFormData({
+        name: '',
+        provider_type: 'Supplier',
+        contact_person: '',
+        email: '',
+        phone: '',
+        address: '',
+        tax_id: '',
+        payment_terms: '',
+        notes: ''
+      });
+    }
+  }, [provider, isOpen]);
+
+  const providerTypes = ['Supplier', 'Vendor', 'Contractor', 'Service Provider', 'Manufacturer', 'Distributor', 'Other'];
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="card max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold theme-text">
+            {provider ? 'Edit Provider' : 'New Provider'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Provider Name *</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Provider name"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Provider Type</label>
+              <select
+                className="form-input w-full"
+                value={formData.provider_type}
+                onChange={(e) => setFormData({...formData, provider_type: e.target.value})}
+              >
+                {providerTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Contact Person</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.contact_person}
+                onChange={(e) => setFormData({...formData, contact_person: e.target.value})}
+                placeholder="Contact person name"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Email</label>
+              <input
+                type="email"
+                className="form-input w-full"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="contact@provider.com"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Phone</label>
+              <input
+                type="tel"
+                className="form-input w-full"
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                placeholder="+54 11 1234-5678"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Tax ID</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.tax_id}
+                onChange={(e) => setFormData({...formData, tax_id: e.target.value})}
+                placeholder="Tax ID or CUIT"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Address</label>
+            <input
+              type="text"
+              className="form-input w-full"
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+              placeholder="Full address"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Payment Terms</label>
+            <input
+              type="text"
+              className="form-input w-full"
+              value={formData.payment_terms}
+              onChange={(e) => setFormData({...formData, payment_terms: e.target.value})}
+              placeholder="e.g., 30 days, Immediate, etc."
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Notes</label>
+            <textarea
+              className="form-input w-full"
+              rows="3"
+              value={formData.notes}
+              onChange={(e) => setFormData({...formData, notes: e.target.value})}
+              placeholder="Additional notes about the provider"
+            />
+          </div>
+
+          <div className="flex space-x-4 pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex-1 disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : (provider ? 'Update Provider' : 'Create Provider')}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary flex-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
