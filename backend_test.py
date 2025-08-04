@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Backend API Test Suite for Hermanas Caradonti Admin Tool
-Focus: Deco Movements Module Testing
+Focus: Provider Management System Testing
 
-This test suite validates the Deco Movements module backend API endpoints:
+This test suite validates the Provider Management system backend API endpoints:
 - Authentication (login)
-- Creating deco movements
-- Creating disbursement orders
-- Retrieving movements and orders
+- Provider CRUD operations
+- Provider autocomplete functionality
+- Provider financial calculations
+- Integration with shop cash module
 - Data validation and error handling
 """
 
