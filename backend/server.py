@@ -10,6 +10,13 @@ from datetime import datetime, timedelta, date
 from motor.motor_asyncio import AsyncIOMotorClient
 import uvicorn
 import logging
+from bson import ObjectId
+
+# Custom BSON encoder for date objects
+def custom_encoder(obj):
+    if isinstance(obj, date):
+        return datetime.combine(obj, datetime.min.time())
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 # Import all models
 from models import *
