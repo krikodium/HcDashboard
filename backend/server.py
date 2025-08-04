@@ -454,7 +454,7 @@ async def add_ledger_entry(
     current_user: User = Depends(get_current_user)
 ):
     """Add a ledger entry to an event"""
-    event = await db.events_cash.find_one({"id": event_id})
+    event = await db.events_cash.find_one({"_id": event_id})
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
     
@@ -463,9 +463,12 @@ async def add_ledger_entry(
     event_obj.ledger_entries.append(new_entry)
     event_obj.recalculate_balances()
     
+    # Convert dates for MongoDB storage
+    event_doc = convert_dates_for_mongo(event_obj.dict(by_alias=True, exclude={"id", "created_at"}))
+    
     await db.events_cash.update_one(
-        {"id": event_id},
-        {"$set": event_obj.dict(by_alias=True, exclude={"id", "created_at"})}
+        {"_id": event_id},
+        {"$set": event_doc}
     )
     
     return event_obj
