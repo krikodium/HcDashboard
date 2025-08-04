@@ -361,15 +361,18 @@ class ProviderManagementAPITester:
     def test_shop_cash_integration(self) -> bool:
         """Test integration with shop cash module by creating a shop cash entry with provider"""
         try:
-            # First, create a shop cash entry with a provider name
+            # First, create a shop cash entry with a provider name using correct required fields
             shop_cash_data = {
                 "date": "2024-01-30",
-                "description": "Test purchase from provider",
                 "provider": "Flores & Decoraciones SRL",  # Use existing provider
-                "amount": 1500.0,
-                "currency": "ARS",
-                "category": "Materials",
-                "payment_method": "Transfer"
+                "client": "Cliente Test SA",
+                "internal_coordinator": "María Elena Coordinadora",
+                "quantity": 2,
+                "item_description": "Flores decorativas para evento",
+                "sold_amount_ars": 1500.0,
+                "payment_method": "Transferencia",  # Use Spanish enum value
+                "cost_ars": 800.0,
+                "comments": "Test purchase from provider integration"
             }
             
             response = self.session.post(f"{API_BASE}/shop-cash", json=shop_cash_data)
@@ -397,7 +400,7 @@ class ProviderManagementAPITester:
                             return True
                         else:
                             self.log_test("Shop Cash Integration - Provider Financials", False,
-                                        "Failed to retrieve provider with financials")
+                                        f"Failed to retrieve provider with financials: {provider_response.status_code}")
                             return False
                     else:
                         self.log_test("Shop Cash Integration - Find Provider", False,
