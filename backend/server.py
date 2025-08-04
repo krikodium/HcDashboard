@@ -801,7 +801,10 @@ async def create_cash_count(
     expected_ars = 50000.0
     cash_count.compare_with_ledger(expected_usd, expected_ars)
     
-    await db.deco_cash_count.insert_one(cash_count.dict(by_alias=True))
+    # Convert dates for MongoDB storage
+    cash_count_doc = convert_dates_for_mongo(cash_count.dict(by_alias=True))
+    
+    await db.deco_cash_count.insert_one(cash_count_doc)
     return cash_count
 
 @app.get("/api/deco-cash-count", response_model=List[DecoCashCount])
