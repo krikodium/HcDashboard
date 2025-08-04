@@ -105,7 +105,12 @@ class EventsCashBugTester:
             
             if response.status_code == 200:
                 event = response.json()
+                print(f"DEBUG: Event response: {json.dumps(event, indent=2, default=str)}")
                 self.created_event_id = event.get("id")
+                if not self.created_event_id:
+                    # Try alternative ID fields
+                    self.created_event_id = event.get("_id") or event.get("event_id")
+                
                 self.log_test("Create Event", True, 
                             f"Created event for {event_data['header']['client_name']} - ID: {self.created_event_id}")
                 
