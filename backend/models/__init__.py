@@ -72,6 +72,15 @@ from .deco_cash_count import (
     DecoCashCountSummary
 )
 
+from .projects import (
+    ProjectStatus,
+    ProjectType,
+    Project,
+    ProjectCreate,
+    ProjectUpdate,
+    ProjectSummary
+)
+
 __all__ = [
     # Base
     "BaseDocument", "ApprovalStatus", "PaymentMethod", "Currency", 
