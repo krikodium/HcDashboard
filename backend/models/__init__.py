@@ -81,6 +81,16 @@ from .projects import (
     ProjectSummary
 )
 
+from .providers import (
+    ProviderType,
+    ProviderStatus,
+    Provider,
+    ProviderCreate,
+    ProviderUpdate,
+    ProviderSummary,
+    ProviderAutocomplete
+)
+
 __all__ = [
     # Base
     "BaseDocument", "ApprovalStatus", "PaymentMethod", "Currency", 
