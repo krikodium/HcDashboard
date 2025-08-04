@@ -23,6 +23,508 @@ import sys
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://1df6413f-d3b2-45f2-ace0-9cd4a825711a.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
+class ProviderManagementAPITester:
+    def __init__(self):
+        self.auth_token = None
+        self.session = requests.Session()
+        self.test_results = []
+        self.created_providers = []
+        
+    def log_test(self, test_name: str, success: bool, message: str, data: Any = None):
+        """Log test results"""
+        result = {
+            "test": test_name,
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now().isoformat(),
+            "data": data
+        }
+        self.test_results.append(result)
+        status = "✅ PASS" if success else "❌ FAIL"
+        print(f"{status} {test_name}: {message}")
+        if data and not success:
+            print(f"   Data: {json.dumps(data, indent=2, default=str)}")
+    
+    def authenticate(self) -> bool:
+        """Login with test credentials"""
+        try:
+            login_data = {
+                "username": "mateo",
+                "password": "prueba123"
+            }
+            
+            response = self.session.post(f"{API_BASE}/auth/login", json=login_data)
+            
+            if response.status_code == 200:
+                auth_response = response.json()
+                self.auth_token = auth_response["access_token"]
+                self.session.headers.update({
+                    "Authorization": f"Bearer {self.auth_token}"
+                })
+                self.log_test("Authentication", True, f"Successfully logged in as {auth_response['user']['username']}")
+                return True
+            else:
+                self.log_test("Authentication", False, f"Login failed: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Authentication", False, f"Login error: {str(e)}")
+            return False
+    
+    def test_health_check(self) -> bool:
+        """Test basic API health"""
+        try:
+            response = self.session.get(f"{API_BASE}/health")
+            if response.status_code == 200:
+                self.log_test("Health Check", True, "API is healthy")
+                return True
+            else:
+                self.log_test("Health Check", False, f"Health check failed: {response.status_code}")
+                return False
+        except Exception as e:
+            self.log_test("Health Check", False, f"Health check error: {str(e)}")
+            return False
+    
+    def test_get_initial_providers(self) -> bool:
+        """Test retrieving initial providers created during startup"""
+        try:
+            response = self.session.get(f"{API_BASE}/providers")
+            
+            if response.status_code == 200:
+                providers = response.json()
+                provider_names = [p.get('name', '') for p in providers]
+                
+                # Check for expected initial providers
+                expected_providers = [
+                    "Flores & Decoraciones SRL",
+                    "Telas y Textiles Palermo", 
+                    "Iluminación Profesional SA",
+                    "Muebles & Accesorios Victoria",
+                    "Servicios de Transporte López",
+                    "Cristalería Fina Buenos Aires"
+                ]
+                
+                found_providers = []
+                for expected in expected_providers:
+                    if any(expected in name for name in provider_names):
+                        found_providers.append(expected)
+                
+                self.log_test("Get Initial Providers", True, 
+                            f"Retrieved {len(providers)} providers, found {len(found_providers)}/{len(expected_providers)} expected initial providers",
+                            {"total_providers": len(providers), "found_initial": found_providers})
+                return True
+            else:
+                self.log_test("Get Initial Providers", False,
+                            f"Failed to retrieve providers: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Initial Providers", False, f"Error retrieving providers: {str(e)}")
+            return False
+    
+    def test_provider_autocomplete(self) -> bool:
+        """Test provider autocomplete functionality with various search queries"""
+        search_queries = [
+            {"query": "Flores", "expected_partial": "Flores & Decoraciones"},
+            {"query": "Telas", "expected_partial": "Telas y Textiles"},
+            {"query": "Ilum", "expected_partial": "Iluminación"},
+            {"query": "Muebles", "expected_partial": "Muebles & Accesorios"},
+            {"query": "Transport", "expected_partial": "Transporte"},
+            {"query": "Cristal", "expected_partial": "Cristalería"},
+            {"query": "xyz123", "expected_count": 0}  # Should return no results
+        ]
+        
+        all_passed = True
+        
+        for test_query in search_queries:
+            try:
+                response = self.session.get(f"{API_BASE}/providers/autocomplete?q={test_query['query']}")
+                
+                if response.status_code == 200:
+                    results = response.json()
+                    
+                    if test_query['query'] == "xyz123":
+                        # Should return no results
+                        if len(results) == 0:
+                            self.log_test(f"Autocomplete - '{test_query['query']}'", True,
+                                        f"Correctly returned no results for non-existent query")
+                        else:
+                            self.log_test(f"Autocomplete - '{test_query['query']}'", False,
+                                        f"Should return no results but got {len(results)}")
+                            all_passed = False
+                    else:
+                        # Should find matching providers
+                        found_match = any(test_query['expected_partial'] in result.get('name', '') for result in results)
+                        if found_match:
+                            self.log_test(f"Autocomplete - '{test_query['query']}'", True,
+                                        f"Found {len(results)} results including expected provider")
+                        else:
+                            self.log_test(f"Autocomplete - '{test_query['query']}'", False,
+                                        f"Expected to find provider containing '{test_query['expected_partial']}' but didn't")
+                            all_passed = False
+                else:
+                    self.log_test(f"Autocomplete - '{test_query['query']}'", False,
+                                f"Autocomplete failed: {response.status_code} - {response.text}")
+                    all_passed = False
+                    
+            except Exception as e:
+                self.log_test(f"Autocomplete - '{test_query['query']}'", False, f"Error in autocomplete: {str(e)}")
+                all_passed = False
+        
+        return all_passed
+    
+    def test_create_new_provider(self) -> bool:
+        """Test creating a new provider"""
+        try:
+            new_provider_data = {
+                "name": "Proveedores Especiales Test SA",
+                "provider_type": "Supplier",
+                "contact_person": "Juan Carlos Testeo",
+                "email": "juan@proveedorestest.com.ar",
+                "phone": "+54 11 9999-8888",
+                "address": "Av. Test 1234, Buenos Aires",
+                "status": "Active",
+                "payment_terms": "30 días",
+                "preferred_supplier": False
+            }
+            
+            response = self.session.post(f"{API_BASE}/providers", json=new_provider_data)
+            
+            if response.status_code == 200:
+                provider = response.json()
+                self.created_providers.append(provider)
+                self.log_test("Create New Provider", True,
+                            f"Successfully created provider: {provider.get('name')}")
+                
+                # Verify the provider was created with correct data
+                if (provider.get('name') == new_provider_data['name'] and
+                    provider.get('contact_person') == new_provider_data['contact_person'] and
+                    provider.get('email') == new_provider_data['email']):
+                    self.log_test("Verify Created Provider Data", True,
+                                "Provider data matches input")
+                    return True
+                else:
+                    self.log_test("Verify Created Provider Data", False,
+                                "Provider data doesn't match input")
+                    return False
+            else:
+                self.log_test("Create New Provider", False,
+                            f"Failed to create provider: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Create New Provider", False, f"Error creating provider: {str(e)}")
+            return False
+    
+    def test_duplicate_provider_validation(self) -> bool:
+        """Test that duplicate provider names are rejected"""
+        try:
+            # Try to create a provider with the same name as an existing one
+            duplicate_provider_data = {
+                "name": "Flores & Decoraciones SRL",  # This should already exist
+                "provider_type": "Supplier",
+                "contact_person": "Test Person",
+                "email": "test@test.com",
+                "phone": "+54 11 1111-2222",
+                "address": "Test Address",
+                "status": "Active"
+            }
+            
+            response = self.session.post(f"{API_BASE}/providers", json=duplicate_provider_data)
+            
+            if response.status_code >= 400:
+                self.log_test("Duplicate Provider Validation", True,
+                            f"Correctly rejected duplicate provider name: {response.status_code}")
+                return True
+            else:
+                self.log_test("Duplicate Provider Validation", False,
+                            f"Should have rejected duplicate name but got: {response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Duplicate Provider Validation", False, f"Error testing duplicate validation: {str(e)}")
+            return False
+    
+    def test_update_provider(self) -> bool:
+        """Test updating a provider"""
+        if not self.created_providers:
+            self.log_test("Update Provider", False, "No created providers to update")
+            return False
+        
+        try:
+            provider = self.created_providers[0]
+            provider_id = provider.get('id')
+            
+            update_data = {
+                "contact_person": "María Elena Testeo Updated",
+                "phone": "+54 11 7777-6666",
+                "payment_terms": "15 días",
+                "preferred_supplier": True
+            }
+            
+            response = self.session.patch(f"{API_BASE}/providers/{provider_id}", json=update_data)
+            
+            if response.status_code == 200:
+                updated_provider = response.json()
+                
+                # Verify updates were applied
+                if (updated_provider.get('contact_person') == update_data['contact_person'] and
+                    updated_provider.get('phone') == update_data['phone'] and
+                    updated_provider.get('preferred_supplier') == update_data['preferred_supplier']):
+                    self.log_test("Update Provider", True,
+                                f"Successfully updated provider: {updated_provider.get('name')}")
+                    return True
+                else:
+                    self.log_test("Update Provider", False,
+                                "Provider updates were not applied correctly")
+                    return False
+            else:
+                self.log_test("Update Provider", False,
+                            f"Failed to update provider: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Update Provider", False, f"Error updating provider: {str(e)}")
+            return False
+    
+    def test_get_specific_provider(self) -> bool:
+        """Test retrieving a specific provider with calculated financials"""
+        if not self.created_providers:
+            self.log_test("Get Specific Provider", False, "No created providers to retrieve")
+            return False
+        
+        try:
+            provider = self.created_providers[0]
+            provider_id = provider.get('id')
+            
+            response = self.session.get(f"{API_BASE}/providers/{provider_id}")
+            
+            if response.status_code == 200:
+                retrieved_provider = response.json()
+                
+                # Check that financial fields are present (even if zero)
+                financial_fields = ['total_purchases_usd', 'total_purchases_ars', 'transaction_count']
+                has_financials = all(field in retrieved_provider for field in financial_fields)
+                
+                if has_financials:
+                    self.log_test("Get Specific Provider", True,
+                                f"Successfully retrieved provider with financials: {retrieved_provider.get('name')}")
+                    return True
+                else:
+                    self.log_test("Get Specific Provider", False,
+                                "Provider missing financial calculation fields")
+                    return False
+            else:
+                self.log_test("Get Specific Provider", False,
+                            f"Failed to retrieve provider: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Get Specific Provider", False, f"Error retrieving provider: {str(e)}")
+            return False
+    
+    def test_provider_summary(self) -> bool:
+        """Test getting provider summary statistics"""
+        try:
+            response = self.session.get(f"{API_BASE}/providers/summary")
+            
+            if response.status_code == 200:
+                summary = response.json()
+                
+                # Check that summary contains expected fields
+                expected_fields = [
+                    'total_providers', 'active_providers', 'inactive_providers',
+                    'preferred_providers', 'total_purchases_usd', 'total_purchases_ars'
+                ]
+                
+                has_all_fields = all(field in summary for field in expected_fields)
+                
+                if has_all_fields:
+                    self.log_test("Provider Summary", True,
+                                f"Retrieved provider summary with {summary.get('total_providers')} total providers",
+                                summary)
+                    return True
+                else:
+                    missing_fields = [field for field in expected_fields if field not in summary]
+                    self.log_test("Provider Summary", False,
+                                f"Summary missing fields: {missing_fields}")
+                    return False
+            else:
+                self.log_test("Provider Summary", False,
+                            f"Failed to retrieve summary: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Provider Summary", False, f"Error retrieving summary: {str(e)}")
+            return False
+    
+    def test_shop_cash_integration(self) -> bool:
+        """Test integration with shop cash module by creating a shop cash entry with provider"""
+        try:
+            # First, create a shop cash entry with a provider name
+            shop_cash_data = {
+                "date": "2024-01-30",
+                "description": "Test purchase from provider",
+                "provider": "Flores & Decoraciones SRL",  # Use existing provider
+                "amount": 1500.0,
+                "currency": "ARS",
+                "category": "Materials",
+                "payment_method": "Transfer"
+            }
+            
+            response = self.session.post(f"{API_BASE}/shop-cash", json=shop_cash_data)
+            
+            if response.status_code == 200:
+                shop_entry = response.json()
+                self.log_test("Shop Cash Integration - Create Entry", True,
+                            f"Created shop cash entry with provider: {shop_entry.get('provider')}")
+                
+                # Now check if the provider's financials would be updated when retrieved
+                # Find the provider by name
+                providers_response = self.session.get(f"{API_BASE}/providers")
+                if providers_response.status_code == 200:
+                    providers = providers_response.json()
+                    flores_provider = next((p for p in providers if "Flores & Decoraciones" in p.get('name', '')), None)
+                    
+                    if flores_provider:
+                        provider_id = flores_provider.get('id')
+                        provider_response = self.session.get(f"{API_BASE}/providers/{provider_id}")
+                        
+                        if provider_response.status_code == 200:
+                            provider_with_financials = provider_response.json()
+                            self.log_test("Shop Cash Integration - Provider Financials", True,
+                                        f"Provider financials calculated: transactions={provider_with_financials.get('transaction_count', 0)}")
+                            return True
+                        else:
+                            self.log_test("Shop Cash Integration - Provider Financials", False,
+                                        "Failed to retrieve provider with financials")
+                            return False
+                    else:
+                        self.log_test("Shop Cash Integration - Find Provider", False,
+                                    "Could not find Flores provider for integration test")
+                        return False
+                else:
+                    self.log_test("Shop Cash Integration - Get Providers", False,
+                                "Failed to retrieve providers for integration test")
+                    return False
+            else:
+                self.log_test("Shop Cash Integration - Create Entry", False,
+                            f"Failed to create shop cash entry: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Shop Cash Integration", False, f"Error testing integration: {str(e)}")
+            return False
+    
+    def run_provider_tests(self):
+        """Run complete provider management test suite"""
+        print("=" * 80)
+        print("🏪 PROVIDER MANAGEMENT SYSTEM API TEST SUITE")
+        print("=" * 80)
+        print(f"Testing against: {API_BASE}")
+        print()
+        
+        # Step 1: Health check
+        if not self.test_health_check():
+            print("❌ Health check failed - aborting tests")
+            return False
+        
+        # Step 2: Authentication
+        if not self.authenticate():
+            print("❌ Authentication failed - aborting tests")
+            return False
+        
+        print("\n" + "=" * 50)
+        print("📋 TESTING INITIAL PROVIDERS")
+        print("=" * 50)
+        
+        # Step 3: Test initial providers
+        self.test_get_initial_providers()
+        
+        print("\n" + "=" * 50)
+        print("🔍 TESTING AUTOCOMPLETE FUNCTIONALITY")
+        print("=" * 50)
+        
+        # Step 4: Test autocomplete
+        self.test_provider_autocomplete()
+        
+        print("\n" + "=" * 50)
+        print("➕ TESTING PROVIDER CREATION")
+        print("=" * 50)
+        
+        # Step 5: Test creating new provider
+        self.test_create_new_provider()
+        
+        print("\n" + "=" * 50)
+        print("🚫 TESTING VALIDATION")
+        print("=" * 50)
+        
+        # Step 6: Test duplicate validation
+        self.test_duplicate_provider_validation()
+        
+        print("\n" + "=" * 50)
+        print("✏️ TESTING PROVIDER UPDATES")
+        print("=" * 50)
+        
+        # Step 7: Test updating provider
+        self.test_update_provider()
+        
+        print("\n" + "=" * 50)
+        print("📊 TESTING PROVIDER RETRIEVAL & FINANCIALS")
+        print("=" * 50)
+        
+        # Step 8: Test specific provider retrieval
+        self.test_get_specific_provider()
+        
+        print("\n" + "=" * 50)
+        print("📈 TESTING PROVIDER SUMMARY")
+        print("=" * 50)
+        
+        # Step 9: Test provider summary
+        self.test_provider_summary()
+        
+        print("\n" + "=" * 50)
+        print("🔗 TESTING SHOP CASH INTEGRATION")
+        print("=" * 50)
+        
+        # Step 10: Test shop cash integration
+        self.test_shop_cash_integration()
+        
+        # Summary
+        self.print_provider_summary()
+        
+        return True
+    
+    def print_provider_summary(self):
+        """Print provider test results summary"""
+        print("\n" + "=" * 80)
+        print("📊 PROVIDER MANAGEMENT TEST RESULTS SUMMARY")
+        print("=" * 80)
+        
+        total_tests = len(self.test_results)
+        passed_tests = len([r for r in self.test_results if r['success']])
+        failed_tests = total_tests - passed_tests
+        
+        print(f"Total Tests: {total_tests}")
+        print(f"✅ Passed: {passed_tests}")
+        print(f"❌ Failed: {failed_tests}")
+        print(f"Success Rate: {(passed_tests/total_tests)*100:.1f}%")
+        
+        if failed_tests > 0:
+            print("\n🚨 FAILED TESTS:")
+            for result in self.test_results:
+                if not result['success']:
+                    print(f"  • {result['test']}: {result['message']}")
+        
+        print("\n" + "=" * 80)
+        
+        # Save detailed results to file
+        with open('/app/provider_management_test_results.json', 'w') as f:
+            json.dump(self.test_results, f, indent=2, default=str)
+        
+        print(f"📄 Detailed results saved to: /app/provider_management_test_results.json")
+
+
 class DecoMovementsAPITester:
     def __init__(self):
         self.auth_token = None
