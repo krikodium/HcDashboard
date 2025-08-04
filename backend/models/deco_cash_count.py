@@ -28,7 +28,7 @@ class CashCountType(str, Enum):
 # API Models
 class CashCountCreate(BaseModel):
     count_date: date
-    deco_name: DecoProject
+    deco_name: str = Field(..., min_length=1, max_length=200)  # Changed to string for dynamic projects
     count_type: CashCountType = CashCountType.DAILY
     
     # Counted amounts
