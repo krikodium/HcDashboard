@@ -3,98 +3,100 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T20:06:22.318725",
+    "timestamp": "2025-08-04T20:08:43.284704",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T20:06:22.556609",
+    "timestamp": "2025-08-04T20:08:43.527839",
     "data": null
   },
   {
     "test": "Twilio Credentials Loading",
-    "success": false,
-    "message": "Twilio client not initialized - credentials may be missing or invalid",
-    "timestamp": "2025-08-04T20:06:22.581913",
+    "success": true,
+    "message": "Twilio client successfully initialized with live credentials",
+    "timestamp": "2025-08-04T20:08:43.557326",
+    "data": null
+  },
+  {
+    "test": "Twilio Account SID Validation",
+    "success": true,
+    "message": "Valid Twilio Account SID format: AC8b9f373b...",
+    "timestamp": "2025-08-04T20:08:43.557352",
     "data": null
   },
   {
     "test": "Notification Service Initialization",
     "success": true,
     "message": "Notification service initialized successfully",
-    "timestamp": "2025-08-04T20:06:22.581940",
+    "timestamp": "2025-08-04T20:08:43.558512",
     "data": {
       "environment": "development",
-      "twilio_initialized": false,
+      "twilio_initialized": true,
       "sendgrid_initialized": false
     }
   },
   {
     "test": "Twilio Connection Validation",
     "success": false,
-    "message": "Twilio client not initialized",
-    "timestamp": "2025-08-04T20:06:22.581949",
+    "message": "Twilio API connection failed: AccountList.get() missing 1 required positional argument: 'sid'",
+    "timestamp": "2025-08-04T20:08:43.601884",
     "data": null
   },
   {
     "test": "WhatsApp Message Sending",
     "success": true,
-    "message": "WhatsApp message sent successfully: mock_wa_1754337982.608083",
-    "timestamp": "2025-08-04T20:06:22.608165",
-    "data": {
-      "success": true,
-      "message_id": "mock_wa_1754337982.608083",
-      "status": "mock_sent"
-    }
+    "message": "Twilio API connection working (expected failure with test number): HTTP 400 error: Unable to create record: The 'To' number +1234567890 is not a valid phone number.",
+    "timestamp": "2025-08-04T20:08:43.775324",
+    "data": null
   },
   {
     "test": "Debug Cash Entry",
     "success": true,
     "message": "Cash entry created",
-    "timestamp": "2025-08-04T20:06:22.816045",
+    "timestamp": "2025-08-04T20:08:43.941855",
     "data": {
-      "entry_id": "c34268bd-90c1-4065-bf66-c5b4c088b6b9",
+      "entry_id": "bbf1b358-01b7-45ed-b243-f9c130574786",
       "approval_status": "Pending"
     }
   },
   {
     "test": "Payment Approval Notification Trigger",
     "success": true,
-    "message": "Created cash entry requiring approval: c34268bd-90c1-4065-bf66-c5b4c088b6b9",
-    "timestamp": "2025-08-04T20:06:22.816085",
+    "message": "Created cash entry requiring approval: bbf1b358-01b7-45ed-b243-f9c130574786",
+    "timestamp": "2025-08-04T20:08:43.941889",
     "data": null
   },
   {
     "test": "Payment Approval Process",
     "success": true,
     "message": "Payment approval process completed - notifications should have been sent",
-    "timestamp": "2025-08-04T20:06:22.919814",
+    "timestamp": "2025-08-04T20:08:44.054895",
     "data": null
   },
   {
     "test": "Reconciliation Discrepancy Notification",
     "success": true,
-    "message": "Discrepancy notification sent via 2 channels",
-    "timestamp": "2025-08-04T20:06:22.920449",
+    "message": "Discrepancy notification sent via 1 channels",
+    "timestamp": "2025-08-04T20:08:44.141228",
     "data": {
       "notification_type": "reconciliation_discrepancy",
-      "sent_at": "2025-08-04T20:06:22.920344",
+      "sent_at": "2025-08-04T20:08:44.141072",
       "results": [
         {
           "channel": "whatsapp",
           "result": {
-            "success": true,
-            "message_id": "mock_wa_1754337982.920248",
-            "status": "mock_sent"
+            "success": false,
+            "error": "HTTP 400 error: Unable to create record: The 'To' number +1234567890 is not a valid phone number."
           }
         },
         {
           "channel": "email",
           "result": {
             "success": true,
-            "message_id": "mock_email_1754337982.920338",
+            "message_id": "mock_email_1754338124.141062",
             "method": "mock"
           }
         }
@@ -105,28 +107,28 @@
     "test": "Notification Type - payment_approval",
     "success": true,
     "message": "Successfully sent payment_approval notification",
-    "timestamp": "2025-08-04T20:06:22.920829",
+    "timestamp": "2025-08-04T20:08:44.250351",
     "data": null
   },
   {
     "test": "Notification Type - low_stock",
     "success": true,
     "message": "Successfully sent low_stock notification",
-    "timestamp": "2025-08-04T20:06:22.921138",
+    "timestamp": "2025-08-04T20:08:44.338010",
     "data": null
   },
   {
     "test": "Notification Type - project_update",
     "success": true,
     "message": "Successfully sent project_update notification",
-    "timestamp": "2025-08-04T20:06:22.921464",
+    "timestamp": "2025-08-04T20:08:44.423223",
     "data": null
   },
   {
     "test": "Different Notification Types",
     "success": true,
     "message": "Successfully tested 3/3 notification types",
-    "timestamp": "2025-08-04T20:06:22.921479",
+    "timestamp": "2025-08-04T20:08:44.423242",
     "data": null
   }
 ]
