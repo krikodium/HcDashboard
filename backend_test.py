@@ -2132,6 +2132,19 @@ def main():
             return 1
     
     elif choice == "4":
+        print("\n📱 Running Twilio WhatsApp Notification Integration Tests...")
+        tester = TwilioWhatsAppNotificationTester()
+        try:
+            success = tester.run_twilio_whatsapp_tests()
+            return 0 if success else 1
+        except KeyboardInterrupt:
+            print("\n⚠️  Tests interrupted by user")
+            return 1
+        except Exception as e:
+            print(f"\n💥 Unexpected error: {str(e)}")
+            return 1
+    
+    elif choice == "5":
         print("\n🔄 Running All Test Suites...")
         
         # Run Provider Management tests first
