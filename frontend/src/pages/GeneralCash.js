@@ -196,6 +196,7 @@ const EntryFormModal = ({ isOpen, onClose, onSubmit, loading }) => {
 const GeneralCash = () => {
   const [entries, setEntries] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -215,6 +216,11 @@ const GeneralCash = () => {
       
       setEntries(entriesResponse.data);
       setSummary(summaryResponse.data);
+      
+      // Process data for chart
+      const monthlyData = processMonthlyData(entriesResponse.data);
+      setChartData(monthlyData);
+      
       setError('');
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -222,6 +228,32 @@ const GeneralCash = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Process entries for monthly income vs expense chart
+  const processMonthlyData = (entries) => {
+    const monthlyMap = {};
+    
+    entries.forEach(entry => {
+      const date = new Date(entry.date);
+      const monthKey = format(date, 'MMM yyyy');
+      
+      if (!monthlyMap[monthKey]) {
+        monthlyMap[monthKey] = {
+          month: monthKey,
+          income: 0,
+          expense: 0,
+        };
+      }
+      
+      monthlyMap[monthKey].income += entry.income_ars || 0;
+      monthlyMap[monthKey].expense += entry.expense_ars || 0;
+    });
+    
+    // Convert to array and sort by date
+    return Object.values(monthlyMap).sort((a, b) => {
+      return new Date(a.month) - new Date(b.month);
+    });
   };
 
   const handleCreateEntry = async (formData) => {
