@@ -261,7 +261,7 @@ const GeneralCash = () => {
       setIsSubmitting(true);
       await axios.post('/api/general-cash', formData);
       setIsModalOpen(false);
-      await fetchData(); // Refresh data
+      await fetchData(); // Refresh data including chart
     } catch (error) {
       console.error('Error creating entry:', error);
       setError('Failed to create entry. Please try again.');
