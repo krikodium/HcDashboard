@@ -118,7 +118,7 @@ class LedgerComparison(BaseModel):
 class DecoCashCount(BaseDocument):
     """Deco Cash Count (Arqueo) - Main document model"""
     count_date: date
-    deco_name: DecoProject
+    deco_name: str  # Changed to string for dynamic projects
     count_type: CashCountType
     
     # Counted Cash Amounts
