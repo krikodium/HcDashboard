@@ -1671,10 +1671,10 @@ def main():
         return 0 if (provider_success and deco_success and cash_count_success) else 1
     
     else:
-        print("Invalid choice. Defaulting to Provider Management tests...")
-        tester = ProviderManagementAPITester()
+        print("Invalid choice. Defaulting to Deco Cash-Count tests...")
+        tester = DecoCashCountAPITester()
         try:
-            success = tester.run_provider_tests()
+            success = tester.run_cash_count_tests()
             return 0 if success else 1
         except KeyboardInterrupt:
             print("\n⚠️  Tests interrupted by user")
