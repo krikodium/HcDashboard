@@ -492,7 +492,10 @@ async def create_shop_cash_entry(
     entry = ShopCashEntry(**entry_dict)
     entry.calculate_amounts()
     
-    await db.shop_cash.insert_one(entry.dict(by_alias=True))
+    # Convert dates for MongoDB storage
+    entry_doc = convert_dates_for_mongo(entry.dict(by_alias=True))
+    
+    await db.shop_cash.insert_one(entry_doc)
     return entry
 
 @app.get("/api/shop-cash", response_model=List[ShopCashEntry])
