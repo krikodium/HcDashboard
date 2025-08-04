@@ -108,5 +108,9 @@ __all__ = [
     # Deco Cash Count
     "ReconciliationStatus", "DiscrepancyType", "CashCountType", "DecoCashCount",
     "CashCountCreate", "CashCountUpdate", "DiscrepancyRecord", 
-    "LedgerComparison", "DecoCashCountSummary"
+    "LedgerComparison", "DecoCashCountSummary",
+    
+    # Projects
+    "ProjectStatus", "ProjectType", "Project", "ProjectCreate", 
+    "ProjectUpdate", "ProjectSummary"
 ]
