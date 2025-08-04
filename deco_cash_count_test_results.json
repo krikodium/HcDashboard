@@ -3,140 +3,140 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T19:01:36.991730",
+    "timestamp": "2025-08-04T19:03:06.274970",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T19:01:37.230699",
+    "timestamp": "2025-08-04T19:03:06.513076",
     "data": null
   },
   {
     "test": "GET Cash Count Endpoint",
     "success": true,
-    "message": "Successfully retrieved 0 cash count records",
-    "timestamp": "2025-08-04T19:01:37.243039",
+    "message": "Successfully retrieved 9 cash count records",
+    "timestamp": "2025-08-04T19:03:06.529847",
     "data": null
   },
   {
     "test": "Create Cash Count 1",
     "success": true,
     "message": "Created Daily count for P\u00e1jaro: $2500 USD, $125000 ARS",
-    "timestamp": "2025-08-04T19:01:37.266467",
+    "timestamp": "2025-08-04T19:03:06.540587",
     "data": null
   },
   {
     "test": "Create Cash Count 2",
     "success": true,
     "message": "Created Weekly count for Alvear: $1800 USD, $95000 ARS",
-    "timestamp": "2025-08-04T19:01:37.277186",
+    "timestamp": "2025-08-04T19:03:06.552072",
     "data": null
   },
   {
     "test": "Create Cash Count 3",
     "success": true,
     "message": "Created Daily count for Hotel Madero: $3200 USD, $180000 ARS",
-    "timestamp": "2025-08-04T19:01:37.288107",
+    "timestamp": "2025-08-04T19:03:06.564996",
     "data": null
   },
   {
     "test": "Create Cash Count 4",
     "success": true,
     "message": "Created Monthly count for Bah\u00eda Bustamante: $4500 USD, $250000 ARS",
-    "timestamp": "2025-08-04T19:01:37.296684",
+    "timestamp": "2025-08-04T19:03:06.576513",
     "data": null
   },
   {
     "test": "Create Cash Count 5",
     "success": true,
     "message": "Created Special count for Palacio Duhau: $5800 USD, $320000 ARS",
-    "timestamp": "2025-08-04T19:01:37.305359",
+    "timestamp": "2025-08-04T19:03:06.588964",
     "data": null
   },
   {
     "test": "Cash Count Filtering",
     "success": true,
-    "message": "Successfully filtered cash counts by project: found 1 counts for P\u00e1jaro",
-    "timestamp": "2025-08-04T19:01:37.315104",
+    "message": "Successfully filtered cash counts by project: found 2 counts for P\u00e1jaro",
+    "timestamp": "2025-08-04T19:03:06.601441",
     "data": null
   },
   {
     "test": "Cash Count Pagination",
     "success": true,
     "message": "Successfully retrieved 2 counts with pagination",
-    "timestamp": "2025-08-04T19:01:37.323594",
+    "timestamp": "2025-08-04T19:03:06.612373",
     "data": null
   },
   {
     "test": "Invalid Cash Count - Missing Required Fields",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T19:01:37.330843",
+    "timestamp": "2025-08-04T19:03:06.622573",
     "data": null
   },
   {
     "test": "Invalid Cash Count - Negative Amount",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T19:01:37.337519",
+    "timestamp": "2025-08-04T19:03:06.632694",
     "data": null
   },
   {
     "test": "Invalid Cash Count - Invalid Count Type",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T19:01:37.348983",
+    "timestamp": "2025-08-04T19:03:06.643164",
     "data": null
   },
   {
     "test": "Valid Cash Count - Minimal Data",
     "success": true,
     "message": "Valid data accepted",
-    "timestamp": "2025-08-04T19:01:37.357393",
+    "timestamp": "2025-08-04T19:03:06.654270",
     "data": null
   },
   {
     "test": "Cash Count Calculations",
     "success": true,
     "message": "Profit calculations correct: USD $2000.00, ARS $100000.00",
-    "timestamp": "2025-08-04T19:01:37.357465",
+    "timestamp": "2025-08-04T19:03:06.654325",
     "data": null
   },
   {
     "test": "Ledger Comparison",
     "success": true,
     "message": "Ledger comparison performed during cash count creation",
-    "timestamp": "2025-08-04T19:01:37.357473",
+    "timestamp": "2025-08-04T19:03:06.654331",
     "data": null
   },
   {
     "test": "Response Structure",
     "success": false,
     "message": "Missing required fields: id",
-    "timestamp": "2025-08-04T19:01:37.357489",
+    "timestamp": "2025-08-04T19:03:06.654347",
     "data": null
   },
   {
     "test": "Perfect Match Scenario",
     "success": true,
     "message": "Successfully created Audit count: $1000 USD",
-    "timestamp": "2025-08-04T19:01:37.365811",
+    "timestamp": "2025-08-04T19:03:06.665221",
     "data": null
   },
   {
     "test": "High Volume Scenario",
     "success": true,
     "message": "Successfully created Monthly count: $15000 USD",
-    "timestamp": "2025-08-04T19:01:37.375036",
+    "timestamp": "2025-08-04T19:03:06.676267",
     "data": null
   },
   {
     "test": "Minimal Cash Scenario",
     "success": true,
     "message": "Successfully created Daily count: $50 USD",
-    "timestamp": "2025-08-04T19:01:37.383083",
+    "timestamp": "2025-08-04T19:03:06.686301",
     "data": null
   }
 ]
