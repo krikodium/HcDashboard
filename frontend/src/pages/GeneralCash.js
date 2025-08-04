@@ -349,6 +349,58 @@ const GeneralCash = () => {
           </div>
         )}
 
+        {/* Monthly Income vs Expense Chart */}
+        {chartData.length > 0 && (
+          <div className="card mb-8">
+            <div className="border-b theme-border pb-4 mb-6">
+              <h2 className="text-xl font-semibold theme-text">Monthly Income vs Expense (ARS)</h2>
+              <p className="text-sm theme-text-secondary">Track monthly financial performance</p>
+            </div>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#d1d5db' }}
+                    tickFormatter={(value) => `${value.toLocaleString()}`}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      `ARS ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+                      name === 'income' ? 'Income' : 'Expense'
+                    ]}
+                    labelStyle={{ color: '#374151' }}
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.5rem'
+                    }}
+                  />
+                  <Legend />
+                  <Bar 
+                    dataKey="income" 
+                    name="Income"
+                    fill="#10b981" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    dataKey="expense" 
+                    name="Expense"
+                    fill="#ef4444" 
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
         {/* Entries Table */}
         <div className="card">
           <div className="overflow-x-auto">
