@@ -48,7 +48,6 @@ from .shop_cash import (
 )
 
 from .deco_movements import (
-    DecoProject,
     DisbursementType,
     DisbursementStatus,
     DecoMovement,
