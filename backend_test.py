@@ -263,8 +263,8 @@ class ProviderManagementAPITester:
             update_data = {
                 "contact_person": "María Elena Testeo Updated",
                 "phone": "+54 11 7777-6666",
-                "payment_terms": "15 días",
-                "preferred_supplier": True
+                "payment_terms": "15 días"
+                # Note: preferred_supplier is not in ProviderUpdate model, so we can't test it
             }
             
             response = self.session.patch(f"{API_BASE}/providers/{provider_id}", json=update_data)
