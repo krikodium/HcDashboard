@@ -623,7 +623,7 @@ async def create_cash_count(
 async def get_cash_counts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    deco_name: Optional[DecoProject] = None,
+    deco_name: Optional[str] = None,  # Changed from DecoProject enum to string
     current_user: User = Depends(get_current_user)
 ):
     """Get cash count records"""
@@ -635,6 +635,215 @@ async def get_cash_counts(
     counts = await cursor.to_list(length=limit)
     
     return [DecoCashCount(**count) for count in counts]
+
+# ===============================
+# PROJECTS MODULE API
+# ===============================
+
+@app.post("/api/projects", response_model=Project)
+async def create_project(
+    project_data: ProjectCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new project"""
+    # Check if project name already exists
+    existing_project = await db.projects.find_one({"name": project_data.name, "is_archived": False})
+    if existing_project:
+        raise HTTPException(status_code=400, detail="Project name already exists")
+    
+    project_dict = project_data.dict()
+    project_dict["created_by"] = current_user.username
+    project_dict["created_at"] = datetime.utcnow()
+    project_dict["updated_at"] = datetime.utcnow()
+    project_dict["id"] = str(__import__('uuid').uuid4())
+    
+    project = Project(**project_dict)
+    
+    # Convert dates for MongoDB storage
+    project_doc = convert_dates_for_mongo(project.dict(by_alias=True))
+    
+    await db.projects.insert_one(project_doc)
+    return project
+
+@app.get("/api/projects", response_model=List[Project])
+async def get_projects(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    status: Optional[str] = None,
+    project_type: Optional[str] = None,
+    include_archived: bool = Query(False),
+    current_user: User = Depends(get_current_user)
+):
+    """Get projects list"""
+    query = {}
+    if not include_archived:
+        query["is_archived"] = False
+    if status:
+        query["status"] = status
+    if project_type:
+        query["project_type"] = project_type
+    
+    cursor = db.projects.find(query).skip(skip).limit(limit).sort("created_at", -1)
+    projects = await cursor.to_list(length=limit)
+    
+    return [Project.from_mongo(project) for project in projects]
+
+@app.get("/api/projects/{project_id}", response_model=Project)
+async def get_project(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get a specific project with calculated financials"""
+    project = await db.projects.find_one({"$or": [{"_id": project_id}, {"id": project_id}]})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project_obj = Project.from_mongo(project)
+    
+    # Get related movements and disbursement orders for financial calculations
+    movements = await db.deco_movements.find({"project_name": project_obj.name}).to_list(length=1000)
+    disbursement_orders = await db.disbursement_orders.find({"project_name": project_obj.name}).to_list(length=1000)
+    
+    # Recalculate financials
+    project_obj.recalculate_financials(movements, disbursement_orders)
+    
+    # Update the database with calculated values
+    update_data = {
+        "current_balance_usd": project_obj.current_balance_usd,
+        "current_balance_ars": project_obj.current_balance_ars,
+        "total_income_usd": project_obj.total_income_usd,
+        "total_expense_usd": project_obj.total_expense_usd,
+        "total_income_ars": project_obj.total_income_ars,
+        "total_expense_ars": project_obj.total_expense_ars,
+        "movements_count": project_obj.movements_count,
+        "disbursement_orders_count": project_obj.disbursement_orders_count,
+        "updated_at": datetime.utcnow()
+    }
+    
+    await db.projects.update_one(
+        {"$or": [{"_id": project_id}, {"id": project_id}]},
+        {"$set": update_data}
+    )
+    
+    return project_obj
+
+@app.patch("/api/projects/{project_id}", response_model=Project)
+async def update_project(
+    project_id: str,
+    update_data: ProjectUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update a project"""
+    project = await db.projects.find_one({"$or": [{"_id": project_id}, {"id": project_id}]})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Check for name conflicts if name is being updated
+    if update_data.name and update_data.name != project["name"]:
+        existing_project = await db.projects.find_one({
+            "name": update_data.name, 
+            "is_archived": False,
+            "$nor": [{"_id": project_id}, {"id": project_id}]
+        })
+        if existing_project:
+            raise HTTPException(status_code=400, detail="Project name already exists")
+    
+    update_dict = {k: v for k, v in update_data.dict().items() if v is not None}
+    update_dict["updated_at"] = datetime.utcnow()
+    update_dict["updated_by"] = current_user.username
+    
+    # Convert dates for MongoDB storage
+    update_dict = convert_dates_for_mongo(update_dict)
+    
+    await db.projects.update_one(
+        {"$or": [{"_id": project_id}, {"id": project_id}]},
+        {"$set": update_dict}
+    )
+    
+    updated_project = await db.projects.find_one({"$or": [{"_id": project_id}, {"id": project_id}]})
+    return Project.from_mongo(updated_project)
+
+@app.delete("/api/projects/{project_id}")
+async def archive_project(
+    project_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Archive a project (soft delete)"""
+    project = await db.projects.find_one({"$or": [{"_id": project_id}, {"id": project_id}]})
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    await db.projects.update_one(
+        {"$or": [{"_id": project_id}, {"id": project_id}]},
+        {"$set": {
+            "is_archived": True,
+            "status": "Cancelled",
+            "updated_at": datetime.utcnow(),
+            "updated_by": current_user.username
+        }}
+    )
+    
+    return {"message": "Project archived successfully"}
+
+@app.get("/api/projects/summary", response_model=ProjectSummary)
+async def get_projects_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get projects summary statistics"""
+    # Aggregate pipeline for project statistics
+    pipeline = [
+        {"$match": {"is_archived": False}},
+        {
+            "$group": {
+                "_id": None,
+                "total_projects": {"$sum": 1},
+                "active_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Active"]}, 1, 0]}
+                },
+                "completed_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Completed"]}, 1, 0]}
+                },
+                "on_hold_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "On Hold"]}, 1, 0]}
+                },
+                "cancelled_projects": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Cancelled"]}, 1, 0]}
+                },
+                "total_budget_usd": {"$sum": {"$ifNull": ["$budget_usd", 0]}},
+                "total_budget_ars": {"$sum": {"$ifNull": ["$budget_ars", 0]}},
+                "total_expenses_usd": {"$sum": {"$ifNull": ["$total_expense_usd", 0]}},
+                "total_expenses_ars": {"$sum": {"$ifNull": ["$total_expense_ars", 0]}},
+                "projects_over_budget": {
+                    "$sum": {
+                        "$cond": [
+                            {
+                                "$or": [
+                                    {"$gt": ["$total_expense_usd", "$budget_usd"]},
+                                    {"$gt": ["$total_expense_ars", "$budget_ars"]}
+                                ]
+                            },
+                            1, 0
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+    
+    result = await db.projects.aggregate(pipeline).to_list(1)
+    if not result:
+        return ProjectSummary(
+            total_projects=0, active_projects=0, completed_projects=0,
+            on_hold_projects=0, cancelled_projects=0,
+            total_budget_usd=0.0, total_budget_ars=0.0,
+            total_expenses_usd=0.0, total_expenses_ars=0.0,
+            projects_over_budget=0, average_project_duration_days=None
+        )
+    
+    summary_data = result[0]
+    summary_data["average_project_duration_days"] = None  # TODO: Calculate if needed
+    
+    return ProjectSummary(**summary_data)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
