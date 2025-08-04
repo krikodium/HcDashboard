@@ -3,49 +3,98 @@
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T17:48:41.095166",
+    "timestamp": "2025-08-04T17:49:00.395686",
     "data": null
   },
   {
     "test": "Create Event",
     "success": true,
-    "message": "Created event for Familia Rodr\u00edguez - ID: None",
-    "timestamp": "2025-08-04T17:48:41.125992",
+    "message": "Created event for Familia Rodr\u00edguez - ID: 62389b8c-4cb0-4bae-9ab9-694125a9807c",
+    "timestamp": "2025-08-04T17:49:00.407221",
     "data": null
   },
   {
     "test": "Initial Payment Processing",
     "success": true,
     "message": "Initial payment of ARS 135,000 correctly processed",
-    "timestamp": "2025-08-04T17:48:41.126027",
+    "timestamp": "2025-08-04T17:49:00.407236",
     "data": null
   },
   {
-    "test": "Add Ledger Entries",
-    "success": false,
-    "message": "No event ID available",
-    "timestamp": "2025-08-04T17:48:41.126054",
+    "test": "Add Ledger Entry 1",
+    "success": true,
+    "message": "Entry added successfully - Total entries: 2",
+    "timestamp": "2025-08-04T17:49:00.417380",
+    "data": null
+  },
+  {
+    "test": "Running Balance Check 1",
+    "success": true,
+    "message": "Running balance ARS: 90000.0",
+    "timestamp": "2025-08-04T17:49:00.417423",
+    "data": null
+  },
+  {
+    "test": "Add Ledger Entry 2",
+    "success": true,
+    "message": "Entry added successfully - Total entries: 3",
+    "timestamp": "2025-08-04T17:49:00.429588",
+    "data": null
+  },
+  {
+    "test": "Running Balance Check 2",
+    "success": true,
+    "message": "Running balance ARS: 270000.0",
+    "timestamp": "2025-08-04T17:49:00.429624",
+    "data": null
+  },
+  {
+    "test": "Add Ledger Entry 3",
+    "success": true,
+    "message": "Entry added successfully - Total entries: 4",
+    "timestamp": "2025-08-04T17:49:00.452048",
+    "data": null
+  },
+  {
+    "test": "Running Balance Check 3",
+    "success": true,
+    "message": "Running balance ARS: 185000.0",
+    "timestamp": "2025-08-04T17:49:00.452084",
+    "data": null
+  },
+  {
+    "test": "Add Ledger Entry 4",
+    "success": true,
+    "message": "Entry added successfully - Total entries: 5",
+    "timestamp": "2025-08-04T17:49:00.463094",
+    "data": null
+  },
+  {
+    "test": "Running Balance Check 4",
+    "success": true,
+    "message": "Running balance ARS: 173000.0",
+    "timestamp": "2025-08-04T17:49:00.463127",
     "data": null
   },
   {
     "test": "Data Persistence Check",
     "success": false,
-    "message": "No event ID available",
-    "timestamp": "2025-08-04T17:48:41.126065",
+    "message": "Event with ID 62389b8c-4cb0-4bae-9ab9-694125a9807c not found in retrieved events",
+    "timestamp": "2025-08-04T17:49:00.471648",
     "data": null
   },
   {
     "test": "Event ID Consistency",
     "success": false,
-    "message": "No event ID available",
-    "timestamp": "2025-08-04T17:48:41.126076",
+    "message": "Event ID 62389b8c-4cb0-4bae-9ab9-694125a9807c not found in database. Available IDs: [None, None, None, None]",
+    "timestamp": "2025-08-04T17:49:00.481930",
     "data": null
   },
   {
     "test": "Database Update Operation",
     "success": false,
-    "message": "No event ID available",
-    "timestamp": "2025-08-04T17:48:41.126087",
+    "message": "Could not find event before update",
+    "timestamp": "2025-08-04T17:49:00.490085",
     "data": null
   }
 ]
