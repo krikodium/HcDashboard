@@ -400,6 +400,7 @@ const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading, projects }
 const DecoMovements = () => {
   const [movements, setMovements] = useState([]);
   const [disbursementOrders, setDisbursementOrders] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [summary, setSummary] = useState(null);
   const [chartData, setChartData] = useState([]);
   const [projectBalanceData, setProjectBalanceData] = useState([]);
@@ -407,6 +408,7 @@ const DecoMovements = () => {
   const [selectedProject, setSelectedProject] = useState('');
   const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
   const [isDisbursementModalOpen, setIsDisbursementModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -417,13 +419,15 @@ const DecoMovements = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [movementsResponse, disbursementsResponse] = await Promise.all([
+      const [movementsResponse, disbursementsResponse, projectsResponse] = await Promise.all([
         axios.get('/api/deco-movements'),
-        axios.get('/api/deco-movements/disbursement-order').catch(() => ({ data: [] }))
+        axios.get('/api/deco-movements/disbursement-order').catch(() => ({ data: [] })),
+        axios.get('/api/projects').catch(() => ({ data: [] }))
       ]);
       
       setMovements(movementsResponse.data);
       setDisbursementOrders(disbursementsResponse.data || []);
+      setProjects(projectsResponse.data || []);
       
       // Process data for charts
       const monthlyData = processMonthlyData(movementsResponse.data);
@@ -442,6 +446,24 @@ const DecoMovements = () => {
       setError('Failed to load data. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateProject = async (formData) => {
+    try {
+      setIsSubmitting(true);
+      await axios.post('/api/projects', formData);
+      setIsProjectModalOpen(false);
+      await fetchData(); // Refresh all data including projects
+    } catch (error) {
+      console.error('Error creating project:', error);
+      if (error.response?.data?.detail) {
+        setError(error.response.data.detail);
+      } else {
+        setError('Failed to create project. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -575,7 +597,11 @@ const DecoMovements = () => {
     ? movements.filter(m => m.project_name === selectedProject)
     : movements;
 
-  const projects = ['', ...new Set(movements.map(m => m.project_name))];
+  // Create project options for filter dropdown from projects and movements
+  const projectOptions = ['', ...new Set([
+    ...projects.map(p => p.name),
+    ...movements.map(m => m.project_name)
+  ])];
 
   return (
     <div className="p-8">
@@ -587,6 +613,12 @@ const DecoMovements = () => {
             <p className="theme-text-secondary">Project ledgers and disbursement orders</p>
           </div>
           <div className="flex space-x-4">
+            <button
+              onClick={() => setIsProjectModalOpen(true)}
+              className="btn-secondary"
+            >
+              Create Project
+            </button>
             <button
               onClick={() => setIsMovementModalOpen(true)}
               className="btn-primary"
@@ -606,6 +638,12 @@ const DecoMovements = () => {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
             {error}
+            <button 
+              onClick={() => setError('')}
+              className="float-right text-red-900 hover:text-red-700"
+            >
+              ×
+            </button>
           </div>
         )}
 
@@ -615,6 +653,7 @@ const DecoMovements = () => {
             <div className="card">
               <h3 className="text-sm font-medium theme-text-secondary">Total Projects</h3>
               <p className="text-2xl font-bold theme-text">{summary.total_projects}</p>
+              <p className="text-xs theme-text-secondary mt-1">{projects.length} managed</p>
             </div>
             <div className="card">
               <h3 className="text-sm font-medium theme-text-secondary">Total Movements</h3>
