@@ -196,7 +196,8 @@ class ProviderManagementAPITester:
                 provider = response.json()
                 self.created_providers.append(provider)
                 self.log_test("Create New Provider", True,
-                            f"Successfully created provider: {provider.get('name')}")
+                            f"Successfully created provider: {provider.get('name')}",
+                            {"provider_id": provider.get('id'), "provider_name": provider.get('name')})
                 
                 # Verify the provider was created with correct data
                 if (provider.get('name') == new_provider_data['name'] and
