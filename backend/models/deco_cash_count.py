@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date
 from .base import BaseDocument, Currency
-from .deco_movements import DecoProject
 from enum import Enum
 
 class ReconciliationStatus(str, Enum):
