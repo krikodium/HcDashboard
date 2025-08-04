@@ -19,10 +19,10 @@ const TableSkeleton = () => (
 );
 
 // Cash Count Form Modal
-const CashCountModal = ({ isOpen, onClose, onSubmit, loading }) => {
+const CashCountModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
   const [formData, setFormData] = useState({
     count_date: new Date().toISOString().split('T')[0],
-    deco_name: 'Pájaro',
+    deco_name: '',
     count_type: 'Daily',
     cash_usd_counted: '',
     cash_ars_counted: '',
@@ -41,10 +41,12 @@ const CashCountModal = ({ isOpen, onClose, onSubmit, loading }) => {
     notes: ''
   });
 
-  const projects = [
-    'Pájaro', 'Alvear', 'Bahía Bustamante', 'Hotel Madero', 
-    'Palacio Duhau', 'Four Seasons', 'Alvear Palace', 'Other'
-  ];
+  // Set default project when projects are loaded
+  useEffect(() => {
+    if (projects.length > 0 && !formData.deco_name) {
+      setFormData(prev => ({...prev, deco_name: projects[0].name}));
+    }
+  }, [projects, formData.deco_name]);
 
   const countTypes = ['Daily', 'Weekly', 'Monthly', 'Special', 'Audit'];
 
