@@ -256,7 +256,7 @@ class ProviderManagementAPITester:
         
         try:
             provider = self.created_providers[0]
-            provider_id = provider.get('id')
+            provider_id = provider.get('id') or provider.get('_id')  # Try both id and _id
             
             self.log_test("Debug Provider ID", True, f"Using provider ID: {provider_id}", provider)
             
