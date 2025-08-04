@@ -109,8 +109,9 @@ const CashCountModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
                 onChange={(e) => setFormData({...formData, deco_name: e.target.value})}
                 required
               >
+                <option value="">Select a project</option>
                 {projects.map(project => (
-                  <option key={project} value={project}>{project}</option>
+                  <option key={project.id} value={project.name}>{project.name}</option>
                 ))}
               </select>
             </div>
