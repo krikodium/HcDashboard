@@ -49,10 +49,16 @@ db = client.hermanas_caradonti
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=[
+        "http://localhost:3000",
+        "https://localhost:3000", 
+        "https://1df6413f-d3b2-45f2-ace0-9cd4a825711a.preview.emergentagent.com",
+        "*"  # Fallback for other environments
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # User models for authentication
