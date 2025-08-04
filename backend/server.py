@@ -220,6 +220,104 @@ async def startup_event():
         
         await db.projects.insert_many(initial_projects)
         logger.info("✅ Initial projects created successfully")
+    
+    # Create initial providers if none exist
+    existing_providers = await db.providers.count_documents({"is_archived": False})
+    if existing_providers == 0:
+        initial_providers = [
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Flores & Decoraciones SRL",
+                "provider_type": "Supplier",
+                "contact_person": "María Elena Flores",
+                "email": "ventas@floresydeco.com.ar",
+                "phone": "+54 11 4567-8901",
+                "address": "Av. Corrientes 1234, Buenos Aires",
+                "status": "Active",
+                "preferred_supplier": True,
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Telas y Textiles Palermo",
+                "provider_type": "Supplier",
+                "contact_person": "Carlos Mendoza",
+                "email": "carlos@telaspalermo.com",
+                "phone": "+54 11 4789-0123",
+                "address": "Gorriti 5678, Palermo, Buenos Aires",
+                "status": "Active",
+                "payment_terms": "30 días",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Iluminación Profesional SA",
+                "provider_type": "Supplier",
+                "contact_person": "Ana Rodriguez",
+                "email": "info@ilumprofesional.com.ar",
+                "phone": "+54 11 4321-5678",
+                "address": "Av. Santa Fe 9876, Recoleta, Buenos Aires",
+                "status": "Active",
+                "payment_terms": "15 días",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Muebles & Accesorios Victoria",
+                "provider_type": "Manufacturer",
+                "contact_person": "Roberto Silva",
+                "email": "roberto@mueblesvictoria.com",
+                "phone": "+54 11 5555-1234",
+                "address": "Av. Belgrano 3456, San Telmo, Buenos Aires",
+                "status": "Active",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Servicios de Transporte López",
+                "provider_type": "Service Provider",
+                "contact_person": "Diego López",
+                "email": "diego@transportelopez.com.ar",
+                "phone": "+54 11 6666-7890",
+                "address": "Av. Rivadavia 7890, Caballito, Buenos Aires",
+                "status": "Active",
+                "payment_terms": "Inmediato",
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            },
+            {
+                "id": str(__import__('uuid').uuid4()),
+                "name": "Cristalería Fina Buenos Aires",
+                "provider_type": "Distributor",
+                "contact_person": "Sofia Martinez",
+                "email": "sofia@cristaleriafina.com",
+                "phone": "+54 11 4444-3333",
+                "address": "Defensa 2345, La Boca, Buenos Aires",
+                "status": "Active",
+                "preferred_supplier": True,
+                "created_by": "system",
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+                "is_archived": False
+            }
+        ]
+        
+        await db.providers.insert_many(initial_providers)
+        logger.info("✅ Initial providers created successfully")
 
 # Authentication routes
 @app.post("/api/auth/register", response_model=User)
