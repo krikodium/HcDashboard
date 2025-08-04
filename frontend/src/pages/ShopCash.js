@@ -921,6 +921,14 @@ const SaleEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
         onClose={() => setIsInventoryModalOpen(false)}
         onSelectItem={handleSelectItem}
       />
+      
+      {/* Provider Management Modal */}
+      <ProviderModal
+        isOpen={showProviderModal}
+        onClose={() => setShowProviderModal(false)}
+        onSubmit={handleCreateProvider}
+        loading={isCreatingProvider}
+      />
     </>
   );
 };
