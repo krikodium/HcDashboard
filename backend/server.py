@@ -11,6 +11,10 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import uvicorn
 import logging
 from bson import ObjectId
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Utility function to convert dates to datetime for MongoDB
 def convert_dates_for_mongo(data):
