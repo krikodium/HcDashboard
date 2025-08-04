@@ -1113,12 +1113,21 @@ const DecoMovements = () => {
           onClose={() => setIsMovementModalOpen(false)}
           onSubmit={handleCreateMovement}
           loading={isSubmitting}
+          projects={projects}
         />
 
         <DisbursementOrderModal
           isOpen={isDisbursementModalOpen}
           onClose={() => setIsDisbursementModalOpen(false)}
           onSubmit={handleCreateDisbursementOrder}
+          loading={isSubmitting}
+          projects={projects}
+        />
+
+        <ProjectCreateModal
+          isOpen={isProjectModalOpen}
+          onClose={() => setIsProjectModalOpen(false)}
+          onSubmit={handleCreateProject}
           loading={isSubmitting}
         />
       </div>
