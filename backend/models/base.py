@@ -43,7 +43,9 @@ class BaseDocument(BaseModel):
     def from_mongo(cls, data: dict):
         """Create instance from MongoDB document, handling _id field"""
         if "_id" in data and "id" not in data:
-            data["id"] = data["_id"]
+            data["id"] = str(data["_id"])  # Convert ObjectId to string
+        if "_id" in data:
+            del data["_id"]  # Remove _id to avoid conflicts
         return cls(**data)
 
 class UserNotificationPreferences(BaseModel):
