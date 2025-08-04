@@ -766,7 +766,7 @@ const DecoMovements = () => {
               onChange={(e) => setSelectedProject(e.target.value)}
             >
               <option value="">All Projects</option>
-              {projects.slice(1).map(project => (
+              {projectOptions.slice(1).map(project => (
                 <option key={project} value={project}>{project}</option>
               ))}
             </select>
