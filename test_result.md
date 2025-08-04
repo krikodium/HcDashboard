@@ -100,7 +100,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Deco Movements API endpoints testing completed"
+    - "CORS Configuration Fix testing completed"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
