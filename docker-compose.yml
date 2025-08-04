@@ -27,7 +27,7 @@ services:
       - "8001:8001"
     environment:
       - MONGO_URL=mongodb://admin:hermanas2025@mongodb:27017/hermanas_caradonti?authSource=admin
-      - JWT_SECRET_KEY=hermanas-caradonti-production-secret-key-change-me
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
       - ENVIRONMENT=production
       - DEBUG=false
     depends_on:
