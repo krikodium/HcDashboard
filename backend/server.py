@@ -143,7 +143,7 @@ async def startup_event():
             "created_at": datetime.utcnow()
         }
         await db.users.insert_one(seed_user)
-        logger.info("✅ Seed user 'mateo' created with password 'prueba123'")
+        logger.info("✅ Seed user created successfully")
     
     # Create initial projects if none exist
     existing_projects = await db.projects.count_documents({"is_archived": False})
