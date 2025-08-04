@@ -139,25 +139,25 @@ class EventsCashBugTester:
         
         ledger_entries_data = [
             {
-                "payment_method": "Cash",
+                "payment_method": "Efectivo",
                 "date": "2024-02-15",
                 "detail": "Compra de flores y decoración",
                 "expense_ars": 45000.0
             },
             {
-                "payment_method": "Bank Transfer", 
+                "payment_method": "Transferencia", 
                 "date": "2024-02-20",
                 "detail": "Segundo pago del cliente - 40%",
                 "income_ars": 180000.0
             },
             {
-                "payment_method": "Credit Card",
+                "payment_method": "Tarjeta",
                 "date": "2024-02-25", 
                 "detail": "Pago a proveedor de catering",
                 "expense_ars": 85000.0
             },
             {
-                "payment_method": "Cash",
+                "payment_method": "Efectivo",
                 "date": "2024-03-01",
                 "detail": "Gastos varios de montaje",
                 "expense_ars": 12000.0
