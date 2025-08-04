@@ -216,9 +216,9 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) =>
 };
 
 // Disbursement Order Modal
-const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading }) => {
+const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
   const [formData, setFormData] = useState({
-    project_name: 'Pájaro',
+    project_name: '',
     disbursement_type: 'Supplier Payment',
     amount_usd: '',
     amount_ars: '',
@@ -229,10 +229,12 @@ const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading }) => {
     supporting_documents: []
   });
 
-  const projects = [
-    'Pájaro', 'Alvear', 'Bahía Bustamante', 'Hotel Madero', 
-    'Palacio Duhau', 'Four Seasons', 'Alvear Palace', 'Other'
-  ];
+  // Set default project when projects are loaded
+  useEffect(() => {
+    if (projects.length > 0 && !formData.project_name) {
+      setFormData(prev => ({...prev, project_name: projects[0].name}));
+    }
+  }, [projects, formData.project_name]);
 
   const disbursementTypes = [
     'Supplier Payment', 'Materials', 'Labor', 'Transport', 'Utilities', 'Maintenance', 'Other'
@@ -275,8 +277,9 @@ const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 onChange={(e) => setFormData({...formData, project_name: e.target.value})}
                 required
               >
+                <option value="">Select a project</option>
                 {projects.map(project => (
-                  <option key={project} value={project}>{project}</option>
+                  <option key={project.id} value={project.name}>{project.name}</option>
                 ))}
               </select>
             </div>
