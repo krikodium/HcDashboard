@@ -999,17 +999,88 @@ class DecoMovementsAPITester:
 
 def main():
     """Main test execution"""
-    tester = DecoMovementsAPITester()
+    print("🚀 Starting Backend API Test Suite")
+    print("Choose test suite to run:")
+    print("1. Provider Management System Tests")
+    print("2. Deco Movements Module Tests (Legacy)")
+    print("3. Run Both Test Suites")
     
-    try:
-        success = tester.run_all_tests()
-        return 0 if success else 1
-    except KeyboardInterrupt:
-        print("\n⚠️  Tests interrupted by user")
-        return 1
-    except Exception as e:
-        print(f"\n💥 Unexpected error: {str(e)}")
-        return 1
+    # For automated testing, default to Provider Management tests
+    choice = "1"  # Default to provider tests as requested
+    
+    if choice == "1":
+        print("\n🏪 Running Provider Management System Tests...")
+        tester = ProviderManagementAPITester()
+        try:
+            success = tester.run_provider_tests()
+            return 0 if success else 1
+        except KeyboardInterrupt:
+            print("\n⚠️  Tests interrupted by user")
+            return 1
+        except Exception as e:
+            print(f"\n💥 Unexpected error: {str(e)}")
+            return 1
+    
+    elif choice == "2":
+        print("\n📝 Running Deco Movements Module Tests...")
+        tester = DecoMovementsAPITester()
+        try:
+            success = tester.run_all_tests()
+            return 0 if success else 1
+        except KeyboardInterrupt:
+            print("\n⚠️  Tests interrupted by user")
+            return 1
+        except Exception as e:
+            print(f"\n💥 Unexpected error: {str(e)}")
+            return 1
+    
+    elif choice == "3":
+        print("\n🔄 Running Both Test Suites...")
+        
+        # Run Provider Management tests first
+        print("\n" + "="*80)
+        print("🏪 PROVIDER MANAGEMENT SYSTEM TESTS")
+        print("="*80)
+        provider_tester = ProviderManagementAPITester()
+        provider_success = provider_tester.run_provider_tests()
+        
+        # Run Deco Movements tests
+        print("\n" + "="*80)
+        print("📝 DECO MOVEMENTS MODULE TESTS")
+        print("="*80)
+        deco_tester = DecoMovementsAPITester()
+        deco_success = deco_tester.run_all_tests()
+        
+        # Combined summary
+        print("\n" + "="*80)
+        print("🎯 COMBINED TEST RESULTS")
+        print("="*80)
+        provider_total = len(provider_tester.test_results)
+        provider_passed = len([r for r in provider_tester.test_results if r['success']])
+        deco_total = len(deco_tester.test_results)
+        deco_passed = len([r for r in deco_tester.test_results if r['success']])
+        
+        total_tests = provider_total + deco_total
+        total_passed = provider_passed + deco_passed
+        
+        print(f"Provider Management: {provider_passed}/{provider_total} passed")
+        print(f"Deco Movements: {deco_passed}/{deco_total} passed")
+        print(f"Overall: {total_passed}/{total_tests} passed ({(total_passed/total_tests)*100:.1f}%)")
+        
+        return 0 if (provider_success and deco_success) else 1
+    
+    else:
+        print("Invalid choice. Defaulting to Provider Management tests...")
+        tester = ProviderManagementAPITester()
+        try:
+            success = tester.run_provider_tests()
+            return 0 if success else 1
+        except KeyboardInterrupt:
+            print("\n⚠️  Tests interrupted by user")
+            return 1
+        except Exception as e:
+            print(f"\n💥 Unexpected error: {str(e)}")
+            return 1
 
 if __name__ == "__main__":
     sys.exit(main())
