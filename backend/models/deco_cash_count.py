@@ -83,7 +83,7 @@ class DiscrepancyRecord(BaseModel):
     actual_amount: float
     difference: float
     description: str
-    severity: str = Field(default="Medium", regex="^(Low|Medium|High|Critical)$")
+    severity: str = Field(default="Medium", pattern="^(Low|Medium|High|Critical)$")
     
     # Resolution tracking
     resolved: bool = False
