@@ -1657,9 +1657,13 @@ class TwilioWhatsAppNotificationTester:
     def test_twilio_credentials_loading(self) -> bool:
         """Test that Twilio credentials are properly loaded from environment"""
         try:
-            # Import the notification service to test initialization
+            # Load environment variables first
             import sys
             sys.path.append('/app/backend')
+            from dotenv import load_dotenv
+            load_dotenv('/app/backend/.env')
+            
+            # Import the notification service to test initialization
             from services.notification_service import notification_service
             
             # Check if Twilio client was initialized
