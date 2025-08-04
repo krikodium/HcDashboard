@@ -3,154 +3,154 @@
     "test": "Health Check",
     "success": true,
     "message": "API is healthy",
-    "timestamp": "2025-08-04T17:19:27.716625",
+    "timestamp": "2025-08-04T18:32:33.301258",
     "data": null
   },
   {
     "test": "Authentication",
     "success": true,
     "message": "Successfully logged in as mateo",
-    "timestamp": "2025-08-04T17:19:27.958967",
+    "timestamp": "2025-08-04T18:32:33.537320",
     "data": null
   },
   {
     "test": "Create Movement 1",
     "success": true,
     "message": "Created movement for P\u00e1jaro: Initial project funding from client...",
-    "timestamp": "2025-08-04T17:19:27.984422",
+    "timestamp": "2025-08-04T18:32:33.547164",
     "data": null
   },
   {
     "test": "Create Movement 2",
     "success": true,
     "message": "Created movement for P\u00e1jaro: Materials purchase - marble tiles...",
-    "timestamp": "2025-08-04T17:19:28.000886",
+    "timestamp": "2025-08-04T18:32:33.556691",
     "data": null
   },
   {
     "test": "Create Movement 3",
     "success": true,
     "message": "Created movement for Alvear: Design consultation payment...",
-    "timestamp": "2025-08-04T17:19:28.015081",
+    "timestamp": "2025-08-04T18:32:33.565835",
     "data": null
   },
   {
     "test": "Create Movement 4",
     "success": true,
     "message": "Created movement for Hotel Madero: Furniture procurement...",
-    "timestamp": "2025-08-04T17:19:28.029046",
+    "timestamp": "2025-08-04T18:32:33.574842",
     "data": null
   },
   {
     "test": "Create Movement 5",
     "success": true,
     "message": "Created movement for Alvear: Lighting fixtures expense...",
-    "timestamp": "2025-08-04T17:19:28.039433",
+    "timestamp": "2025-08-04T18:32:33.584012",
     "data": null
   },
   {
     "test": "Create Movement 6",
     "success": true,
     "message": "Created movement for Hotel Madero: Client advance payment...",
-    "timestamp": "2025-08-04T17:19:28.050675",
+    "timestamp": "2025-08-04T18:32:33.592384",
     "data": null
   },
   {
     "test": "Create Disbursement Order 1",
     "success": true,
     "message": "Created order for P\u00e1jaro: Payment for construction materials and labor...",
-    "timestamp": "2025-08-04T17:19:28.073959",
+    "timestamp": "2025-08-04T18:32:33.601638",
     "data": null
   },
   {
     "test": "Create Disbursement Order 2",
     "success": true,
     "message": "Created order for Alvear: Premium wood flooring materials...",
-    "timestamp": "2025-08-04T17:19:28.083426",
+    "timestamp": "2025-08-04T18:32:33.610693",
     "data": null
   },
   {
     "test": "Create Disbursement Order 3",
     "success": true,
     "message": "Created order for Hotel Madero: Installation team payment for furniture setup...",
-    "timestamp": "2025-08-04T17:19:28.094595",
+    "timestamp": "2025-08-04T18:32:33.620194",
     "data": null
   },
   {
     "test": "Get Deco Movements",
     "success": true,
-    "message": "Retrieved 6 movements",
-    "timestamp": "2025-08-04T17:19:28.106500",
+    "message": "Retrieved 16 movements",
+    "timestamp": "2025-08-04T18:32:33.630290",
     "data": null
   },
   {
     "test": "Get Movements - Project Filter",
     "success": true,
-    "message": "Retrieved 2 movements for P\u00e1jaro project",
-    "timestamp": "2025-08-04T17:19:28.117256",
+    "message": "Retrieved 5 movements for P\u00e1jaro project",
+    "timestamp": "2025-08-04T18:32:33.639357",
     "data": null
   },
   {
     "test": "Get Movements - Pagination",
     "success": true,
     "message": "Retrieved 3 movements with pagination",
-    "timestamp": "2025-08-04T17:19:28.127615",
+    "timestamp": "2025-08-04T18:32:33.648474",
     "data": null
   },
   {
     "test": "Get Disbursement Orders",
     "success": true,
-    "message": "Retrieved 3 disbursement orders",
-    "timestamp": "2025-08-04T17:19:28.138071",
+    "message": "Retrieved 6 disbursement orders",
+    "timestamp": "2025-08-04T18:32:33.657712",
     "data": null
   },
   {
     "test": "Get Orders - Project Filter",
     "success": true,
-    "message": "Retrieved 1 orders for Alvear project",
-    "timestamp": "2025-08-04T17:19:28.148281",
+    "message": "Retrieved 2 orders for Alvear project",
+    "timestamp": "2025-08-04T18:32:33.666867",
     "data": null
   },
   {
     "test": "Get Orders - Status Filter",
     "success": true,
-    "message": "Retrieved 3 orders with 'Requested' status",
-    "timestamp": "2025-08-04T17:19:28.160118",
+    "message": "Retrieved 6 orders with 'Requested' status",
+    "timestamp": "2025-08-04T18:32:33.676205",
     "data": null
   },
   {
     "test": "Invalid Movement - Missing Required Fields",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T17:19:28.168500",
+    "timestamp": "2025-08-04T18:32:33.685117",
     "data": null
   },
   {
     "test": "Invalid Movement - Negative Amount",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T17:19:28.177216",
+    "timestamp": "2025-08-04T18:32:33.692897",
     "data": null
   },
   {
     "test": "Invalid Disbursement - Missing Supplier",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T17:19:28.186690",
+    "timestamp": "2025-08-04T18:32:33.700711",
     "data": null
   },
   {
     "test": "Invalid Disbursement - Invalid Priority",
     "success": true,
     "message": "Correctly rejected invalid data: 422",
-    "timestamp": "2025-08-04T17:19:28.194941",
+    "timestamp": "2025-08-04T18:32:33.709435",
     "data": null
   },
   {
     "test": "Balance Calculations",
     "success": true,
     "message": "Calculated balances for 3 projects",
-    "timestamp": "2025-08-04T17:19:28.195011",
+    "timestamp": "2025-08-04T18:32:33.709502",
     "data": {
       "P\u00e1jaro": {
         "income_usd": 5000.0,
