@@ -1115,6 +1115,60 @@ async def get_providers_autocomplete(
     
     return results
 
+@app.get("/api/providers/summary", response_model=ProviderSummary)
+async def get_providers_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get providers summary statistics"""
+    # Aggregate pipeline for provider statistics
+    pipeline = [
+        {"$match": {"is_archived": False}},
+        {
+            "$group": {
+                "_id": None,
+                "total_providers": {"$sum": 1},
+                "active_providers": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Active"]}, 1, 0]}
+                },
+                "inactive_providers": {
+                    "$sum": {"$cond": [{"$eq": ["$status", "Inactive"]}, 1, 0]}
+                },
+                "preferred_providers": {
+                    "$sum": {"$cond": [{"$eq": ["$preferred_supplier", True]}, 1, 0]}
+                },
+                "high_volume_providers": {
+                    "$sum": {"$cond": [{"$gte": ["$transaction_count", 50]}, 1, 0]}
+                },
+                "total_purchases_usd": {"$sum": {"$ifNull": ["$total_purchases_usd", 0]}},
+                "total_purchases_ars": {"$sum": {"$ifNull": ["$total_purchases_ars", 0]}},
+                "providers_with_recent_activity": {
+                    "$sum": {"$cond": [{"$ne": ["$last_transaction_date", None]}, 1, 0]}
+                },
+                "total_transactions": {"$sum": {"$ifNull": ["$transaction_count", 0]}}
+            }
+        }
+    ]
+    
+    result = await db.providers.aggregate(pipeline).to_list(1)
+    if not result:
+        return ProviderSummary(
+            total_providers=0, active_providers=0, inactive_providers=0,
+            preferred_providers=0, high_volume_providers=0,
+            total_purchases_usd=0.0, total_purchases_ars=0.0,
+            providers_with_recent_activity=0, average_transactions_per_provider=0.0
+        )
+    
+    summary_data = result[0]
+    
+    # Calculate average transactions per provider
+    total_providers = summary_data.get("total_providers", 0)
+    total_transactions = summary_data.get("total_transactions", 0)
+    summary_data["average_transactions_per_provider"] = (
+        total_transactions / total_providers if total_providers > 0 else 0.0
+    )
+    
+    return ProviderSummary(**summary_data)
+
 @app.get("/api/providers/{provider_id}", response_model=Provider)
 async def get_provider(
     provider_id: str,
