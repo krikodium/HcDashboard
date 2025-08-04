@@ -808,6 +808,7 @@ const CashCount = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleCreateCashCount}
           loading={isSubmitting}
+          projects={projects}
         />
       </div>
     </div>
