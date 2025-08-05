@@ -811,6 +811,323 @@ async def get_shop_cash_entries(
     return [ShopCashEntry(**entry) for entry in entries]
 
 # ===============================
+# INVENTORY MANAGEMENT MODULE API
+# ===============================
+
+@app.post("/api/inventory/products", response_model=Product)
+async def create_product(
+    product_data: ProductCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new product in inventory"""
+    # Check if SKU already exists
+    existing_product = await db.inventory.find_one({"sku": product_data.sku})
+    if existing_product:
+        raise HTTPException(status_code=400, detail="Product with this SKU already exists")
+    
+    product_dict = product_data.dict()
+    product_dict["created_by"] = current_user.username
+    product_dict["created_at"] = datetime.utcnow()
+    product_dict["updated_at"] = datetime.utcnow()
+    product_dict["id"] = str(__import__('uuid').uuid4())
+    
+    product = Product(**product_dict)
+    
+    # Convert dates for MongoDB storage
+    product_doc = convert_dates_for_mongo(product.dict(by_alias=True))
+    
+    await db.inventory.insert_one(product_doc)
+    return product
+
+@app.get("/api/inventory/products", response_model=List[Product])
+async def get_products(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    category: Optional[ProductCategory] = None,
+    provider_name: Optional[str] = None,
+    stock_status: Optional[StockStatus] = None,
+    active_only: bool = Query(True),
+    sort_by: str = Query("name", regex="^(name|sku|category|current_stock|total_sold|provider_name|created_at)$"),
+    sort_order: str = Query("asc", regex="^(asc|desc)$"),
+    current_user: User = Depends(get_current_user)
+):
+    """Get products with filtering and sorting"""
+    query = {}
+    if active_only:
+        query["is_active"] = True
+    if category:
+        query["category"] = category
+    if provider_name:
+        query["provider_name"] = {"$regex": f".*{provider_name}.*", "$options": "i"}
+    
+    # Handle stock status filtering
+    if stock_status:
+        if stock_status == "OUT_OF_STOCK":
+            query["current_stock"] = 0
+        elif stock_status == "LOW_STOCK":
+            query["$expr"] = {"$lte": ["$current_stock", "$min_stock_threshold"]}
+    
+    # Sort direction
+    sort_direction = 1 if sort_order == "asc" else -1
+    
+    cursor = db.inventory.find(query).skip(skip).limit(limit).sort(sort_by, sort_direction)
+    products = await cursor.to_list(length=limit)
+    
+    return [Product.from_mongo(product) for product in products]
+
+@app.get("/api/inventory/products/autocomplete")
+async def get_products_autocomplete(
+    q: str = Query(..., min_length=1, description="Search query"),
+    category: Optional[ProductCategory] = None,
+    in_stock_only: bool = Query(False),
+    limit: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user)
+):
+    """Get products for autocomplete with search"""
+    query = {
+        "is_active": True,
+        "$or": [
+            {"name": {"$regex": f".*{q}.*", "$options": "i"}},
+            {"sku": {"$regex": f".*{q}.*", "$options": "i"}},
+            {"description": {"$regex": f".*{q}.*", "$options": "i"}}
+        ]
+    }
+    
+    if category:
+        query["category"] = category
+    if in_stock_only:
+        query["current_stock"] = {"$gt": 0}
+    
+    cursor = db.inventory.find(query).limit(limit).sort("total_sold", -1)
+    products = await cursor.to_list(length=limit)
+    
+    return [ProductAutocomplete(
+        id=product.get("id", str(product["_id"])),
+        sku=product["sku"],
+        name=product["name"],
+        category=product["category"],
+        current_stock=product.get("current_stock", 0),
+        stock_status=get_stock_status(product),
+        cost_ars=product.get("cost_ars"),
+        cost_usd=product.get("cost_usd"),
+        selling_price_ars=product.get("selling_price_ars"),
+        selling_price_usd=product.get("selling_price_usd"),
+        provider_name=product.get("provider_name")
+    ) for product in products]
+
+def get_stock_status(product: dict) -> StockStatus:
+    """Helper function to determine stock status"""
+    if not product.get("is_active", True):
+        return StockStatus.DISCONTINUED
+    elif product.get("current_stock", 0) == 0:
+        return StockStatus.OUT_OF_STOCK
+    elif product.get("current_stock", 0) <= product.get("min_stock_threshold", 5):
+        return StockStatus.LOW_STOCK
+    else:
+        return StockStatus.IN_STOCK
+
+@app.get("/api/inventory/products/{product_id}", response_model=Product)
+async def get_product(
+    product_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get a specific product"""
+    product = await db.inventory.find_one({"$or": [{"_id": product_id}, {"id": product_id}]})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    return Product.from_mongo(product)
+
+@app.put("/api/inventory/products/{product_id}", response_model=Product)
+async def update_product(
+    product_id: str,
+    product_data: ProductUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update a product"""
+    # Check if product exists
+    existing_product = await db.inventory.find_one({"$or": [{"_id": product_id}, {"id": product_id}]})
+    if not existing_product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Check SKU uniqueness if being updated
+    if product_data.sku and product_data.sku != existing_product.get("sku"):
+        sku_exists = await db.inventory.find_one({"sku": product_data.sku})
+        if sku_exists:
+            raise HTTPException(status_code=400, detail="Product with this SKU already exists")
+    
+    # Prepare update data
+    update_data = {k: v for k, v in product_data.dict(exclude_unset=True).items() if v is not None}
+    update_data["updated_at"] = datetime.utcnow()
+    
+    # Update product
+    await db.inventory.update_one(
+        {"$or": [{"_id": product_id}, {"id": product_id}]},
+        {"$set": update_data}
+    )
+    
+    # Return updated product
+    updated_product = await db.inventory.find_one({"$or": [{"_id": product_id}, {"id": product_id}]})
+    return Product.from_mongo(updated_product)
+
+@app.delete("/api/inventory/products/{product_id}")
+async def delete_product(
+    product_id: str,
+    hard_delete: bool = Query(False, description="Permanently delete instead of soft delete"),
+    current_user: User = Depends(get_current_user)
+):
+    """Delete a product (soft delete by default)"""
+    product = await db.inventory.find_one({"$or": [{"_id": product_id}, {"id": product_id}]})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    if hard_delete:
+        await db.inventory.delete_one({"$or": [{"_id": product_id}, {"id": product_id}]})
+        return {"message": "Product permanently deleted"}
+    else:
+        await db.inventory.update_one(
+            {"$or": [{"_id": product_id}, {"id": product_id}]},
+            {"$set": {"is_active": False, "updated_at": datetime.utcnow()}}
+        )
+        return {"message": "Product deactivated"}
+
+@app.post("/api/inventory/products/{product_id}/stock-adjustment")
+async def adjust_product_stock(
+    product_id: str,
+    adjustment: StockAdjustment,
+    current_user: User = Depends(get_current_user)
+):
+    """Adjust product stock levels"""
+    product = await db.inventory.find_one({"$or": [{"_id": product_id}, {"id": product_id}]})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    current_stock = product.get("current_stock", 0)
+    
+    # Calculate new stock based on adjustment type
+    if adjustment.adjustment_type == "increase":
+        new_stock = current_stock + adjustment.quantity
+    elif adjustment.adjustment_type == "decrease":
+        new_stock = max(0, current_stock - adjustment.quantity)
+    elif adjustment.adjustment_type == "set":
+        new_stock = adjustment.quantity
+    else:
+        raise HTTPException(status_code=400, detail="Invalid adjustment type")
+    
+    # Update product stock
+    await db.inventory.update_one(
+        {"$or": [{"_id": product_id}, {"id": product_id}]},
+        {"$set": {"current_stock": new_stock, "updated_at": datetime.utcnow()}}
+    )
+    
+    # Create stock movement record
+    movement = StockMovement(
+        id=str(__import__('uuid').uuid4()),
+        product_id=product.get("id", str(product["_id"])),
+        product_sku=product["sku"],
+        product_name=product["name"],
+        movement_type="adjustment",
+        quantity_change=new_stock - current_stock,
+        previous_stock=current_stock,
+        new_stock=new_stock,
+        reason=adjustment.reason,
+        notes=adjustment.notes,
+        created_by=current_user.username,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow()
+    )
+    
+    await db.stock_movements.insert_one(convert_dates_for_mongo(movement.dict(by_alias=True)))
+    
+    return {"message": "Stock adjusted successfully", "previous_stock": current_stock, "new_stock": new_stock}
+
+@app.get("/api/inventory/summary", response_model=InventorySummary)
+async def get_inventory_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get inventory summary statistics"""
+    # Get all active products
+    products = await db.inventory.find({"is_active": True}).to_list(length=None)
+    
+    # Calculate basic stats
+    total_products = len(products)
+    low_stock_items = sum(1 for p in products if p.get("current_stock", 0) <= p.get("min_stock_threshold", 5) and p.get("current_stock", 0) > 0)
+    out_of_stock_items = sum(1 for p in products if p.get("current_stock", 0) == 0)
+    
+    # Calculate stock values
+    total_stock_value_ars = sum(
+        (p.get("current_stock", 0) * p.get("cost_ars", 0)) for p in products if p.get("cost_ars")
+    )
+    total_stock_value_usd = sum(
+        (p.get("current_stock", 0) * p.get("cost_usd", 0)) for p in products if p.get("cost_usd")
+    )
+    
+    # Group by category
+    products_by_category = {}
+    for product in products:
+        category = product.get("category", "Other")
+        products_by_category[category] = products_by_category.get(category, 0) + 1
+    
+    # Group by status
+    products_by_status = {
+        "In Stock": sum(1 for p in products if p.get("current_stock", 0) > p.get("min_stock_threshold", 5)),
+        "Low Stock": low_stock_items,
+        "Out of Stock": out_of_stock_items
+    }
+    
+    # Most sold products
+    most_sold_products = sorted(
+        [
+            {
+                "id": p.get("id", str(p["_id"])),
+                "sku": p["sku"],
+                "name": p["name"],
+                "total_sold": p.get("total_sold", 0),
+                "total_revenue_ars": p.get("total_revenue_ars", 0)
+            }
+            for p in products if p.get("total_sold", 0) > 0
+        ],
+        key=lambda x: x["total_sold"],
+        reverse=True
+    )[:10]
+    
+    # Top revenue products
+    top_revenue_products = sorted(
+        [
+            {
+                "id": p.get("id", str(p["_id"])),
+                "sku": p["sku"],
+                "name": p["name"],
+                "total_revenue_ars": p.get("total_revenue_ars", 0),
+                "total_sold": p.get("total_sold", 0)
+            }
+            for p in products if p.get("total_revenue_ars", 0) > 0
+        ],
+        key=lambda x: x["total_revenue_ars"],
+        reverse=True
+    )[:10]
+    
+    # Group by provider
+    products_by_provider = {}
+    for product in products:
+        provider = product.get("provider_name", "Unknown")
+        products_by_provider[provider] = products_by_provider.get(provider, 0) + 1
+    
+    return InventorySummary(
+        total_products=total_products,
+        active_products=total_products,
+        low_stock_items=low_stock_items,
+        out_of_stock_items=out_of_stock_items,
+        total_stock_value_ars=total_stock_value_ars,
+        total_stock_value_usd=total_stock_value_usd,
+        products_by_category=products_by_category,
+        products_by_status=products_by_status,
+        most_sold_products=most_sold_products,
+        top_revenue_products=top_revenue_products,
+        products_by_provider=products_by_provider
+    )
+
+# ===============================
 # DECO MOVEMENTS MODULE API
 # ===============================
 
