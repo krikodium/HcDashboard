@@ -738,6 +738,31 @@ async def add_ledger_entry(
     # Handle client payments - update payment status automatically
     if entry_data.is_client_payment and entry_data.income_ars:
         await process_client_payment(event_obj, entry_data.income_ars)
+        
+        # Send notification for client payment received
+        try:
+            await notify_event_payment_received(
+                DEFAULT_ADMIN_PREFERENCES,
+                f"{event_obj.header.client_name} - {event_obj.header.event_type}",
+                event_obj.header.client_name,
+                entry_data.income_ars,
+                "ARS"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send client payment notification: {e}")
+    
+    # Check for large expenses and notify
+    if entry_data.expense_ars and entry_data.expense_ars >= 10000:
+        try:
+            await notify_large_expense(
+                DEFAULT_ADMIN_PREFERENCES,
+                "Events Cash",
+                entry_data.detail,
+                entry_data.expense_ars,
+                "ARS"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send large expense notification: {e}")
     
     # Handle provider usage tracking
     if entry_data.provider_id and (entry_data.expense_ars or entry_data.expense_usd):
