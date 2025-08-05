@@ -707,6 +707,125 @@ class BackendTester:
             self.log_test("Events Cash Expenses Summary", False, f"Error: {str(e)}")
             return None
     
+    def test_integration_event_providers_with_events_cash(self):
+        """Test integration between Event Providers and Events Cash"""
+        try:
+            # Create multiple event providers with different categories
+            providers_data = [
+                {
+                    "name": f"Premium Catering Services {datetime.now().strftime('%H%M%S')}",
+                    "category": "Catering",
+                    "provider_type": "Vendor",
+                    "contact_person": "Carlos Mendoza",
+                    "phone": "+54 11 2345-6789",
+                    "email": "carlos@premiumcatering.com"
+                },
+                {
+                    "name": f"Elite Decorations {datetime.now().strftime('%H%M%S')}",
+                    "category": "Decoration",
+                    "provider_type": "Subcontractor",
+                    "contact_person": "Ana Rodriguez",
+                    "phone": "+54 11 3456-7890",
+                    "email": "ana@elitedecorations.com"
+                },
+                {
+                    "name": f"Sound & Music Pro {datetime.now().strftime('%H%M%S')}",
+                    "category": "Music",
+                    "provider_type": "Vendor",
+                    "contact_person": "Diego Silva",
+                    "phone": "+54 11 4567-8901",
+                    "email": "diego@soundmusicpro.com"
+                }
+            ]
+            
+            created_providers = []
+            for provider_data in providers_data:
+                response = requests.post(
+                    f"{self.base_url}/event-providers",
+                    json=provider_data,
+                    headers=self.headers,
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    created_providers.append(response.json())
+            
+            if len(created_providers) < 3:
+                self.log_test("Integration Test - Provider Creation", False, f"Only created {len(created_providers)} of 3 providers")
+                return False
+            
+            # Create an event
+            test_event = {
+                "header": {
+                    "event_date": "2024-12-30",
+                    "organizer": "Paz Caradonti",
+                    "client_name": "Empresa ABC",
+                    "event_type": "Corporate",
+                    "province": "Buenos Aires",
+                    "localidad": "Recoleta",
+                    "total_budget_no_iva": 200000.0,
+                    "budget_number": f"INT-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    "payment_terms": "50% anticipo, 50% contra entrega"
+                }
+            }
+            
+            event_response = requests.post(
+                f"{self.base_url}/events-cash",
+                json=test_event,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if event_response.status_code != 200:
+                self.log_test("Integration Test - Event Creation", False, f"Failed to create event: {event_response.status_code}")
+                return False
+            
+            created_event = event_response.json()
+            event_id = created_event.get('id') or created_event.get('_id')
+            
+            # Add ledger entries with provider references
+            integration_success = True
+            for i, provider in enumerate(created_providers):
+                provider_id = provider.get('id') or provider.get('_id')
+                entry_data = {
+                    "payment_method": "Bank Transfer",
+                    "date": date.today().isoformat(),
+                    "detail": f"Pago a {provider['name']}",
+                    "expense_ars": 15000.0 + (i * 5000),  # Different amounts
+                    "provider_id": provider_id,
+                    "is_client_payment": False
+                }
+                
+                entry_response = requests.post(
+                    f"{self.base_url}/events-cash/{event_id}/ledger",
+                    json=entry_data,
+                    headers=self.headers,
+                    timeout=10
+                )
+                
+                if entry_response.status_code != 200:
+                    integration_success = False
+                    break
+            
+            if integration_success:
+                self.log_test(
+                    "Integration Test - Event Providers with Events Cash", 
+                    True, 
+                    f"Successfully integrated {len(created_providers)} providers with event ledger",
+                    {
+                        "providers_created": len(created_providers),
+                        "event_id": event_id,
+                        "ledger_entries_added": len(created_providers)
+                    }
+                )
+                return {"event_id": event_id, "providers": created_providers}
+            else:
+                self.log_test("Integration Test - Event Providers with Events Cash", False, "Failed to add all ledger entries")
+                return False
+                
+        except Exception as e:
+            self.log_test("Integration Test - Event Providers with Events Cash", False, f"Error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Backend API Tests for General Cash Module and Application Categories")
