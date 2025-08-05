@@ -933,7 +933,7 @@ const SaleEntryModal = ({ isOpen, onClose, onSubmit, loading }) => {
   );
 };
 
-// Main Shop Cash Component
+// Main Shop Cash Component with Tabbed Interface
 const ShopCash = () => {
   const [entries, setEntries] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -943,10 +943,13 @@ const ShopCash = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('sales'); // New state for tab management
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (activeTab === 'sales') {
+      fetchData();
+    }
+  }, [activeTab]);
 
   const fetchData = async () => {
     try {
