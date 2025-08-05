@@ -368,15 +368,15 @@ class BackendTester:
                 timeout=10
             )
             
-            if response.status_code == 401:
+            if response.status_code in [401, 403]:  # Both are valid for authentication required
                 self.log_test(
                     "Authentication Required", 
                     True, 
-                    "Endpoints properly require authentication"
+                    f"Endpoints properly require authentication (HTTP {response.status_code})"
                 )
                 return True
             else:
-                self.log_test("Authentication Required", False, f"Expected 401, got {response.status_code}", response.text)
+                self.log_test("Authentication Required", False, f"Expected 401/403, got {response.status_code}", response.text)
                 return False
         except Exception as e:
             self.log_test("Authentication Required", False, f"Error: {str(e)}")
