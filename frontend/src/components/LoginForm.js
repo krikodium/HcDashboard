@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
-const LoginForm = ({ onLogin, isDark, setIsDark }) => {
+const LoginForm = ({ isDark, setIsDark }) => {
   const [credentials, setCredentials] = useState({
     username: '',
     password: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,10 +16,12 @@ const LoginForm = ({ onLogin, isDark, setIsDark }) => {
     setError('');
 
     try {
-      const response = await axios.post('/api/auth/login', credentials);
-      onLogin(response.data.access_token, response.data.user);
+      const result = await login(credentials);
+      if (!result.success) {
+        setError(result.error);
+      }
     } catch (error) {
-      setError(error.response?.data?.detail || 'Login failed');
+      setError('Login failed');
     } finally {
       setLoading(false);
     }
