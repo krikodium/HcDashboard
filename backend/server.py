@@ -1139,6 +1139,18 @@ async def adjust_product_stock(
     
     await db.stock_movements.insert_one(convert_dates_for_mongo(movement.dict(by_alias=True)))
     
+    # Check for low stock after adjustment and notify
+    if new_stock <= product.get("min_stock_threshold", 5) and new_stock > 0:
+        try:
+            await notify_low_stock(
+                DEFAULT_ADMIN_PREFERENCES,
+                product["name"],
+                new_stock,
+                product.get("min_stock_threshold", 5)
+            )
+        except Exception as e:
+            logger.error(f"Failed to send low stock notification: {e}")
+    
     return {"message": "Stock adjusted successfully", "previous_stock": current_stock, "new_stock": new_stock}
 
 @app.get("/api/inventory/summary", response_model=InventorySummary)
