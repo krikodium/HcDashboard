@@ -705,10 +705,10 @@ async def get_events_cash(
 @app.post("/api/events-cash/{event_id}/ledger", response_model=EventsCash)
 async def add_ledger_entry(
     event_id: str,
-    entry_data: LedgerEntryCreate,
+    entry_data: LedgerEntryCreateEnhanced,
     current_user: User = Depends(get_current_user)
 ):
-    """Add a ledger entry to an event"""
+    """Add a ledger entry to an event with provider integration"""
     # Try both _id and id fields for compatibility
     event = await db.events_cash.find_one({"$or": [{"_id": event_id}, {"id": event_id}]})
     if not event:
@@ -716,7 +716,24 @@ async def add_ledger_entry(
     
     # Use from_mongo method to properly handle ID field
     event_obj = EventsCash.from_mongo(event)
-    new_entry = EventsLedgerEntry(**entry_data.dict())
+    
+    # Create the ledger entry
+    entry_dict = entry_data.dict(exclude={'provider_id', 'expense_category_id', 'is_client_payment'})
+    new_entry = EventsLedgerEntry(**entry_dict)
+    
+    # Handle client payments - update payment status automatically
+    if entry_data.is_client_payment and entry_data.income_ars:
+        await process_client_payment(event_obj, entry_data.income_ars)
+    
+    # Handle provider usage tracking
+    if entry_data.provider_id and (entry_data.expense_ars or entry_data.expense_usd):
+        await increment_event_provider_usage(
+            entry_data.provider_id,
+            amount_ars=entry_data.expense_ars or 0.0,
+            amount_usd=entry_data.expense_usd or 0.0,
+            current_user=current_user
+        )
+    
     event_obj.ledger_entries.append(new_entry)
     event_obj.recalculate_balances()
     
@@ -730,6 +747,22 @@ async def add_ledger_entry(
     )
     
     return event_obj
+
+async def process_client_payment(event_obj: EventsCash, payment_amount: float):
+    """Process client payment and update payment status automatically"""
+    payment_status = event_obj.payment_status
+    
+    # Determine which payment this should be applied to
+    if payment_status.anticipo_received == 0:
+        # First payment - allocate to anticipo
+        payment_status.anticipo_received = min(payment_amount, payment_status.total_budget * 0.3)  # Assume 30% anticipo
+    elif payment_status.segundo_pago == 0:
+        # Second payment
+        remaining_after_anticipo = payment_status.total_budget - payment_status.anticipo_received
+        payment_status.segundo_pago = min(payment_amount, remaining_after_anticipo * 0.6)  # Assume 60% of remaining
+    else:
+        # Final payment
+        payment_status.tercer_pago += payment_amount
 
 # ===============================
 # SHOP CASH MODULE API
