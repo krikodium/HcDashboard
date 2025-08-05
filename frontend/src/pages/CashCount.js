@@ -521,7 +521,7 @@ const CashCount = () => {
 
   const getDiscrepancyIndicator = (hasDiscrepancies, ledgerComparison) => {
     if (!hasDiscrepancies) {
-      return <span className="text-green-600 font-medium">✓ Match</span>;
+      return <span className="text-green-600 font-semibold">Match</span>;
     }
     
     const difference = ledgerComparison?.difference || 0;
