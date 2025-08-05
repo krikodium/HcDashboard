@@ -1251,7 +1251,7 @@ async def create_application_category(
 
 @app.get("/api/application-categories", response_model=List[ApplicationCategory])
 async def get_application_categories(
-    category_type: Optional[str] = Query(None, regex="^(Income|Expense|Both)$"),
+    category_type: Optional[str] = Query(None, pattern="^(Income|Expense|Both)$"),
     active_only: bool = Query(True),
     current_user: User = Depends(get_current_user)
 ):
