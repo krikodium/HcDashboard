@@ -148,7 +148,7 @@ class StockMovement(BaseDocument):
     product_id: str
     product_sku: str
     product_name: str
-    movement_type: str = Field(..., regex="^(sale|adjustment|return|damaged|transfer)$")
+    movement_type: str = Field(..., pattern="^(sale|adjustment|return|damaged|transfer)$")
     quantity_change: int  # Positive for increase, negative for decrease
     previous_stock: int
     new_stock: int
