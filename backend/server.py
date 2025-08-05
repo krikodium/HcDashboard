@@ -665,13 +665,12 @@ async def approve_general_cash_entry(
     await db.general_cash.update_one({"_id": entry_id}, {"$set": update_data})
     
     # Send notification
-    user_prefs = {
-        "whatsapp": {"enabled": True, "number": "+1234567890"},
-        "email": {"enabled": True, "address": "admin@hermanascaradonti.com"}
-    }
-    amount = (entry.get("expense_ars", 0) or 0) + (entry.get("expense_usd", 0) or 0)
-    currency = "ARS" if entry.get("expense_ars") else "USD"
-    await notify_payment_approved(user_prefs, amount, currency, current_user.username)
+    try:
+        amount = (entry.get("expense_ars", 0) or 0) + (entry.get("expense_usd", 0) or 0)
+        currency = "ARS" if entry.get("expense_ars") else "USD"
+        await notify_payment_approved(DEFAULT_ADMIN_PREFERENCES, amount, currency, current_user.username)
+    except Exception as e:
+        logger.error(f"Failed to send approval notification: {e}")
     
     return {"message": "Entry approved successfully"}
 
