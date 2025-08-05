@@ -222,3 +222,56 @@ async def notify_reconciliation_discrepancy(user_prefs: Dict, deco_name: str, di
         message=f"Discrepancy found in {deco_name} cash count.\n\nAmount: {currency} {discrepancy:,.2f}",
         data={"deco": deco_name, "discrepancy": discrepancy, "currency": currency}
     )
+
+async def notify_event_payment_received(user_prefs: Dict, event_name: str, client_name: str, amount: float, currency: str):
+    """Notify when client payment is received for an event"""
+    return await notification_service.send_notification(
+        user_preferences=user_prefs,
+        notification_type="event_payment",
+        title="Event Payment Received",
+        message=f"Client payment received for event '{event_name}'.\n\nClient: {client_name}\nAmount: {currency} {amount:,.2f}",
+        data={"event": event_name, "client": client_name, "amount": amount, "currency": currency}
+    )
+
+async def notify_sale_completed(user_prefs: Dict, client_name: str, item_description: str, amount: float, currency: str):
+    """Notify when a shop sale is completed"""
+    return await notification_service.send_notification(
+        user_preferences=user_prefs,
+        notification_type="sale_completed",
+        title="New Sale Completed",
+        message=f"Sale completed to {client_name}.\n\nItem: {item_description}\nAmount: {currency} {amount:,.2f}",
+        data={"client": client_name, "item": item_description, "amount": amount, "currency": currency}
+    )
+
+async def notify_deco_movement_created(user_prefs: Dict, project_name: str, movement_type: str, amount: float, currency: str):
+    """Notify when a deco movement is created"""
+    return await notification_service.send_notification(
+        user_preferences=user_prefs,
+        notification_type="deco_movement",
+        title="Deco Movement Created",
+        message=f"New {movement_type} created for project '{project_name}'.\n\nAmount: {currency} {amount:,.2f}",
+        data={"project": project_name, "type": movement_type, "amount": amount, "currency": currency}
+    )
+
+async def notify_large_expense(user_prefs: Dict, module: str, description: str, amount: float, currency: str, threshold: float = 10000):
+    """Notify when a large expense is recorded"""
+    if amount >= threshold:
+        return await notification_service.send_notification(
+            user_preferences=user_prefs,
+            notification_type="large_expense",
+            title="Large Expense Alert",
+            message=f"Large expense recorded in {module}.\n\nDescription: {description}\nAmount: {currency} {amount:,.2f}",
+            data={"module": module, "description": description, "amount": amount, "currency": currency}
+        )
+
+# Default admin user preferences for notifications
+DEFAULT_ADMIN_PREFERENCES = {
+    "whatsapp": {
+        "enabled": True,
+        "number": "+5491112345678"  # Replace with actual admin WhatsApp number
+    },
+    "email": {
+        "enabled": True,
+        "address": "admin@hermanascaradonti.com"
+    }
+}
