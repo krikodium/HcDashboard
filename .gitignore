@@ -14,6 +14,11 @@ env.*
 **/*credential*
 **/config/production.*
 
+# Specific secret patterns detected by GitGuardian
+*AC8b9f373bea952991e559e9f599b4707d*
+*105bae06472e0410fce73c87259673a5*
+*hermanas-caradonti-super-secret-key*
+
 # Dependencies and cache folders
 /node_modules
 /frontend/node_modules
