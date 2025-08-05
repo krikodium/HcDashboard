@@ -410,6 +410,8 @@ class BackendTester:
             category_id = categories[0].get('id')
             if category_id:
                 self.test_application_categories_increment_usage(category_id)
+            else:
+                print("⚠️  No category ID found for increment usage test")
         
         # Test General Cash API
         print("\n💰 Testing General Cash API...")
@@ -420,6 +422,9 @@ class BackendTester:
         # Test approval if we have an entry
         if created_entry and created_entry.get('id'):
             self.test_general_cash_approve(created_entry['id'])
+        elif entries and len(entries) > 0 and entries[0].get('id'):
+            # Try with an existing entry
+            self.test_general_cash_approve(entries[0]['id'])
         
         # Print summary
         self.print_test_summary()
