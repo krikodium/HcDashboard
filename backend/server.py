@@ -33,10 +33,21 @@ from models.deco_movements import DisbursementStatus
 from models.projects import Project, ProjectCreate, ProjectUpdate, ProjectSummary
 from models.providers import Provider, ProviderCreate, ProviderUpdate, ProviderSummary, ProviderAutocomplete
 from models.general_cash import ApplicationCategory, ApplicationCategoryCreate, ApplicationCategorySummary
-from models.event_providers import (
-    EventProvider, EventProviderCreate, EventProviderUpdate, EventProviderSummary, EventProviderAutocomplete,
-    EventProviderCategory, EventProviderType, ExpenseCategory, ExpenseCategoryCreate, ExpenseCategorySummary
-)
+    # Update events cash ledger entries to include provider information
+from models.events_cash import EventsLedgerEntry, LedgerEntryCreate
+
+class LedgerEntryCreateEnhanced(BaseModel):
+    payment_method: PaymentMethod
+    date: date
+    detail: str = Field(..., min_length=1, max_length=300)
+    income_ars: Optional[float] = Field(None, ge=0)
+    expense_ars: Optional[float] = Field(None, ge=0)
+    income_usd: Optional[float] = Field(None, ge=0)
+    expense_usd: Optional[float] = Field(None, ge=0)
+    # New fields for provider integration
+    provider_id: Optional[str] = None
+    expense_category_id: Optional[str] = None
+    is_client_payment: bool = False  # Special flag for client payments
 from services.notification_service import notification_service, notify_payment_approval_needed, notify_payment_approved
 
 # Setup logging
