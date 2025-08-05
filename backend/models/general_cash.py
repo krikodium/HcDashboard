@@ -71,7 +71,7 @@ class GeneralCash(BaseDocument):
 class ApplicationCategory(BaseDocument):
     """Dynamic application categories for General Cash"""
     name: str = Field(..., min_length=1, max_length=200)
-    category_type: str = Field(..., regex="^(Income|Expense|Both)$")  # Income, Expense, or Both
+    category_type: str = Field(..., pattern="^(Income|Expense|Both)$")  # Income, Expense, or Both
     description: Optional[str] = Field(None, max_length=500)
     is_active: bool = True
     usage_count: int = 0  # Track how often it's used
