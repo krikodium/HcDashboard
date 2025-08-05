@@ -878,6 +878,23 @@ async def create_shop_cash_entry(
             )
             
             await db.stock_movements.insert_one(convert_dates_for_mongo(movement.dict(by_alias=True)))
+            
+            # Check for low stock after sale and notify
+            updated_product = await db.inventory.find_one({"sku": entry_data.sku})
+            if updated_product:
+                current_stock = updated_product.get("current_stock", 0)
+                threshold = updated_product.get("min_stock_threshold", 5)
+                
+                if current_stock <= threshold and current_stock > 0:
+                    try:
+                        await notify_low_stock(
+                            DEFAULT_ADMIN_PREFERENCES,
+                            updated_product["name"],
+                            current_stock,
+                            threshold
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to send low stock notification: {e}")
     
     return entry
 
