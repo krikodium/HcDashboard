@@ -787,7 +787,7 @@ class BackendTester:
             for i, provider in enumerate(created_providers):
                 provider_id = provider.get('id') or provider.get('_id')
                 entry_data = {
-                    "payment_method": "Bank Transfer",
+                    "payment_method": "Transferencia",
                     "date": date.today().isoformat(),
                     "detail": f"Pago a {provider['name']}",
                     "expense_ars": 15000.0 + (i * 5000),  # Different amounts
