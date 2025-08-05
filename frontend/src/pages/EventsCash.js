@@ -18,6 +18,153 @@ const TableSkeleton = () => (
   </div>
 );
 
+// Event Provider Autocomplete Component
+const EventProviderAutocomplete = ({ value, onChange, onProviderSelect, category, disabled = false }) => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState(null);
+
+  const fetchProviders = async (query) => {
+    if (query.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const params = { q: query, limit: 10 };
+      if (category) params.category = category;
+      
+      const response = await axios.get('/api/event-providers/autocomplete', { params });
+      setSuggestions(response.data);
+    } catch (error) {
+      console.error('Error fetching providers:', error);
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    
+    if (newValue.length >= 2) {
+      fetchProviders(newValue);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+    
+    // Clear selected provider if input changes
+    if (selectedProvider && selectedProvider.name !== newValue) {
+      setSelectedProvider(null);
+      if (onProviderSelect) onProviderSelect(null);
+    }
+  };
+
+  const handleSelectSuggestion = (provider) => {
+    onChange(provider.name);
+    setSelectedProvider(provider);
+    setShowSuggestions(false);
+    if (onProviderSelect) onProviderSelect(provider);
+  };
+
+  const handleInputBlur = () => {
+    setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  const handleInputFocus = () => {
+    if (value.length >= 2 && suggestions.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="flex space-x-2">
+        <div className="flex-1 relative">
+          <input
+            type="text"
+            className="form-input w-full"
+            value={value}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            onFocus={handleInputFocus}
+            placeholder="Type provider name..."
+            disabled={disabled}
+          />
+          
+          {loading && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+            </div>
+          )}
+          
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border theme-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+              {suggestions.map((provider, index) => (
+                <div
+                  key={index}
+                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer theme-text"
+                  onMouseDown={() => handleSelectSuggestion(provider)}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium">{provider.name}</span>
+                      {provider.contact_person && (
+                        <div className="text-xs theme-text-secondary">Contact: {provider.contact_person}</div>
+                      )}
+                    </div>
+                    <div className="text-xs theme-text-secondary flex items-center space-x-2">
+                      <span className={`status-badge ${
+                        provider.category === 'Catering' ? 'status-success' : 
+                        provider.category === 'Decoration' ? 'status-info' : 
+                        provider.category === 'Music' ? 'status-warning' : 'status-secondary'
+                      }`}>
+                        {provider.category}
+                      </span>
+                      {provider.usage_count > 0 && (
+                        <span className="text-xs">Used {provider.usage_count} times</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {selectedProvider && (
+        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center justify-between text-sm">
+            <div>
+              <span className="font-medium text-blue-700 dark:text-blue-300">Selected: {selectedProvider.name}</span>
+              <div className="text-xs text-blue-600 dark:text-blue-400">
+                Category: {selectedProvider.category} | Type: {selectedProvider.provider_type}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedProvider(null);
+                onChange('');
+                if (onProviderSelect) onProviderSelect(null);
+              }}
+              className="text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Event Header Component
 const EventHeader = ({ event }) => {
   if (!event) return null;
