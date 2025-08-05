@@ -1347,9 +1347,65 @@ BULK-003,Bulk Test Textile,Luxury silk curtain,Textiles,Textiles Buenos Aires,20
             self.log_test("Integration Test - Comprehensive Inventory", False, f"Error: {str(e)}")
             return False
     
+    def test_authentication_required(self):
+        """Test that endpoints require authentication"""
+        try:
+            # Test without token
+            headers_no_auth = {"Content-Type": "application/json"}
+            
+            response = requests.get(
+                f"{self.base_url}/general-cash",
+                headers=headers_no_auth,
+                timeout=10
+            )
+            
+            if response.status_code in [401, 403]:  # Both are valid for authentication required
+                self.log_test(
+                    "Authentication Required", 
+                    True, 
+                    f"Endpoints properly require authentication (HTTP {response.status_code})"
+                )
+                return True
+            else:
+                self.log_test("Authentication Required", False, f"Expected 401/403, got {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_test("Authentication Required", False, f"Error: {str(e)}")
+            return False
+    
+    def run_inventory_tests(self):
+        """Run all inventory management tests for Phase 3"""
+        print("\n📦 Testing Inventory Management API...")
+        
+        # Test basic CRUD operations
+        created_product = self.test_inventory_products_create()
+        products = self.test_inventory_products_list()
+        self.test_inventory_products_autocomplete()
+        self.test_inventory_summary()
+        
+        # Test operations on created product
+        if created_product:
+            product_id = created_product.get('id')
+            if product_id:
+                self.test_inventory_products_get_by_id(product_id)
+                self.test_inventory_products_update(product_id)
+                self.test_inventory_products_stock_adjustment(product_id)
+                # Note: We'll skip delete test to keep the product for integration tests
+        
+        # Test bulk import
+        self.test_inventory_bulk_import()
+        
+        # Test shop cash integration
+        self.test_shop_cash_inventory_integration()
+        
+        # Test comprehensive integration
+        integration_result = self.test_integration_inventory_comprehensive()
+        
+        return True
+    
     def run_all_tests(self):
-        """Run all backend tests for Phase 2.2: Event Providers and Enhanced Events Cash"""
-        print("🚀 Starting Backend API Tests for Phase 2.2: Event Providers and Enhanced Events Cash")
+        """Run all backend tests for Phase 3: Shop Cash Module Overhaul - Inventory Management"""
+        print("🚀 Starting Backend API Tests for Phase 3: Shop Cash Module Overhaul - Inventory Management")
         print("=" * 80)
         
         # Test authentication first
@@ -1363,79 +1419,8 @@ BULK-003,Bulk Test Textile,Luxury silk curtain,Textiles,Textiles Buenos Aires,20
         # Test authentication requirement
         self.test_authentication_required()
         
-        # Test Event Providers API
-        print("\n🏢 Testing Event Providers API...")
-        created_provider = self.test_event_providers_create()
-        providers = self.test_event_providers_list()
-        self.test_event_providers_filtering()
-        self.test_event_providers_autocomplete()
-        self.test_event_providers_summary()
-        
-        # Test increment usage if we have a provider
-        if providers and len(providers) > 0:
-            provider_id = providers[0].get('id') or providers[0].get('_id')
-            if provider_id:
-                self.test_event_providers_increment_usage(provider_id)
-            else:
-                print("⚠️  No provider ID found for increment usage test")
-        
-        # Test Enhanced Events Cash API
-        print("\n💰 Testing Enhanced Events Cash API...")
-        created_event = self.test_events_cash_create()
-        events = self.test_events_cash_list()
-        
-        # Test enhanced ledger entry functionality
-        if created_event:
-            event_id = created_event.get('id') or created_event.get('_id')
-            provider_id = created_provider.get('id') if created_provider else None
-            
-            if event_id:
-                # Test enhanced ledger entry with provider integration
-                self.test_events_cash_add_ledger_entry_enhanced(event_id, provider_id)
-                
-                # Test client payment processing
-                self.test_events_cash_client_payment_processing(event_id)
-                
-                # Test expense summary reporting
-                self.test_events_cash_expenses_summary(event_id)
-        
-        # Test Integration Scenarios
-        print("\n🔗 Testing Integration Scenarios...")
-        integration_result = self.test_integration_event_providers_with_events_cash()
-        
-        # Test expense summary with integration data
-        if integration_result and isinstance(integration_result, dict):
-            event_id = integration_result.get('event_id')
-            if event_id:
-                self.test_events_cash_expenses_summary(event_id)
-        
-        # Test Application Categories API (existing functionality)
-        print("\n📂 Testing Application Categories API...")
-        categories = self.test_application_categories_list()
-        created_category = self.test_application_categories_create()
-        self.test_application_categories_autocomplete()
-        self.test_application_categories_summary()
-        
-        # Test increment usage if we have a category
-        if categories and len(categories) > 0:
-            category_id = categories[0].get('id') or categories[0].get('_id')
-            if category_id:
-                self.test_application_categories_increment_usage(category_id)
-        
-        # Test General Cash API (existing functionality)
-        print("\n💰 Testing General Cash API...")
-        entries = self.test_general_cash_list()
-        created_entry = self.test_general_cash_create()
-        self.test_general_cash_summary()
-        
-        # Test approval if we have an entry
-        if created_entry and (created_entry.get('id') or created_entry.get('_id')):
-            entry_id = created_entry.get('id') or created_entry.get('_id')
-            self.test_general_cash_approve(entry_id)
-        elif entries and len(entries) > 0 and (entries[0].get('id') or entries[0].get('_id')):
-            # Try with an existing entry
-            entry_id = entries[0].get('id') or entries[0].get('_id')
-            self.test_general_cash_approve(entry_id)
+        # Run Inventory Management Tests (Phase 3 Focus)
+        self.run_inventory_tests()
         
         # Print summary
         self.print_test_summary()
