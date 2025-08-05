@@ -1363,6 +1363,33 @@ async def create_deco_movement(
     # Convert dates for MongoDB storage
     movement_doc = convert_dates_for_mongo(movement.dict(by_alias=True))
     await db.deco_movements.insert_one(movement_doc)
+    
+    # Send notification for deco movement creation
+    try:
+        movement_type = "Income" if movement.income_ars or movement.income_usd else "Expense"
+        amount = movement.income_ars or movement.expense_ars or movement.income_usd or movement.expense_usd or 0
+        currency = "USD" if movement.income_usd or movement.expense_usd else "ARS"
+        
+        await notify_deco_movement_created(
+            DEFAULT_ADMIN_PREFERENCES,
+            movement.project_name,
+            movement_type,
+            amount,
+            currency
+        )
+        
+        # Check for large expenses
+        if movement.expense_ars and movement.expense_ars >= 10000:
+            await notify_large_expense(
+                DEFAULT_ADMIN_PREFERENCES,
+                "Deco Movements",
+                movement.detail,
+                movement.expense_ars,
+                "ARS"
+            )
+    except Exception as e:
+        logger.error(f"Failed to send deco movement notification: {e}")
+    
     return movement
 
 @app.get("/api/deco-movements", response_model=List[DecoMovement])
