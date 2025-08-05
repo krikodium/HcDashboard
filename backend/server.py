@@ -1358,6 +1358,179 @@ async def get_application_categories_summary(
     
     return ApplicationCategorySummary(**summary_data)
 
+# ===============================
+# EVENT PROVIDERS MODULE API
+# ===============================
+
+@app.post("/api/event-providers", response_model=EventProvider)
+async def create_event_provider(
+    provider_data: EventProviderCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new event provider"""
+    provider_dict = provider_data.dict()
+    provider_dict["created_by"] = current_user.username
+    provider_dict["created_at"] = datetime.utcnow()
+    provider_dict["updated_at"] = datetime.utcnow()
+    provider_dict["id"] = str(__import__('uuid').uuid4())
+    
+    provider = EventProvider(**provider_dict)
+    
+    # Convert dates for MongoDB storage
+    provider_doc = convert_dates_for_mongo(provider.dict(by_alias=True))
+    
+    await db.event_providers.insert_one(provider_doc)
+    return provider
+
+@app.get("/api/event-providers", response_model=List[EventProvider])
+async def get_event_providers(
+    category: Optional[EventProviderCategory] = None,
+    provider_type: Optional[EventProviderType] = None,
+    active_only: bool = Query(True),
+    current_user: User = Depends(get_current_user)
+):
+    """Get event providers"""
+    query = {}
+    if active_only:
+        query["is_active"] = True
+    if category:
+        query["category"] = category
+    if provider_type:
+        query["provider_type"] = provider_type
+    
+    cursor = db.event_providers.find(query).sort("usage_count", -1)  # Sort by most used
+    providers = await cursor.to_list(length=100)
+    
+    return [EventProvider.from_mongo(provider) for provider in providers]
+
+@app.get("/api/event-providers/autocomplete")
+async def get_event_providers_autocomplete(
+    q: str = Query(..., min_length=1, description="Search query"),
+    category: Optional[EventProviderCategory] = None,
+    provider_type: Optional[EventProviderType] = None,
+    limit: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user)
+):
+    """Get event providers for autocomplete with search"""
+    query = {
+        "is_active": True,
+        "$or": [
+            {"name": {"$regex": f".*{q}.*", "$options": "i"}},
+            {"contact_person": {"$regex": f".*{q}.*", "$options": "i"}}
+        ]
+    }
+    
+    if category:
+        query["category"] = category
+    if provider_type:
+        query["provider_type"] = provider_type
+    
+    cursor = db.event_providers.find(query).limit(limit).sort("usage_count", -1)
+    providers = await cursor.to_list(length=limit)
+    
+    return [EventProviderAutocomplete(
+        id=provider.get("id", str(provider["_id"])),
+        name=provider["name"],
+        category=provider["category"],
+        provider_type=provider["provider_type"],
+        contact_person=provider.get("contact_person"),
+        usage_count=provider.get("usage_count", 0),
+        last_used_date=provider.get("last_used_date")
+    ) for provider in providers]
+
+@app.patch("/api/event-providers/{provider_id}/increment-usage")
+async def increment_event_provider_usage(
+    provider_id: str,
+    amount_ars: float = Query(0.0, ge=0),
+    amount_usd: float = Query(0.0, ge=0),
+    current_user: User = Depends(get_current_user)
+):
+    """Increment usage count and amounts for an event provider"""
+    result = await db.event_providers.update_one(
+        {"$or": [{"_id": provider_id}, {"id": provider_id}]},
+        {
+            "$inc": {
+                "usage_count": 1,
+                "total_amount_ars": amount_ars,
+                "total_amount_usd": amount_usd
+            },
+            "$set": {
+                "last_used_date": datetime.utcnow(),
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Event provider not found")
+    
+    return {"message": "Usage count and amounts updated"}
+
+@app.get("/api/event-providers/summary", response_model=EventProviderSummary)
+async def get_event_providers_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get event providers summary statistics"""
+    # Aggregate pipeline for provider statistics
+    pipeline = [
+        {"$match": {"is_active": True}},
+        {
+            "$group": {
+                "_id": None,
+                "total_providers": {"$sum": 1},
+                "total_spent_ars": {"$sum": "$total_amount_ars"},
+                "total_spent_usd": {"$sum": "$total_amount_usd"},
+                "avg_rating": {"$avg": "$average_rating"}
+            }
+        }
+    ]
+    
+    result = await db.event_providers.aggregate(pipeline).to_list(1)
+    
+    # Get counts by category
+    category_pipeline = [
+        {"$match": {"is_active": True}},
+        {"$group": {"_id": "$category", "count": {"$sum": 1}}}
+    ]
+    category_counts = await db.event_providers.aggregate(category_pipeline).to_list(100)
+    
+    # Get counts by type
+    type_pipeline = [
+        {"$match": {"is_active": True}},
+        {"$group": {"_id": "$provider_type", "count": {"$sum": 1}}}
+    ]
+    type_counts = await db.event_providers.aggregate(type_pipeline).to_list(100)
+    
+    # Get most used providers
+    most_used = await db.event_providers.find(
+        {"is_active": True, "usage_count": {"$gt": 0}}
+    ).sort("usage_count", -1).limit(5).to_list(5)
+    
+    summary_data = result[0] if result else {
+        "total_providers": 0,
+        "total_spent_ars": 0.0,
+        "total_spent_usd": 0.0,
+        "avg_rating": None
+    }
+    
+    summary_data.update({
+        "active_providers": summary_data["total_providers"],
+        "providers_by_category": {item["_id"]: item["count"] for item in category_counts},
+        "providers_by_type": {item["_id"]: item["count"] for item in type_counts},
+        "most_used_providers": [
+            {
+                "id": provider.get("id", str(provider["_id"])),
+                "name": provider["name"],
+                "category": provider["category"],
+                "usage_count": provider.get("usage_count", 0),
+                "total_amount_ars": provider.get("total_amount_ars", 0.0)
+            } for provider in most_used
+        ],
+        "average_provider_rating": summary_data.pop("avg_rating")
+    })
+    
+    return EventProviderSummary(**summary_data)
+
 @app.get("/api/providers/{provider_id}", response_model=Provider)
 async def get_provider(
     provider_id: str,
