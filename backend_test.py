@@ -14,7 +14,7 @@ import os
 # Configuration
 BACKEND_URL = "https://231fb371-62f5-4f18-8306-0edc3eeac6de.preview.emergentagent.com/api"
 TEST_USERNAME = "admin"
-TEST_PASSWORD = "secure123"
+TEST_PASSWORD = "changeme123"
 
 class BackendTester:
     def __init__(self):
