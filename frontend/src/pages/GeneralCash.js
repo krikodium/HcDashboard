@@ -654,7 +654,7 @@ const GeneralCash = () => {
             <p className="theme-text-secondary">Financial entries and transaction management</p>
           </div>
           <button
-            onClick={() => setIsModal Open(true)}
+            onClick={() => setIsModalOpen(true)}
             className="btn-primary"
           >
             Add Entry
