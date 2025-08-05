@@ -1285,4 +1285,385 @@ const ShopCash = () => {
   );
 };
 
+// Inventory Management Component
+const InventoryManagement = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    category: '',
+    provider_name: '',
+    stock_status: '',
+    sort_by: 'provider_name', // Default sort by provider
+    sort_order: 'asc'
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+  const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [inventorySummary, setInventorySummary] = useState(null);
+  const [error, setError] = useState('');
+
+  const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Tableware', 'Seasonal', 'Other'];
+  const stockStatuses = ['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK'];
+  const sortOptions = [
+    { value: 'name', label: 'Name' },
+    { value: 'sku', label: 'SKU' },
+    { value: 'category', label: 'Category' },
+    { value: 'provider_name', label: 'Provider' },
+    { value: 'current_stock', label: 'Stock Level' },
+    { value: 'total_sold', label: 'Most Sold' },
+    { value: 'created_at', label: 'Date Added' }
+  ];
+
+  useEffect(() => {
+    fetchProducts();
+    fetchInventorySummary();
+  }, [filters]);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      
+      if (searchTerm) params.append('search', searchTerm);
+
+      const response = await axios.get(`/api/inventory/products?${params.toString()}`);
+      setProducts(response.data);
+      setError('');
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setError('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchInventorySummary = async () => {
+    try {
+      const response = await axios.get('/api/inventory/summary');
+      setInventorySummary(response.data);
+    } catch (error) {
+      console.error('Error fetching inventory summary:', error);
+    }
+  };
+
+  const handleAddProduct = async (productData) => {
+    try {
+      await axios.post('/api/inventory/products', productData);
+      setIsAddProductModalOpen(false);
+      fetchProducts();
+      fetchInventorySummary();
+    } catch (error) {
+      console.error('Error adding product:', error);
+      setError('Failed to add product');
+    }
+  };
+
+  const handleEditProduct = async (productData) => {
+    try {
+      await axios.put(`/api/inventory/products/${selectedProduct.id}`, productData);
+      setIsEditProductModalOpen(false);
+      setSelectedProduct(null);
+      fetchProducts();
+      fetchInventorySummary();
+    } catch (error) {
+      console.error('Error updating product:', error);
+      setError('Failed to update product');
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await axios.delete(`/api/inventory/products/${productId}`);
+        fetchProducts();
+        fetchInventorySummary();
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        setError('Failed to delete product');
+      }
+    }
+  };
+
+  const handleStockAdjustment = async (productId, adjustment) => {
+    try {
+      await axios.post(`/api/inventory/products/${productId}/stock-adjustment`, adjustment);
+      fetchProducts();
+      fetchInventorySummary();
+    } catch (error) {
+      console.error('Error adjusting stock:', error);
+      setError('Failed to adjust stock');
+    }
+  };
+
+  const formatCurrency = (amount, currency) => {
+    if (!amount) return '-';
+    return `${currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  };
+
+  const getStockStatusBadge = (product) => {
+    const stock = product.current_stock;
+    const threshold = product.min_stock_threshold;
+    
+    if (stock === 0) {
+      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">Out of Stock</span>;
+    } else if (stock <= threshold) {
+      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Low Stock</span>;
+    } else {
+      return <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">In Stock</span>;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      {inventorySummary && (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="card">
+            <h3 className="text-sm font-medium theme-text-secondary">Total Products</h3>
+            <p className="text-2xl font-bold theme-text">{inventorySummary.total_products}</p>
+          </div>
+          <div className="card">
+            <h3 className="text-sm font-medium theme-text-secondary">Low Stock Items</h3>
+            <p className="text-2xl font-bold text-yellow-600">{inventorySummary.low_stock_items}</p>
+          </div>
+          <div className="card">
+            <h3 className="text-sm font-medium theme-text-secondary">Out of Stock</h3>
+            <p className="text-2xl font-bold text-red-600">{inventorySummary.out_of_stock_items}</p>
+          </div>
+          <div className="card">
+            <h3 className="text-sm font-medium theme-text-secondary">Stock Value ARS</h3>
+            <p className="text-2xl font-bold text-blue-600">{formatCurrency(inventorySummary.total_stock_value_ars, 'ARS')}</p>
+          </div>
+          <div className="card">
+            <h3 className="text-sm font-medium theme-text-secondary">Stock Value USD</h3>
+            <p className="text-2xl font-bold text-green-600">{formatCurrency(inventorySummary.total_stock_value_usd, 'USD')}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Controls and Filters */}
+      <div className="card">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <h2 className="text-xl font-semibold theme-text">Inventory Management</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsBulkImportModalOpen(true)}
+              className="btn-secondary"
+            >
+              Bulk Import CSV
+            </button>
+            <button
+              onClick={() => setIsAddProductModalOpen(true)}
+              className="btn-primary"
+            >
+              Add Product
+            </button>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Search</label>
+            <input
+              type="text"
+              className="form-input w-full"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && fetchProducts()}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Category</label>
+            <select
+              className="form-input w-full"
+              value={filters.category}
+              onChange={(e) => setFilters({...filters, category: e.target.value})}
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Provider</label>
+            <input
+              type="text"
+              className="form-input w-full"
+              placeholder="Provider name..."
+              value={filters.provider_name}
+              onChange={(e) => setFilters({...filters, provider_name: e.target.value})}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Stock Status</label>
+            <select
+              className="form-input w-full"
+              value={filters.stock_status}
+              onChange={(e) => setFilters({...filters, stock_status: e.target.value})}
+            >
+              <option value="">All Status</option>
+              <option value="IN_STOCK">In Stock</option>
+              <option value="LOW_STOCK">Low Stock</option>
+              <option value="OUT_OF_STOCK">Out of Stock</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Sort By</label>
+            <select
+              className="form-input w-full"
+              value={filters.sort_by}
+              onChange={(e) => setFilters({...filters, sort_by: e.target.value})}
+            >
+              {sortOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Order</label>
+            <select
+              className="form-input w-full"
+              value={filters.sort_order}
+              onChange={(e) => setFilters({...filters, sort_order: e.target.value})}
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Products Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="table-header">
+                <th className="text-left p-4 font-medium theme-text">SKU</th>
+                <th className="text-left p-4 font-medium theme-text">Product Name</th>
+                <th className="text-left p-4 font-medium theme-text">Category</th>
+                <th className="text-left p-4 font-medium theme-text">Provider</th>
+                <th className="text-center p-4 font-medium theme-text">Stock</th>
+                <th className="text-center p-4 font-medium theme-text">Status</th>
+                <th className="text-right p-4 font-medium theme-text">Cost ARS</th>
+                <th className="text-right p-4 font-medium theme-text">Price ARS</th>
+                <th className="text-center p-4 font-medium theme-text">Total Sold</th>
+                <th className="text-center p-4 font-medium theme-text">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="10" className="p-0">
+                    <TableSkeleton />
+                  </td>
+                </tr>
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan="10" className="text-center py-12 theme-text-secondary">
+                    No products found. Add your first product to get started.
+                  </td>
+                </tr>
+              ) : (
+                products.map((product) => (
+                  <tr key={product.id} className="table-row">
+                    <td className="p-4 theme-text font-mono">{product.sku}</td>
+                    <td className="p-4 theme-text">
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        {product.description && (
+                          <p className="text-xs theme-text-secondary truncate max-w-xs">{product.description}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4 theme-text">{product.category}</td>
+                    <td className="p-4 theme-text">{product.provider_name || '-'}</td>
+                    <td className="p-4 text-center theme-text font-medium">{product.current_stock}</td>
+                    <td className="p-4 text-center">{getStockStatusBadge(product)}</td>
+                    <td className="p-4 theme-text text-right table-cell-numeric">
+                      {formatCurrency(product.cost_ars, 'ARS')}
+                    </td>
+                    <td className="p-4 theme-text text-right table-cell-numeric">
+                      {formatCurrency(product.selling_price_ars, 'ARS')}
+                    </td>
+                    <td className="p-4 text-center theme-text font-medium">{product.total_sold || 0}</td>
+                    <td className="p-4 text-center">
+                      <div className="flex justify-center space-x-1">
+                        <button
+                          onClick={() => {
+                            setSelectedProduct(product);
+                            setIsEditProductModalOpen(true);
+                          }}
+                          className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200"
+                          title="Edit Product"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs hover:bg-red-200"
+                          title="Delete Product"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <ProductModal
+        isOpen={isAddProductModalOpen}
+        onClose={() => setIsAddProductModalOpen(false)}
+        onSubmit={handleAddProduct}
+        title="Add New Product"
+      />
+
+      <ProductModal
+        isOpen={isEditProductModalOpen}
+        onClose={() => {
+          setIsEditProductModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onSubmit={handleEditProduct}
+        product={selectedProduct}
+        title="Edit Product"
+      />
+
+      <BulkImportModal
+        isOpen={isBulkImportModalOpen}
+        onClose={() => setIsBulkImportModalOpen(false)}
+        onSuccess={() => {
+          fetchProducts();
+          fetchInventorySummary();
+        }}
+      />
+    </div>
+  );
+};
+
 export default ShopCash;
