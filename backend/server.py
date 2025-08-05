@@ -1127,6 +1127,110 @@ async def get_inventory_summary(
         products_by_provider=products_by_provider
     )
 
+@app.post("/api/inventory/bulk-import", response_model=BulkImportResult)
+async def bulk_import_products(
+    file: UploadFile = File(...),
+    update_existing: bool = Query(False, description="Update existing products if SKU matches"),
+    current_user: User = Depends(get_current_user)
+):
+    """Bulk import products from CSV file"""
+    import csv
+    import io
+    
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="File must be a CSV")
+    
+    # Read CSV content
+    try:
+        content = await file.read()
+        csv_content = content.decode('utf-8')
+        csv_reader = csv.DictReader(io.StringIO(csv_content))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error reading CSV file: {str(e)}")
+    
+    results = BulkImportResult(
+        total_rows=0,
+        successful_imports=0,
+        failed_imports=0,
+        errors=[],
+        created_products=[],
+        updated_products=[]
+    )
+    
+    for row_num, row in enumerate(csv_reader, start=1):
+        results.total_rows += 1
+        
+        try:
+            # Validate and convert CSV row
+            csv_row = ProductCSVRow(**row)
+            
+            # Convert to ProductCreate format
+            product_data = ProductCreate(
+                sku=csv_row.sku,
+                name=csv_row.name,
+                description=csv_row.description or None,
+                category=ProductCategory(csv_row.category),
+                provider_name=csv_row.provider_name or None,
+                cost_ars=float(csv_row.cost_ars) if csv_row.cost_ars else None,
+                cost_usd=float(csv_row.cost_usd) if csv_row.cost_usd else None,
+                selling_price_ars=float(csv_row.selling_price_ars) if csv_row.selling_price_ars else None,
+                selling_price_usd=float(csv_row.selling_price_usd) if csv_row.selling_price_usd else None,
+                current_stock=int(csv_row.current_stock) if csv_row.current_stock else 0,
+                min_stock_threshold=int(csv_row.min_stock_threshold) if csv_row.min_stock_threshold else 5,
+                location=csv_row.location or None,
+                condition=ProductCondition(csv_row.condition) if csv_row.condition else ProductCondition.NEW,
+                notes=csv_row.notes or None
+            )
+            
+            # Check if product exists
+            existing_product = await db.inventory.find_one({"sku": product_data.sku})
+            
+            if existing_product:
+                if update_existing:
+                    # Update existing product
+                    update_data = product_data.dict(exclude_unset=True)
+                    update_data["updated_at"] = datetime.utcnow()
+                    
+                    await db.inventory.update_one(
+                        {"sku": product_data.sku},
+                        {"$set": update_data}
+                    )
+                    
+                    results.successful_imports += 1
+                    results.updated_products.append(product_data.sku)
+                else:
+                    results.failed_imports += 1
+                    results.errors.append({
+                        "row": str(row_num),
+                        "sku": product_data.sku,
+                        "error": "Product with this SKU already exists"
+                    })
+            else:
+                # Create new product
+                product_dict = product_data.dict()
+                product_dict["created_by"] = current_user.username
+                product_dict["created_at"] = datetime.utcnow()
+                product_dict["updated_at"] = datetime.utcnow()
+                product_dict["id"] = str(__import__('uuid').uuid4())
+                
+                product = Product(**product_dict)
+                product_doc = convert_dates_for_mongo(product.dict(by_alias=True))
+                
+                await db.inventory.insert_one(product_doc)
+                
+                results.successful_imports += 1
+                results.created_products.append(product_data.sku)
+                
+        except Exception as e:
+            results.failed_imports += 1
+            results.errors.append({
+                "row": str(row_num),
+                "sku": row.get("sku", "unknown"),
+                "error": str(e)
+            })
+    
+    return results
+
 # ===============================
 # DECO MOVEMENTS MODULE API
 # ===============================
