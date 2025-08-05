@@ -1265,7 +1265,7 @@ async def get_application_categories(
     cursor = db.application_categories.find(query).sort("usage_count", -1)  # Sort by most used
     categories = await cursor.to_list(length=100)
     
-    return [ApplicationCategory(**category) for category in categories]
+    return [ApplicationCategory.from_mongo(category) for category in categories]
 
 @app.get("/api/application-categories/autocomplete")
 async def get_application_categories_autocomplete(
