@@ -500,15 +500,26 @@ async def create_general_cash_entry(
     result = await db.general_cash.insert_one(entry_doc)
     
     # Send notification if approval needed
-    if entry.needs_approval() and "super-admin" in current_user.roles:
-        # Mock user preferences for notification
-        user_prefs = {
-            "whatsapp": {"enabled": True, "number": "+1234567890"},
-            "email": {"enabled": True, "address": "admin@hermanascaradonti.com"}
-        }
-        amount = (entry.expense_ars or 0) + (entry.expense_usd or 0)
-        currency = "ARS" if entry.expense_ars else "USD"
-        await notify_payment_approval_needed(user_prefs, amount, currency, entry.description)
+    if entry.needs_approval():
+        try:
+            amount = (entry.expense_ars or 0) + (entry.expense_usd or 0)
+            currency = "ARS" if entry.expense_ars else "USD"
+            await notify_payment_approval_needed(DEFAULT_ADMIN_PREFERENCES, amount, currency, entry.description)
+        except Exception as e:
+            logger.error(f"Failed to send approval notification: {e}")
+    
+    # Check for large expenses and notify
+    if entry.expense_ars and entry.expense_ars >= 10000:
+        try:
+            await notify_large_expense(
+                DEFAULT_ADMIN_PREFERENCES,
+                "General Cash",
+                entry.description,
+                entry.expense_ars,
+                "ARS"
+            )
+        except Exception as e:
+            logger.error(f"Failed to send large expense notification: {e}")
     
     return entry
 
