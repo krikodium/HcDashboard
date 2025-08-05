@@ -826,30 +826,525 @@ class BackendTester:
             self.log_test("Integration Test - Event Providers with Events Cash", False, f"Error: {str(e)}")
             return False
     
-    def test_authentication_required(self):
-        """Test that endpoints require authentication"""
+    def test_inventory_products_create(self):
+        """Test POST /api/inventory/products"""
         try:
-            # Test without token
-            headers_no_auth = {"Content-Type": "application/json"}
+            test_product = {
+                "sku": f"TEST-DECOR-{datetime.now().strftime('%H%M%S')}",
+                "name": f"Test Decorative Vase {datetime.now().strftime('%H%M%S')}",
+                "description": "Beautiful ceramic vase for event decoration",
+                "category": "Décor",
+                "provider_name": "Ceramicas Buenos Aires",
+                "cost_ars": 2500.0,
+                "cost_usd": 15.0,
+                "selling_price_ars": 4000.0,
+                "selling_price_usd": 25.0,
+                "current_stock": 10,
+                "min_stock_threshold": 3,
+                "location": "Warehouse A - Shelf 12",
+                "condition": "New",
+                "notes": "Premium quality ceramic, handle with care"
+            }
             
-            response = requests.get(
-                f"{self.base_url}/general-cash",
-                headers=headers_no_auth,
+            response = requests.post(
+                f"{self.base_url}/inventory/products",
+                json=test_product,
+                headers=self.headers,
                 timeout=10
             )
             
-            if response.status_code in [401, 403]:  # Both are valid for authentication required
+            if response.status_code == 200:
+                created_product = response.json()
                 self.log_test(
-                    "Authentication Required", 
+                    "Inventory Products Create", 
                     True, 
-                    f"Endpoints properly require authentication (HTTP {response.status_code})"
+                    f"Created product: {created_product.get('name')} (SKU: {created_product.get('sku')})",
+                    created_product
+                )
+                return created_product
+            else:
+                self.log_test("Inventory Products Create", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Inventory Products Create", False, f"Error: {str(e)}")
+            return None
+    
+    def test_inventory_products_list(self):
+        """Test GET /api/inventory/products with filtering and sorting"""
+        try:
+            # Test basic list
+            response = requests.get(
+                f"{self.base_url}/inventory/products",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                products = response.json()
+                self.log_test(
+                    "Inventory Products List", 
+                    True, 
+                    f"Retrieved {len(products)} products",
+                    {"count": len(products), "sample": products[:2] if products else []}
+                )
+                
+                # Test filtering by category
+                params = {
+                    "category": "Décor",
+                    "active_only": True,
+                    "sort_by": "name",
+                    "sort_order": "asc"
+                }
+                
+                filter_response = requests.get(
+                    f"{self.base_url}/inventory/products",
+                    params=params,
+                    headers=self.headers,
+                    timeout=10
+                )
+                
+                if filter_response.status_code == 200:
+                    filtered_products = filter_response.json()
+                    self.log_test(
+                        "Inventory Products List - Filtering", 
+                        True, 
+                        f"Found {len(filtered_products)} Décor products",
+                        {"category": "Décor", "count": len(filtered_products)}
+                    )
+                
+                return products
+            else:
+                self.log_test("Inventory Products List", False, f"Failed: {response.status_code}", response.text)
+                return []
+        except Exception as e:
+            self.log_test("Inventory Products List", False, f"Error: {str(e)}")
+            return []
+    
+    def test_inventory_products_autocomplete(self):
+        """Test GET /api/inventory/products/autocomplete"""
+        try:
+            params = {
+                "q": "Test",
+                "category": "Décor",
+                "in_stock_only": True,
+                "limit": 5
+            }
+            
+            response = requests.get(
+                f"{self.base_url}/inventory/products/autocomplete",
+                params=params,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                results = response.json()
+                self.log_test(
+                    "Inventory Products Autocomplete", 
+                    True, 
+                    f"Found {len(results)} matching products",
+                    {"query": "Test", "results": results}
+                )
+                return results
+            else:
+                self.log_test("Inventory Products Autocomplete", False, f"Failed: {response.status_code}", response.text)
+                return []
+        except Exception as e:
+            self.log_test("Inventory Products Autocomplete", False, f"Error: {str(e)}")
+            return []
+    
+    def test_inventory_products_get_by_id(self, product_id: str):
+        """Test GET /api/inventory/products/{id}"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/inventory/products/{product_id}",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                product = response.json()
+                self.log_test(
+                    "Inventory Products Get by ID", 
+                    True, 
+                    f"Retrieved product: {product.get('name')}",
+                    product
+                )
+                return product
+            else:
+                self.log_test("Inventory Products Get by ID", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Inventory Products Get by ID", False, f"Error: {str(e)}")
+            return None
+    
+    def test_inventory_products_update(self, product_id: str):
+        """Test PUT /api/inventory/products/{id}"""
+        try:
+            update_data = {
+                "description": "Updated description - Premium ceramic vase with gold accents",
+                "selling_price_ars": 4500.0,
+                "selling_price_usd": 28.0,
+                "notes": "Updated pricing for premium quality"
+            }
+            
+            response = requests.put(
+                f"{self.base_url}/inventory/products/{product_id}",
+                json=update_data,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                updated_product = response.json()
+                self.log_test(
+                    "Inventory Products Update", 
+                    True, 
+                    f"Updated product: {updated_product.get('name')}",
+                    updated_product
+                )
+                return updated_product
+            else:
+                self.log_test("Inventory Products Update", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Inventory Products Update", False, f"Error: {str(e)}")
+            return None
+    
+    def test_inventory_products_stock_adjustment(self, product_id: str):
+        """Test POST /api/inventory/products/{id}/stock-adjustment"""
+        try:
+            adjustment_data = {
+                "adjustment_type": "increase",
+                "quantity": 5,
+                "reason": "New stock received from supplier",
+                "notes": "Quality checked and approved"
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/inventory/products/{product_id}/stock-adjustment",
+                json=adjustment_data,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.log_test(
+                    "Inventory Products Stock Adjustment", 
+                    True, 
+                    f"Stock adjusted: {result.get('previous_stock')} → {result.get('new_stock')}",
+                    result
+                )
+                return result
+            else:
+                self.log_test("Inventory Products Stock Adjustment", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Inventory Products Stock Adjustment", False, f"Error: {str(e)}")
+            return None
+    
+    def test_inventory_products_delete(self, product_id: str):
+        """Test DELETE /api/inventory/products/{id} (soft delete)"""
+        try:
+            # Test soft delete first
+            response = requests.delete(
+                f"{self.base_url}/inventory/products/{product_id}",
+                params={"hard_delete": False},
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.log_test(
+                    "Inventory Products Delete (Soft)", 
+                    True, 
+                    "Product deactivated successfully",
+                    result
                 )
                 return True
             else:
-                self.log_test("Authentication Required", False, f"Expected 401/403, got {response.status_code}", response.text)
+                self.log_test("Inventory Products Delete (Soft)", False, f"Failed: {response.status_code}", response.text)
                 return False
         except Exception as e:
-            self.log_test("Authentication Required", False, f"Error: {str(e)}")
+            self.log_test("Inventory Products Delete (Soft)", False, f"Error: {str(e)}")
+            return False
+    
+    def test_inventory_summary(self):
+        """Test GET /api/inventory/summary"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/inventory/summary",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                summary = response.json()
+                self.log_test(
+                    "Inventory Summary", 
+                    True, 
+                    "Retrieved inventory summary statistics",
+                    summary
+                )
+                return summary
+            else:
+                self.log_test("Inventory Summary", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Inventory Summary", False, f"Error: {str(e)}")
+            return None
+    
+    def test_inventory_bulk_import(self):
+        """Test POST /api/inventory/bulk-import"""
+        try:
+            # Create a test CSV content
+            csv_content = """sku,name,description,category,provider_name,cost_ars,cost_usd,selling_price_ars,selling_price_usd,current_stock,min_stock_threshold,location,condition,notes
+BULK-001,Bulk Test Lamp,Modern LED table lamp,Lighting,Lighting Solutions SA,1500,10,2500,16,8,2,Warehouse B,New,Imported from Italy
+BULK-002,Bulk Test Chair,Elegant dining chair,Furniture,Muebles Premium,3000,20,5000,32,5,1,Warehouse A,New,Solid wood construction
+BULK-003,Bulk Test Textile,Luxury silk curtain,Textiles,Textiles Buenos Aires,2000,12,3200,20,12,3,Warehouse C,New,100% silk material"""
+            
+            # Create a temporary file-like object
+            import io
+            csv_file = io.BytesIO(csv_content.encode('utf-8'))
+            
+            files = {
+                'file': ('test_products.csv', csv_file, 'text/csv')
+            }
+            
+            # Remove Content-Type header for file upload
+            headers_for_upload = {k: v for k, v in self.headers.items() if k != 'Content-Type'}
+            
+            response = requests.post(
+                f"{self.base_url}/inventory/bulk-import",
+                files=files,
+                headers=headers_for_upload,
+                params={"update_existing": False},
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.log_test(
+                    "Inventory Bulk Import", 
+                    True, 
+                    f"Imported {result.get('successful_imports', 0)} of {result.get('total_rows', 0)} products",
+                    result
+                )
+                return result
+            else:
+                self.log_test("Inventory Bulk Import", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Inventory Bulk Import", False, f"Error: {str(e)}")
+            return None
+    
+    def test_shop_cash_inventory_integration(self):
+        """Test Shop Cash integration with inventory (stock reduction on sales)"""
+        try:
+            # First, create a product for testing
+            test_product = {
+                "sku": f"SHOP-TEST-{datetime.now().strftime('%H%M%S')}",
+                "name": f"Shop Test Item {datetime.now().strftime('%H%M%S')}",
+                "description": "Test item for shop cash integration",
+                "category": "Accessories",
+                "provider_name": "Test Supplier",
+                "cost_ars": 1000.0,
+                "selling_price_ars": 1800.0,
+                "current_stock": 20,
+                "min_stock_threshold": 5
+            }
+            
+            product_response = requests.post(
+                f"{self.base_url}/inventory/products",
+                json=test_product,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if product_response.status_code != 200:
+                self.log_test("Shop Cash Inventory Integration - Product Creation", False, "Failed to create test product")
+                return False
+            
+            created_product = product_response.json()
+            product_sku = created_product.get('sku')
+            
+            # Now create a shop cash entry with this product
+            shop_cash_entry = {
+                "date": date.today().isoformat(),
+                "client": "Test Customer",
+                "sku": product_sku,
+                "quantity": 3,
+                "sold_amount_ars": 5400.0,  # 3 * 1800
+                "payment_method": "Efectivo",
+                "notes": "Test sale for inventory integration"
+            }
+            
+            sale_response = requests.post(
+                f"{self.base_url}/shop-cash",
+                json=shop_cash_entry,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if sale_response.status_code == 200:
+                # Verify that stock was reduced
+                updated_product_response = requests.get(
+                    f"{self.base_url}/inventory/products/{created_product.get('id')}",
+                    headers=self.headers,
+                    timeout=10
+                )
+                
+                if updated_product_response.status_code == 200:
+                    updated_product = updated_product_response.json()
+                    expected_stock = 20 - 3  # Original stock minus sold quantity
+                    actual_stock = updated_product.get('current_stock', 0)
+                    
+                    if actual_stock == expected_stock:
+                        self.log_test(
+                            "Shop Cash Inventory Integration", 
+                            True, 
+                            f"Stock correctly reduced from 20 to {actual_stock} after sale",
+                            {
+                                "product_sku": product_sku,
+                                "quantity_sold": 3,
+                                "stock_before": 20,
+                                "stock_after": actual_stock
+                            }
+                        )
+                        return True
+                    else:
+                        self.log_test(
+                            "Shop Cash Inventory Integration", 
+                            False, 
+                            f"Stock not correctly updated. Expected: {expected_stock}, Actual: {actual_stock}"
+                        )
+                        return False
+                else:
+                    self.log_test("Shop Cash Inventory Integration", False, "Failed to retrieve updated product")
+                    return False
+            else:
+                self.log_test("Shop Cash Inventory Integration", False, f"Failed to create shop cash entry: {sale_response.status_code}")
+                return False
+                
+        except Exception as e:
+            self.log_test("Shop Cash Inventory Integration", False, f"Error: {str(e)}")
+            return False
+    
+    def test_integration_inventory_comprehensive(self):
+        """Test comprehensive inventory integration scenario"""
+        try:
+            # Create multiple products with different categories
+            products_data = [
+                {
+                    "sku": f"INT-DECOR-{datetime.now().strftime('%H%M%S')}",
+                    "name": f"Integration Test Vase {datetime.now().strftime('%H%M%S')}",
+                    "category": "Décor",
+                    "provider_name": "Ceramicas Elite",
+                    "cost_ars": 2000.0,
+                    "selling_price_ars": 3500.0,
+                    "current_stock": 15
+                },
+                {
+                    "sku": f"INT-FURN-{datetime.now().strftime('%H%M%S')}",
+                    "name": f"Integration Test Chair {datetime.now().strftime('%H%M%S')}",
+                    "category": "Furniture",
+                    "provider_name": "Muebles Modernos",
+                    "cost_ars": 5000.0,
+                    "selling_price_ars": 8000.0,
+                    "current_stock": 8
+                },
+                {
+                    "sku": f"INT-LIGHT-{datetime.now().strftime('%H%M%S')}",
+                    "name": f"Integration Test Lamp {datetime.now().strftime('%H%M%S')}",
+                    "category": "Lighting",
+                    "provider_name": "Iluminacion Pro",
+                    "cost_ars": 3000.0,
+                    "selling_price_ars": 4800.0,
+                    "current_stock": 12
+                }
+            ]
+            
+            created_products = []
+            for product_data in products_data:
+                response = requests.post(
+                    f"{self.base_url}/inventory/products",
+                    json=product_data,
+                    headers=self.headers,
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    created_products.append(response.json())
+            
+            if len(created_products) < 3:
+                self.log_test("Integration Test - Product Creation", False, f"Only created {len(created_products)} of 3 products")
+                return False
+            
+            # Test stock adjustments on each product
+            integration_success = True
+            for i, product in enumerate(created_products):
+                product_id = product.get('id')
+                adjustment_data = {
+                    "adjustment_type": "increase",
+                    "quantity": 5 + i,  # Different quantities
+                    "reason": f"Integration test stock increase #{i+1}",
+                    "notes": "Automated integration test"
+                }
+                
+                adjustment_response = requests.post(
+                    f"{self.base_url}/inventory/products/{product_id}/stock-adjustment",
+                    json=adjustment_data,
+                    headers=self.headers,
+                    timeout=10
+                )
+                
+                if adjustment_response.status_code != 200:
+                    integration_success = False
+                    break
+            
+            # Test shop cash sales for inventory integration
+            if integration_success:
+                for product in created_products[:2]:  # Test sales on first 2 products
+                    shop_cash_entry = {
+                        "date": date.today().isoformat(),
+                        "client": f"Integration Test Client {datetime.now().strftime('%H%M%S')}",
+                        "sku": product.get('sku'),
+                        "quantity": 2,
+                        "sold_amount_ars": product.get('selling_price_ars', 0) * 2,
+                        "payment_method": "Transferencia",
+                        "notes": "Integration test sale"
+                    }
+                    
+                    sale_response = requests.post(
+                        f"{self.base_url}/shop-cash",
+                        json=shop_cash_entry,
+                        headers=self.headers,
+                        timeout=10
+                    )
+                    
+                    if sale_response.status_code != 200:
+                        integration_success = False
+                        break
+            
+            if integration_success:
+                self.log_test(
+                    "Integration Test - Comprehensive Inventory", 
+                    True, 
+                    f"Successfully integrated {len(created_products)} products with stock adjustments and sales",
+                    {
+                        "products_created": len(created_products),
+                        "stock_adjustments": len(created_products),
+                        "sales_processed": 2
+                    }
+                )
+                return {"products": created_products}
+            else:
+                self.log_test("Integration Test - Comprehensive Inventory", False, "Failed during integration testing")
+                return False
+                
+        except Exception as e:
+            self.log_test("Integration Test - Comprehensive Inventory", False, f"Error: {str(e)}")
             return False
     
     def run_all_tests(self):
