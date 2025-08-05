@@ -32,6 +32,7 @@ from models import *
 from models.deco_movements import DisbursementStatus
 from models.projects import Project, ProjectCreate, ProjectUpdate, ProjectSummary
 from models.providers import Provider, ProviderCreate, ProviderUpdate, ProviderSummary, ProviderAutocomplete
+from models.general_cash import ApplicationCategory, ApplicationCategoryCreate, ApplicationCategorySummary
 from services.notification_service import notification_service, notify_payment_approval_needed, notify_payment_approved
 
 # Setup logging
