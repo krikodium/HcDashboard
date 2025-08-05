@@ -37,6 +37,10 @@ from models.event_providers import (
     EventProvider, EventProviderCreate, EventProviderUpdate, EventProviderSummary, EventProviderAutocomplete,
     EventProviderCategory, EventProviderType, ExpenseCategory, ExpenseCategoryCreate, ExpenseCategorySummary
 )
+from models.inventory import (
+    Product, ProductCreate, ProductUpdate, ProductAutocomplete, InventorySummary, StockAdjustment,
+    StockMovement, BulkImportResult, ProductCSVRow, ProductCategory, StockStatus, ProductCondition
+)
 from services.notification_service import notification_service, notify_payment_approval_needed, notify_payment_approved
 
 # Update events cash ledger entries to include provider information
