@@ -71,7 +71,7 @@ class ProductUpdate(BaseModel):
 
 class StockAdjustment(BaseModel):
     """Model for stock adjustments"""
-    adjustment_type: str = Field(..., regex="^(increase|decrease|set)$")
+    adjustment_type: str = Field(..., pattern="^(increase|decrease|set)$")
     quantity: int = Field(..., ge=0)
     reason: str = Field(..., min_length=1, max_length=200)
     notes: Optional[str] = Field(None, max_length=500)
