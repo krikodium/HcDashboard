@@ -552,7 +552,7 @@ class BackendTester:
                     "payment_terms": "30% anticipo, 40% a 15 días, 30% contra entrega"
                 },
                 "initial_payment": {
-                    "payment_method": "Bank Transfer",
+                    "payment_method": "Transferencia",
                     "date": date.today().isoformat(),
                     "detail": "Anticipo inicial del evento",
                     "income_ars": 45000.0
