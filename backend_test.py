@@ -759,7 +759,7 @@ class BackendTester:
                     "event_date": "2024-12-30",
                     "organizer": "Paz Caradonti",
                     "client_name": "Empresa ABC",
-                    "event_type": "Corporate",
+                    "event_type": "Corporate Event",
                     "province": "Buenos Aires",
                     "localidad": "Recoleta",
                     "total_budget_no_iva": 200000.0,
