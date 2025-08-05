@@ -782,7 +782,7 @@ async def create_shop_cash_entry(
     entry_data: ShopCashEntryCreate,
     current_user: User = Depends(get_current_user)
 ):
-    """Create a new shop cash entry"""
+    """Create a new shop cash entry with inventory integration"""
     entry_dict = entry_data.dict()
     entry_dict["created_by"] = current_user.username
     entry_dict["created_at"] = datetime.utcnow()
@@ -796,6 +796,47 @@ async def create_shop_cash_entry(
     entry_doc = convert_dates_for_mongo(entry.dict(by_alias=True))
     
     await db.shop_cash.insert_one(entry_doc)
+    
+    # Update inventory if SKU is provided
+    if entry_data.sku:
+        product = await db.inventory.find_one({"sku": entry_data.sku})
+        if product:
+            # Update product sales metrics
+            await db.inventory.update_one(
+                {"sku": entry_data.sku},
+                {
+                    "$inc": {
+                        "total_sold": entry_data.quantity,
+                        "total_revenue_ars": entry_data.sold_amount_ars or 0,
+                        "total_revenue_usd": entry_data.sold_amount_usd or 0,
+                        "current_stock": -entry_data.quantity  # Reduce stock
+                    },
+                    "$set": {
+                        "last_sold_date": datetime.utcnow(),
+                        "updated_at": datetime.utcnow()
+                    }
+                }
+            )
+            
+            # Create stock movement record
+            movement = StockMovement(
+                id=str(__import__('uuid').uuid4()),
+                product_id=product.get("id", str(product["_id"])),
+                product_sku=product["sku"],
+                product_name=product["name"],
+                movement_type="sale",
+                quantity_change=-entry_data.quantity,
+                previous_stock=product.get("current_stock", 0),
+                new_stock=max(0, product.get("current_stock", 0) - entry_data.quantity),
+                reason=f"Sale to {entry_data.client}",
+                reference_id=entry.id,
+                created_by=current_user.username,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            
+            await db.stock_movements.insert_one(convert_dates_for_mongo(movement.dict(by_alias=True)))
+    
     return entry
 
 @app.get("/api/shop-cash", response_model=List[ShopCashEntry])
