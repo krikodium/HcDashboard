@@ -85,7 +85,7 @@ class ApplicationCategory(BaseDocument):
 
 class ApplicationCategoryCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    category_type: str = Field(..., regex="^(Income|Expense|Both)$")
+    category_type: str = Field(..., pattern="^(Income|Expense|Both)$")
     description: Optional[str] = Field(None, max_length=500)
 
 class ApplicationCategorySummary(BaseModel):
