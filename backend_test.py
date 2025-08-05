@@ -611,7 +611,7 @@ class BackendTester:
         """Test POST /api/events-cash/{event_id}/ledger with enhanced model"""
         try:
             test_entry = {
-                "payment_method": "Cash",
+                "payment_method": "Efectivo",
                 "date": date.today().isoformat(),
                 "detail": "Pago a proveedor de catering",
                 "expense_ars": 25000.0,
