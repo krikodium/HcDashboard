@@ -1270,7 +1270,7 @@ async def get_application_categories(
 @app.get("/api/application-categories/autocomplete")
 async def get_application_categories_autocomplete(
     q: str = Query(..., min_length=1, description="Search query"),
-    category_type: Optional[str] = Query(None, regex="^(Income|Expense|Both)$"),
+    category_type: Optional[str] = Query(None, pattern="^(Income|Expense|Both)$"),
     limit: int = Query(10, ge=1, le=50),
     current_user: User = Depends(get_current_user)
 ):
