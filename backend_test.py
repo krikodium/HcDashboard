@@ -41,6 +41,29 @@ class BackendTester:
     def authenticate(self) -> bool:
         """Authenticate and get JWT token"""
         try:
+            # First try to register the user (in case it doesn't exist)
+            register_data = {
+                "username": TEST_USERNAME,
+                "password": TEST_PASSWORD,
+                "roles": ["super-admin"]
+            }
+            
+            register_response = requests.post(
+                f"{self.base_url}/auth/register",
+                json=register_data,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            # Registration might fail if user exists, that's okay
+            if register_response.status_code == 200:
+                print(f"✅ User {TEST_USERNAME} registered successfully")
+            elif register_response.status_code == 400:
+                print(f"ℹ️  User {TEST_USERNAME} already exists")
+            else:
+                print(f"⚠️  Registration response: {register_response.status_code}")
+            
+            # Now try to login
             login_data = {
                 "username": TEST_USERNAME,
                 "password": TEST_PASSWORD
