@@ -827,8 +827,8 @@ class BackendTester:
             return False
     
     def run_all_tests(self):
-        """Run all backend tests"""
-        print("🚀 Starting Backend API Tests for General Cash Module and Application Categories")
+        """Run all backend tests for Phase 2.2: Event Providers and Enhanced Events Cash"""
+        print("🚀 Starting Backend API Tests for Phase 2.2: Event Providers and Enhanced Events Cash")
         print("=" * 80)
         
         # Test authentication first
@@ -842,7 +842,53 @@ class BackendTester:
         # Test authentication requirement
         self.test_authentication_required()
         
-        # Test Application Categories API
+        # Test Event Providers API
+        print("\n🏢 Testing Event Providers API...")
+        created_provider = self.test_event_providers_create()
+        providers = self.test_event_providers_list()
+        self.test_event_providers_filtering()
+        self.test_event_providers_autocomplete()
+        self.test_event_providers_summary()
+        
+        # Test increment usage if we have a provider
+        if providers and len(providers) > 0:
+            provider_id = providers[0].get('id') or providers[0].get('_id')
+            if provider_id:
+                self.test_event_providers_increment_usage(provider_id)
+            else:
+                print("⚠️  No provider ID found for increment usage test")
+        
+        # Test Enhanced Events Cash API
+        print("\n💰 Testing Enhanced Events Cash API...")
+        created_event = self.test_events_cash_create()
+        events = self.test_events_cash_list()
+        
+        # Test enhanced ledger entry functionality
+        if created_event:
+            event_id = created_event.get('id') or created_event.get('_id')
+            provider_id = created_provider.get('id') if created_provider else None
+            
+            if event_id:
+                # Test enhanced ledger entry with provider integration
+                self.test_events_cash_add_ledger_entry_enhanced(event_id, provider_id)
+                
+                # Test client payment processing
+                self.test_events_cash_client_payment_processing(event_id)
+                
+                # Test expense summary reporting
+                self.test_events_cash_expenses_summary(event_id)
+        
+        # Test Integration Scenarios
+        print("\n🔗 Testing Integration Scenarios...")
+        integration_result = self.test_integration_event_providers_with_events_cash()
+        
+        # Test expense summary with integration data
+        if integration_result and isinstance(integration_result, dict):
+            event_id = integration_result.get('event_id')
+            if event_id:
+                self.test_events_cash_expenses_summary(event_id)
+        
+        # Test Application Categories API (existing functionality)
         print("\n📂 Testing Application Categories API...")
         categories = self.test_application_categories_list()
         created_category = self.test_application_categories_create()
@@ -854,11 +900,8 @@ class BackendTester:
             category_id = categories[0].get('id') or categories[0].get('_id')
             if category_id:
                 self.test_application_categories_increment_usage(category_id)
-            else:
-                print("⚠️  No category ID found for increment usage test")
-                print(f"   Category keys: {list(categories[0].keys()) if categories else 'No categories'}")
         
-        # Test General Cash API
+        # Test General Cash API (existing functionality)
         print("\n💰 Testing General Cash API...")
         entries = self.test_general_cash_list()
         created_entry = self.test_general_cash_create()
