@@ -8,6 +8,10 @@ import os
 import asyncio
 sys.path.append("/app/backend")
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv("/app/backend/.env")
+
 # Set environment to ensure proper imports
 os.environ["PYTHONPATH"] = "/app/backend"
 
