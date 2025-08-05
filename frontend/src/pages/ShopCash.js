@@ -1080,206 +1080,243 @@ const ShopCash = () => {
             <h1 className="text-3xl font-bold theme-text">Shop Cash</h1>
             <p className="theme-text-secondary">Retail sales and inventory management</p>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="btn-primary"
-          >
-            Add New Sale
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
-
-        {/* Summary Cards */}
-        {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Total Sales</h3>
-              <p className="text-2xl font-bold theme-text">{summary.total_sales}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Revenue ARS</h3>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(summary.total_revenue_ars, 'ARS')}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Profit ARS</h3>
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(summary.total_profit_ars, 'ARS')}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Commission ARS</h3>
-              <p className="text-2xl font-bold text-purple-600">{formatCurrency(summary.total_commission_ars, 'ARS')}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Monthly Profit Chart */}
-          {chartData.length > 0 && (
-            <div className="card">
-              <div className="border-b theme-border pb-4 mb-6">
-                <h2 className="text-xl font-semibold theme-text">Monthly Profit Trend (ARS)</h2>
-                <p className="text-sm theme-text-secondary">Track profit performance over time</p>
-              </div>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
-                      axisLine={{ stroke: '#d1d5db' }}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
-                      axisLine={{ stroke: '#d1d5db' }}
-                      tickFormatter={(value) => `${value.toLocaleString()}`}
-                    />
-                    <Tooltip 
-                      formatter={(value) => [`ARS ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Profit']}
-                      labelStyle={{ color: '#374151' }}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '0.5rem'
-                      }}
-                    />
-                    <Bar 
-                      dataKey="profit_ars" 
-                      fill="#008080" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
-          {/* Coordinator Performance Chart */}
-          {coordinatorData.length > 0 && (
-            <div className="card">
-              <div className="border-b theme-border pb-4 mb-6">
-                <h2 className="text-xl font-semibold theme-text">Profit by Coordinator</h2>
-                <p className="text-sm theme-text-secondary">Performance comparison across coordinators</p>
-              </div>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={coordinatorData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="profit_ars"
-                    >
-                      {coordinatorData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={`hsl(${180 + (index * 45)}, 60%, 50%)`} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value) => [`ARS ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Profit']}
-                      labelStyle={{ color: '#374151' }}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '0.5rem'
-                      }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+          {activeTab === 'sales' && (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="btn-primary"
+            >
+              Add New Sale
+            </button>
           )}
         </div>
 
-        {/* Sales Table */}
-        <div className="card">
-          <div className="border-b theme-border pb-4 mb-4">
-            <h2 className="text-xl font-semibold theme-text">Sales Records</h2>
+        {/* Tab Navigation */}
+        <div className="card mb-6">
+          <div className="border-b theme-border">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('sales')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'sales'
+                    ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Sales Management
+              </button>
+              <button
+                onClick={() => setActiveTab('inventory')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'inventory'
+                    ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                Inventory Management
+              </button>
+            </nav>
           </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="table-header">
-                  <th className="text-left p-4 font-medium theme-text">Date</th>
-                  <th className="text-left p-4 font-medium theme-text">Client</th>
-                  <th className="text-left p-4 font-medium theme-text">Item</th>
-                  <th className="text-left p-4 font-medium theme-text">Coordinator</th>
-                  <th className="text-right p-4 font-medium theme-text">Sold ARS</th>
-                  <th className="text-right p-4 font-medium theme-text">Cost ARS</th>
-                  <th className="text-right p-4 font-medium theme-text">Net Sale</th>
-                  <th className="text-right p-4 font-medium theme-text">Profit</th>
-                  <th className="text-center p-4 font-medium theme-text">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="9" className="p-0">
-                      <TableSkeleton />
-                    </td>
-                  </tr>
-                ) : entries.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="text-center py-12 theme-text-secondary">
-                      No sales found. Create your first sale to get started.
-                    </td>
-                  </tr>
-                ) : (
-                  entries.map((entry) => (
-                    <tr key={entry._id} className="table-row">
-                      <td className="p-4 theme-text">
-                        {format(new Date(entry.date), 'dd/MM/yyyy')}
-                      </td>
-                      <td className="p-4 theme-text">{entry.client}</td>
-                      <td className="p-4 theme-text">
-                        <div>
-                          <p className="font-medium">{entry.item_description}</p>
-                          {entry.sku && <p className="text-xs theme-text-secondary">SKU: {entry.sku}</p>}
-                        </div>
-                      </td>
-                      <td className="p-4 theme-text">{entry.internal_coordinator}</td>
-                      <td className="p-4 theme-text text-right table-cell-numeric">
-                        {formatCurrency(entry.sold_amount_ars, 'ARS')}
-                      </td>
-                      <td className="p-4 theme-text text-right table-cell-numeric">
-                        {formatCurrency(entry.cost_ars, 'ARS')}
-                      </td>
-                      <td className="p-4 theme-text text-right table-cell-numeric">
-                        {formatCurrency(entry.net_sale_ars, 'ARS')}
-                      </td>
-                      <td className="p-4 theme-text text-right table-cell-numeric font-medium text-green-600">
-                        {formatCurrency(entry.profit_ars, 'ARS')}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className={getStatusBadge(entry.status)}>
-                          {entry.status || 'Pending'}
-                        </span>
-                      </td>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'sales' ? (
+          <>
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+                {error}
+              </div>
+            )}
+
+            {/* Summary Cards */}
+            {summary && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="card">
+                  <h3 className="text-sm font-medium theme-text-secondary">Total Sales</h3>
+                  <p className="text-2xl font-bold theme-text">{summary.total_sales}</p>
+                </div>
+                <div className="card">
+                  <h3 className="text-sm font-medium theme-text-secondary">Revenue ARS</h3>
+                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(summary.total_revenue_ars, 'ARS')}</p>
+                </div>
+                <div className="card">
+                  <h3 className="text-sm font-medium theme-text-secondary">Profit ARS</h3>
+                  <p className="text-2xl font-bold text-green-600">{formatCurrency(summary.total_profit_ars, 'ARS')}</p>
+                </div>
+                <div className="card">
+                  <h3 className="text-sm font-medium theme-text-secondary">Commission ARS</h3>
+                  <p className="text-2xl font-bold text-purple-600">{formatCurrency(summary.total_commission_ars, 'ARS')}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Monthly Profit Chart */}
+              {chartData.length > 0 && (
+                <div className="card">
+                  <div className="border-b theme-border pb-4 mb-6">
+                    <h2 className="text-xl font-semibold theme-text">Monthly Profit Trend (ARS)</h2>
+                    <p className="text-sm theme-text-secondary">Track profit performance over time</p>
+                  </div>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis 
+                          dataKey="month" 
+                          tick={{ fontSize: 12, fill: '#6b7280' }}
+                          axisLine={{ stroke: '#d1d5db' }}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12, fill: '#6b7280' }}
+                          axisLine={{ stroke: '#d1d5db' }}
+                          tickFormatter={(value) => `${value.toLocaleString()}`}
+                        />
+                        <Tooltip 
+                          formatter={(value) => [`ARS ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Profit']}
+                          labelStyle={{ color: '#374151' }}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '0.5rem'
+                          }}
+                        />
+                        <Bar 
+                          dataKey="profit_ars" 
+                          fill="#008080" 
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Coordinator Performance Chart */}
+              {coordinatorData.length > 0 && (
+                <div className="card">
+                  <div className="border-b theme-border pb-4 mb-6">
+                    <h2 className="text-xl font-semibold theme-text">Profit by Coordinator</h2>
+                    <p className="text-sm theme-text-secondary">Performance comparison across coordinators</p>
+                  </div>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={coordinatorData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={2}
+                          dataKey="profit_ars"
+                        >
+                          {coordinatorData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={`hsl(${180 + (index * 45)}, 60%, 50%)`} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value) => [`ARS ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Profit']}
+                          labelStyle={{ color: '#374151' }}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '0.5rem'
+                          }}
+                        />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sales Table */}
+            <div className="card">
+              <div className="border-b theme-border pb-4 mb-4">
+                <h2 className="text-xl font-semibold theme-text">Sales Records</h2>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="table-header">
+                      <th className="text-left p-4 font-medium theme-text">Date</th>
+                      <th className="text-left p-4 font-medium theme-text">Client</th>
+                      <th className="text-left p-4 font-medium theme-text">Item</th>
+                      <th className="text-left p-4 font-medium theme-text">Coordinator</th>
+                      <th className="text-right p-4 font-medium theme-text">Sold ARS</th>
+                      <th className="text-right p-4 font-medium theme-text">Cost ARS</th>
+                      <th className="text-right p-4 font-medium theme-text">Net Sale</th>
+                      <th className="text-right p-4 font-medium theme-text">Profit</th>
+                      <th className="text-center p-4 font-medium theme-text">Status</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="9" className="p-0">
+                          <TableSkeleton />
+                        </td>
+                      </tr>
+                    ) : entries.length === 0 ? (
+                      <tr>
+                        <td colSpan="9" className="text-center py-12 theme-text-secondary">
+                          No sales found. Create your first sale to get started.
+                        </td>
+                      </tr>
+                    ) : (
+                      entries.map((entry) => (
+                        <tr key={entry._id} className="table-row">
+                          <td className="p-4 theme-text">
+                            {format(new Date(entry.date), 'dd/MM/yyyy')}
+                          </td>
+                          <td className="p-4 theme-text">{entry.client}</td>
+                          <td className="p-4 theme-text">
+                            <div>
+                              <p className="font-medium">{entry.item_description}</p>
+                              {entry.sku && <p className="text-xs theme-text-secondary">SKU: {entry.sku}</p>}
+                            </div>
+                          </td>
+                          <td className="p-4 theme-text">{entry.internal_coordinator}</td>
+                          <td className="p-4 theme-text text-right table-cell-numeric">
+                            {formatCurrency(entry.sold_amount_ars, 'ARS')}
+                          </td>
+                          <td className="p-4 theme-text text-right table-cell-numeric">
+                            {formatCurrency(entry.cost_ars, 'ARS')}
+                          </td>
+                          <td className="p-4 theme-text text-right table-cell-numeric">
+                            {formatCurrency(entry.net_sale_ars, 'ARS')}
+                          </td>
+                          <td className="p-4 theme-text text-right table-cell-numeric font-medium text-green-600">
+                            {formatCurrency(entry.profit_ars, 'ARS')}
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className={getStatusBadge(entry.status)}>
+                              {entry.status || 'Pending'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-        {/* Sale Entry Modal */}
-        <SaleEntryModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleCreateEntry}
-          loading={isSubmitting}
-        />
+            {/* Sale Entry Modal */}
+            <SaleEntryModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              onSubmit={handleCreateEntry}
+              loading={isSubmitting}
+            />
+          </>
+        ) : (
+          <InventoryManagement />
+        )}
       </div>
     </div>
   );
