@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 
 // Loading skeleton component
 const TableSkeleton = () => (
   <div className="animate-pulse">
-    {[...Array(5)].map((_, i) => (
+    {[...Array(3)].map((_, i) => (
       <div key={i} className="border-b theme-border">
-        <div className="grid grid-cols-8 gap-4 p-4">
-          {[...Array(8)].map((_, j) => (
+        <div className="grid grid-cols-7 gap-4 p-4">
+          {[...Array(7)].map((_, j) => (
             <div key={j} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
           ))}
         </div>
@@ -18,11 +18,221 @@ const TableSkeleton = () => (
   </div>
 );
 
-// Movement Entry Form Modal
-const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
+// Deco Project Header Component (similar to EventHeader)
+const DecoProjectHeader = ({ project }) => {
+  if (!project) return null;
+
+  return (
+    <div className="card mb-6">
+      <div className="border-b theme-border pb-4 mb-4">
+        <h2 className="text-xl font-semibold theme-text">Project Details</h2>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div>
+          <label className="block text-sm font-medium theme-text-secondary mb-1">Project Name</label>
+          <p className="theme-text font-semibold text-lg">{project.name}</p>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium theme-text-secondary mb-1">Project Type</label>
+          <p className="theme-text font-medium">{project.project_type}</p>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium theme-text-secondary mb-1">Client Name</label>
+          <p className="theme-text font-medium">{project.client_name || 'Not specified'}</p>
+        </div>
+        
+        <div>
+          <label className="block text-sm font-medium theme-text-secondary mb-1">Status</label>
+          <span className={`status-badge ${
+            project.status === 'Active' ? 'status-success' : 
+            project.status === 'Completed' ? 'status-info' : 
+            'status-warning'
+          }`}>
+            {project.status}
+          </span>
+        </div>
+        
+        {project.start_date && (
+          <div>
+            <label className="block text-sm font-medium theme-text-secondary mb-1">Start Date</label>
+            <p className="theme-text font-medium">{format(new Date(project.start_date), 'dd/MM/yyyy')}</p>
+          </div>
+        )}
+        
+        {project.location && (
+          <div>
+            <label className="block text-sm font-medium theme-text-secondary mb-1">Location</label>
+            <p className="theme-text font-medium">{project.location}</p>
+          </div>
+        )}
+        
+        <div>
+          <label className="block text-sm font-medium theme-text-secondary mb-1">Total Movements</label>
+          <p className="theme-text font-medium">{project.movements_count || 0}</p>
+        </div>
+        
+        {project.description && (
+          <div className="col-span-full">
+            <label className="block text-sm font-medium theme-text-secondary mb-1">Description</label>
+            <p className="theme-text">{project.description}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Financial Status Panel (similar to Events Cash payment status)
+const FinancialStatusPanel = ({ project, movements }) => {
+  if (!project) return null;
+
+  const totalIncomeUSD = movements.reduce((sum, m) => sum + (m.income_usd || 0), 0);
+  const totalExpenseUSD = movements.reduce((sum, m) => sum + (m.expense_usd || 0), 0);
+  const totalIncomeARS = movements.reduce((sum, m) => sum + (m.income_ars || 0), 0);
+  const totalExpenseARS = movements.reduce((sum, m) => sum + (m.expense_ars || 0), 0);
+  
+  const balanceUSD = totalIncomeUSD - totalExpenseUSD;
+  const balanceARS = totalIncomeARS - totalExpenseARS;
+  
+  const budgetUtilizationUSD = project.budget_usd ? (totalExpenseUSD / project.budget_usd) * 100 : 0;
+  const budgetUtilizationARS = project.budget_ars ? (totalExpenseARS / project.budget_ars) * 100 : 0;
+
+  return (
+    <div className="card mb-6">
+      <div className="border-b theme-border pb-4 mb-4">
+        <h2 className="text-xl font-semibold theme-text">Financial Status</h2>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* USD Section */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+          <h3 className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">USD Financial Summary</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Total Income:</span>
+              <span className="font-semibold text-green-600">${totalIncomeUSD.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Total Expense:</span>
+              <span className="font-semibold text-red-600">${totalExpenseUSD.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between border-t pt-2">
+              <span className="text-sm font-medium theme-text">Balance:</span>
+              <span className={`font-bold ${balanceUSD >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                ${balanceUSD.toFixed(2)}
+              </span>
+            </div>
+            {project.budget_usd && (
+              <div className="flex justify-between">
+                <span className="text-sm theme-text-secondary">Budget Used:</span>
+                <span className={`font-medium ${budgetUtilizationUSD > 100 ? 'text-red-600' : 'text-blue-600'}`}>
+                  {budgetUtilizationUSD.toFixed(1)}%
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ARS Section */}
+        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+          <h3 className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">ARS Financial Summary</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Total Income:</span>
+              <span className="font-semibold text-green-600">AR$ {totalIncomeARS.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Total Expense:</span>
+              <span className="font-semibold text-red-600">AR$ {totalExpenseARS.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between border-t pt-2">
+              <span className="text-sm font-medium theme-text">Balance:</span>
+              <span className={`font-bold ${balanceARS >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                AR$ {balanceARS.toFixed(2)}
+              </span>
+            </div>
+            {project.budget_ars && (
+              <div className="flex justify-between">
+                <span className="text-sm theme-text-secondary">Budget Used:</span>
+                <span className={`font-medium ${budgetUtilizationARS > 100 ? 'text-red-600' : 'text-blue-600'}`}>
+                  {budgetUtilizationARS.toFixed(1)}%
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Project Health Indicators */}
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+          <h3 className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2">Project Health</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Active Days:</span>
+              <span className="font-medium theme-text">
+                {project.start_date ? Math.ceil((new Date() - new Date(project.start_date)) / (1000 * 60 * 60 * 24)) : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Movements:</span>
+              <span className="font-medium theme-text">{movements.length}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm theme-text-secondary">Avg per Movement:</span>
+              <span className="font-medium theme-text">
+                ${movements.length > 0 ? (totalExpenseUSD / movements.length).toFixed(2) : '0.00'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Budget Status */}
+        {(project.budget_usd || project.budget_ars) && (
+          <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+            <h3 className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2">Budget Status</h3>
+            <div className="space-y-2">
+              {project.budget_usd && (
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm theme-text-secondary">USD Budget:</span>
+                    <span className="font-medium theme-text">${project.budget_usd.toFixed(2)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${budgetUtilizationUSD > 100 ? 'bg-red-500' : budgetUtilizationUSD > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(budgetUtilizationUSD, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+              {project.budget_ars && (
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm theme-text-secondary">ARS Budget:</span>
+                    <span className="font-medium theme-text">AR$ {project.budget_ars.toFixed(2)}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${budgetUtilizationARS > 100 ? 'bg-red-500' : budgetUtilizationARS > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
+                      style={{ width: `${Math.min(budgetUtilizationARS, 100)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Movement Entry Modal
+const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, selectedProject }) => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    project_name: '',
     description: '',
     income_usd: '',
     expense_usd: '',
@@ -33,17 +243,11 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) =>
     notes: ''
   });
 
-  // Set default project when projects are loaded
-  useEffect(() => {
-    if (projects.length > 0 && !formData.project_name) {
-      setFormData(prev => ({...prev, project_name: projects[0].name}));
-    }
-  }, [projects, formData.project_name]);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const submitData = {
       ...formData,
+      project_name: selectedProject?.name,
       income_usd: formData.income_usd ? parseFloat(formData.income_usd) : null,
       expense_usd: formData.expense_usd ? parseFloat(formData.expense_usd) : null,
       income_ars: formData.income_ars ? parseFloat(formData.income_ars) : null,
@@ -52,22 +256,38 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) =>
     onSubmit(submitData);
   };
 
+  const resetForm = () => {
+    setFormData({
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+      income_usd: '',
+      expense_usd: '',
+      income_ars: '',
+      expense_ars: '',
+      supplier: '',
+      reference_number: '',
+      notes: ''
+    });
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="card max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold theme-text">New Deco Movement</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <div className="flex justify-between items-center mb-6 p-6 border-b theme-border">
+          <h2 className="text-2xl font-bold theme-text">New Movement Entry</h2>
+          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl">
             ×
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium theme-text mb-2">Date</label>
@@ -82,17 +302,12 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) =>
             
             <div>
               <label className="block text-sm font-medium theme-text mb-2">Project</label>
-              <select
-                className="form-input w-full"
-                value={formData.project_name}
-                onChange={(e) => setFormData({...formData, project_name: e.target.value})}
-                required
-              >
-                <option value="">Select a project</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.name}>{project.name}</option>
-                ))}
-              </select>
+              <input
+                type="text"
+                className="form-input w-full bg-gray-100 dark:bg-gray-700"
+                value={selectedProject?.name || ''}
+                disabled
+              />
             </div>
           </div>
 
@@ -203,214 +418,6 @@ const MovementEntryModal = ({ isOpen, onClose, onSubmit, loading, projects }) =>
             </button>
             <button
               type="button"
-              onClick={onClose}
-              className="btn-secondary flex-1"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Project Creation Modal Component
-const ProjectCreateModal = ({ isOpen, onClose, onSubmit, loading }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    project_type: 'Deco',
-    start_date: '',
-    end_date: '',
-    budget_usd: '',
-    budget_ars: '',
-    client_name: '',
-    location: '',
-    notes: ''
-  });
-
-  const projectTypes = ['Deco', 'Event', 'Mixed'];
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const submitData = {
-      ...formData,
-      budget_usd: formData.budget_usd ? parseFloat(formData.budget_usd) : null,
-      budget_ars: formData.budget_ars ? parseFloat(formData.budget_ars) : null,
-      start_date: formData.start_date || null,
-      end_date: formData.end_date || null,
-    };
-    onSubmit(submitData);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      project_type: 'Deco',
-      start_date: '',
-      end_date: '',
-      budget_usd: '',
-      budget_ars: '',
-      client_name: '',
-      location: '',
-      notes: ''
-    });
-  };
-
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="card max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold theme-text">Create New Project</h2>
-          <button
-            onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Project Name *</label>
-              <input
-                type="text"
-                className="form-input w-full"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="Enter project name"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Project Type</label>
-              <select
-                className="form-input w-full"
-                value={formData.project_type}
-                onChange={(e) => setFormData({...formData, project_type: e.target.value})}
-              >
-                {projectTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium theme-text mb-2">Description</label>
-            <textarea
-              className="form-input w-full"
-              rows="3"
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Project description"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Client Name</label>
-              <input
-                type="text"
-                className="form-input w-full"
-                value={formData.client_name}
-                onChange={(e) => setFormData({...formData, client_name: e.target.value})}
-                placeholder="Client name"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Location</label>
-              <input
-                type="text"
-                className="form-input w-full"
-                value={formData.location}
-                onChange={(e) => setFormData({...formData, location: e.target.value})}
-                placeholder="Project location"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Start Date</label>
-              <input
-                type="date"
-                className="form-input w-full"
-                value={formData.start_date}
-                onChange={(e) => setFormData({...formData, start_date: e.target.value})}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">End Date</label>
-              <input
-                type="date"
-                className="form-input w-full"
-                value={formData.end_date}
-                onChange={(e) => setFormData({...formData, end_date: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Budget USD</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-input w-full"
-                value={formData.budget_usd}
-                onChange={(e) => setFormData({...formData, budget_usd: e.target.value})}
-                placeholder="0.00"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Budget ARS</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-input w-full"
-                value={formData.budget_ars}
-                onChange={(e) => setFormData({...formData, budget_ars: e.target.value})}
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium theme-text mb-2">Notes</label>
-            <textarea
-              className="form-input w-full"
-              rows="3"
-              value={formData.notes}
-              onChange={(e) => setFormData({...formData, notes: e.target.value})}
-              placeholder="Additional project notes"
-            />
-          </div>
-
-          <div className="flex space-x-4 pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary flex-1 disabled:opacity-50"
-            >
-              {loading ? 'Creating...' : 'Create Project'}
-            </button>
-            <button
-              type="button"
               onClick={handleClose}
               className="btn-secondary flex-1"
             >
@@ -422,178 +429,191 @@ const ProjectCreateModal = ({ isOpen, onClose, onSubmit, loading }) => {
     </div>
   );
 };
-const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading, projects }) => {
+
+// Profits and Fees Management Tab Component
+const ProfitsFeesTab = ({ selectedProject, onUpdateProject }) => {
   const [formData, setFormData] = useState({
-    project_name: '',
-    disbursement_type: 'Supplier Payment',
-    amount_usd: '',
-    amount_ars: '',
-    supplier: '',
-    description: '',
-    due_date: '',
-    priority: 'Normal',
-    supporting_documents: []
+    profit_percentage: '',
+    fee_percentage: '',
+    profit_amount_usd: '',
+    profit_amount_ars: '',
+    fee_amount_usd: '',
+    fee_amount_ars: '',
+    profit_notes: '',
+    fee_notes: ''
   });
+  const [loading, setLoading] = useState(false);
 
-  // Set default project when projects are loaded
   useEffect(() => {
-    if (projects.length > 0 && !formData.project_name) {
-      setFormData(prev => ({...prev, project_name: projects[0].name}));
+    if (selectedProject) {
+      setFormData({
+        profit_percentage: selectedProject.profit_percentage || '',
+        fee_percentage: selectedProject.fee_percentage || '',
+        profit_amount_usd: selectedProject.profit_amount_usd || '',
+        profit_amount_ars: selectedProject.profit_amount_ars || '',
+        fee_amount_usd: selectedProject.fee_amount_usd || '',
+        fee_amount_ars: selectedProject.fee_amount_ars || '',
+        profit_notes: selectedProject.profit_notes || '',
+        fee_notes: selectedProject.fee_notes || ''
+      });
     }
-  }, [projects, formData.project_name]);
+  }, [selectedProject]);
 
-  const disbursementTypes = [
-    'Supplier Payment', 'Materials', 'Labor', 'Transport', 'Utilities', 'Maintenance', 'Other'
-  ];
-
-  const priorities = ['Low', 'Normal', 'High', 'Urgent'];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const submitData = {
-      ...formData,
-      amount_usd: formData.amount_usd ? parseFloat(formData.amount_usd) : null,
-      amount_ars: formData.amount_ars ? parseFloat(formData.amount_ars) : null,
-    };
-    onSubmit(submitData);
+    if (!selectedProject) return;
+
+    try {
+      setLoading(true);
+      const updateData = {
+        profit_percentage: formData.profit_percentage ? parseFloat(formData.profit_percentage) : null,
+        fee_percentage: formData.fee_percentage ? parseFloat(formData.fee_percentage) : null,
+        profit_amount_usd: formData.profit_amount_usd ? parseFloat(formData.profit_amount_usd) : null,
+        profit_amount_ars: formData.profit_amount_ars ? parseFloat(formData.profit_amount_ars) : null,
+        fee_amount_usd: formData.fee_amount_usd ? parseFloat(formData.fee_amount_usd) : null,
+        fee_amount_ars: formData.fee_amount_ars ? parseFloat(formData.fee_amount_ars) : null,
+        profit_notes: formData.profit_notes,
+        fee_notes: formData.fee_notes
+      };
+
+      await axios.patch(`/api/projects/${selectedProject.id}`, updateData);
+      onUpdateProject();
+    } catch (error) {
+      console.error('Error updating profits and fees:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!isOpen) return null;
+  if (!selectedProject) {
+    return (
+      <div className="text-center py-12">
+        <p className="theme-text-secondary">Select a project to manage profits and fees</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="card max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold theme-text">Request Disbursement Order</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
-        </div>
+    <div className="space-y-6">
+      <div className="card">
+        <h3 className="text-xl font-semibold theme-text mb-6">Profits & Fees Management</h3>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Project</label>
-              <select
-                className="form-input w-full"
-                value={formData.project_name}
-                onChange={(e) => setFormData({...formData, project_name: e.target.value})}
-                required
-              >
-                <option value="">Select a project</option>
-                {projects.map(project => (
-                  <option key={project.id} value={project.name}>{project.name}</option>
-                ))}
-              </select>
+          {/* Profit Section */}
+          <div className="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
+            <h4 className="text-lg font-medium text-green-700 dark:text-green-300 mb-4">Profit Configuration</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Profit Percentage (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.profit_percentage}
+                  onChange={(e) => setFormData({...formData, profit_percentage: e.target.value})}
+                  placeholder="15.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Fixed Profit USD</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.profit_amount_usd}
+                  onChange={(e) => setFormData({...formData, profit_amount_usd: e.target.value})}
+                  placeholder="1000.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Fixed Profit ARS</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.profit_amount_ars}
+                  onChange={(e) => setFormData({...formData, profit_amount_ars: e.target.value})}
+                  placeholder="50000.00"
+                />
+              </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Disbursement Type</label>
-              <select
+            <div className="mt-4">
+              <label className="block text-sm font-medium theme-text mb-2">Profit Notes</label>
+              <textarea
                 className="form-input w-full"
-                value={formData.disbursement_type}
-                onChange={(e) => setFormData({...formData, disbursement_type: e.target.value})}
-                required
-              >
-                {disbursementTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Amount USD</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-input w-full"
-                value={formData.amount_usd}
-                onChange={(e) => setFormData({...formData, amount_usd: e.target.value})}
-                placeholder="0.00"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Amount ARS</label>
-              <input
-                type="number"
-                step="0.01"
-                className="form-input w-full"
-                value={formData.amount_ars}
-                onChange={(e) => setFormData({...formData, amount_ars: e.target.value})}
-                placeholder="0.00"
+                rows="3"
+                value={formData.profit_notes}
+                onChange={(e) => setFormData({...formData, profit_notes: e.target.value})}
+                placeholder="Additional notes about profit structure..."
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium theme-text mb-2">Supplier</label>
-            <input
-              type="text"
-              className="form-input w-full"
-              value={formData.supplier}
-              onChange={(e) => setFormData({...formData, supplier: e.target.value})}
-              placeholder="Supplier name"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium theme-text mb-2">Description</label>
-            <textarea
-              className="form-input w-full"
-              rows="3"
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Detailed description of the disbursement request"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Due Date</label>
-              <input
-                type="date"
-                className="form-input w-full"
-                value={formData.due_date}
-                onChange={(e) => setFormData({...formData, due_date: e.target.value})}
-              />
+          {/* Fees Section */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+            <h4 className="text-lg font-medium text-blue-700 dark:text-blue-300 mb-4">Fee Configuration</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Fee Percentage (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.fee_percentage}
+                  onChange={(e) => setFormData({...formData, fee_percentage: e.target.value})}
+                  placeholder="10.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Fixed Fee USD</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.fee_amount_usd}
+                  onChange={(e) => setFormData({...formData, fee_amount_usd: e.target.value})}
+                  placeholder="500.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Fixed Fee ARS</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.fee_amount_ars}
+                  onChange={(e) => setFormData({...formData, fee_amount_ars: e.target.value})}
+                  placeholder="25000.00"
+                />
+              </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium theme-text mb-2">Priority</label>
-              <select
+            <div className="mt-4">
+              <label className="block text-sm font-medium theme-text mb-2">Fee Notes</label>
+              <textarea
                 className="form-input w-full"
-                value={formData.priority}
-                onChange={(e) => setFormData({...formData, priority: e.target.value})}
-              >
-                {priorities.map(priority => (
-                  <option key={priority} value={priority}>{priority}</option>
-                ))}
-              </select>
+                rows="3"
+                value={formData.fee_notes}
+                onChange={(e) => setFormData({...formData, fee_notes: e.target.value})}
+                placeholder="Additional notes about fee structure..."
+              />
             </div>
           </div>
 
-          <div className="flex space-x-4 pt-4">
+          <div className="flex justify-end">
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex-1 disabled:opacity-50"
+              className="btn-primary disabled:opacity-50"
             >
-              {loading ? 'Requesting...' : 'Request Disbursement'}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn-secondary flex-1"
-            >
-              Cancel
+              {loading ? 'Updating...' : 'Update Profits & Fees'}
             </button>
           </div>
         </form>
@@ -602,135 +622,53 @@ const DisbursementOrderModal = ({ isOpen, onClose, onSubmit, loading, projects }
   );
 };
 
-// Main Deco Movements Component
+// Main Deco Movements Component with Tabbed Interface
 const DecoMovements = () => {
-  const [movements, setMovements] = useState([]);
-  const [disbursementOrders, setDisbursementOrders] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [summary, setSummary] = useState(null);
-  const [chartData, setChartData] = useState([]);
-  const [projectBalanceData, setProjectBalanceData] = useState([]);
+  const [movements, setMovements] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState('');
   const [isMovementModalOpen, setIsMovementModalOpen] = useState(false);
-  const [isDisbursementModalOpen, setIsDisbursementModalOpen] = useState(false);
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchData();
+    fetchProjects();
   }, []);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (selectedProject) {
+      fetchMovements();
+    }
+  }, [selectedProject]);
+
+  const fetchProjects = async () => {
     try {
       setLoading(true);
-      const [movementsResponse, disbursementsResponse, projectsResponse] = await Promise.all([
-        axios.get('/api/deco-movements'),
-        axios.get('/api/deco-movements/disbursement-order').catch(() => ({ data: [] })),
-        axios.get('/api/projects').catch(() => ({ data: [] }))
-      ]);
-      
-      setMovements(movementsResponse.data);
-      setDisbursementOrders(disbursementsResponse.data || []);
-      setProjects(projectsResponse.data || []);
-      
-      // Process data for charts
-      const monthlyData = processMonthlyData(movementsResponse.data);
-      const projectData = processProjectBalanceData(movementsResponse.data);
-      
-      setChartData(monthlyData);
-      setProjectBalanceData(projectData);
-      
-      // Calculate summary
-      const calculatedSummary = calculateSummary(movementsResponse.data, disbursementsResponse.data || []);
-      setSummary(calculatedSummary);
-      
-      setError('');
+      const response = await axios.get('/api/projects?project_type=Deco');
+      setProjects(response.data);
+      if (response.data.length > 0 && !selectedProject) {
+        setSelectedProject(response.data[0]);
+      }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('Failed to load data. Please try again.');
+      console.error('Error fetching projects:', error);
+      setError('Failed to load projects');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateProject = async (formData) => {
+  const fetchMovements = async () => {
+    if (!selectedProject) return;
+    
     try {
-      setIsSubmitting(true);
-      await axios.post('/api/projects', formData);
-      setIsProjectModalOpen(false);
-      await fetchData(); // Refresh all data including projects
+      const response = await axios.get(`/api/deco-movements?project=${encodeURIComponent(selectedProject.name)}`);
+      setMovements(response.data);
     } catch (error) {
-      console.error('Error creating project:', error);
-      if (error.response?.data?.detail) {
-        setError(error.response.data.detail);
-      } else {
-        setError('Failed to create project. Please try again.');
-      }
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error fetching movements:', error);
+      setError('Failed to load movements');
     }
-  };
-
-  const processMonthlyData = (movements) => {
-    const monthlyMap = {};
-    
-    movements.forEach(movement => {
-      const date = new Date(movement.date);
-      const monthKey = format(date, 'MMM yyyy');
-      
-      if (!monthlyMap[monthKey]) {
-        monthlyMap[monthKey] = {
-          month: monthKey,
-          income_usd: 0,
-          expense_usd: 0,
-          balance_usd: 0
-        };
-      }
-      
-      monthlyMap[monthKey].income_usd += movement.income_usd || 0;
-      monthlyMap[monthKey].expense_usd += movement.expense_usd || 0;
-      monthlyMap[monthKey].balance_usd = monthlyMap[monthKey].income_usd - monthlyMap[monthKey].expense_usd;
-    });
-    
-    return Object.values(monthlyMap).sort((a, b) => {
-      return new Date(a.month) - new Date(b.month);
-    });
-  };
-
-  const processProjectBalanceData = (movements) => {
-    const projectMap = {};
-    
-    movements.forEach(movement => {
-      const project = movement.project_name;
-      
-      if (!projectMap[project]) {
-        projectMap[project] = {
-          name: project,
-          balance_usd: 0,
-          balance_ars: 0,
-          movements_count: 0
-        };
-      }
-      
-      projectMap[project].balance_usd += (movement.income_usd || 0) - (movement.expense_usd || 0);
-      projectMap[project].balance_ars += (movement.income_ars || 0) - (movement.expense_ars || 0);
-      projectMap[project].movements_count += 1;
-    });
-    
-    return Object.values(projectMap).sort((a, b) => b.balance_usd - a.balance_usd);
-  };
-
-  const calculateSummary = (movements, orders) => {
-    return {
-      total_movements: movements.length,
-      total_projects: new Set(movements.map(m => m.project_name)).size,
-      pending_disbursements: orders.filter(o => o.status === 'Requested').length,
-      total_balance_usd: movements.reduce((sum, m) => sum + (m.income_usd || 0) - (m.expense_usd || 0), 0),
-      total_balance_ars: movements.reduce((sum, m) => sum + (m.income_ars || 0) - (m.expense_ars || 0), 0),
-      overdue_payments: orders.filter(o => o.is_overdue).length,
-    };
   };
 
   const handleCreateMovement = async (formData) => {
@@ -738,76 +676,46 @@ const DecoMovements = () => {
       setIsSubmitting(true);
       await axios.post('/api/deco-movements', formData);
       setIsMovementModalOpen(false);
-      await fetchData();
+      await fetchMovements();
+      await fetchProjects(); // Refresh project data
     } catch (error) {
       console.error('Error creating movement:', error);
-      setError('Failed to create movement. Please try again.');
+      setError('Failed to create movement');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleCreateDisbursementOrder = async (formData) => {
-    try {
-      setIsSubmitting(true);
-      await axios.post('/api/deco-movements/disbursement-order', formData);
-      setIsDisbursementModalOpen(false);
-      await fetchData();
-    } catch (error) {
-      console.error('Error creating disbursement order:', error);
-      setError('Failed to create disbursement order. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  const handleUpdateProject = async () => {
+    await fetchProjects();
+    if (selectedProject) {
+      const updatedProject = projects.find(p => p.id === selectedProject.id);
+      if (updatedProject) {
+        setSelectedProject(updatedProject);
+      }
     }
   };
 
-  const formatCurrency = (amount, currency) => {
-    if (!amount) return '-';
-    return `${currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
-  };
+  const tabs = [
+    { id: 'overview', name: 'Overview', icon: 'chart-bar' },
+    { id: 'movements', name: 'Movements', icon: 'list' },
+    { id: 'profits-fees', name: 'Profits & Fees', icon: 'cash' },
+    { id: 'analytics', name: 'Analytics', icon: 'trending-up' }
+  ];
 
-  const getStatusBadge = (status) => {
-    const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-    switch (status) {
-      case 'Requested':
-        return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`;
-      case 'Approved':
-        return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200`;
-      case 'Processed':
-        return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`;
-      case 'Rejected':
-        return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200`;
-    }
-  };
-
-  const getPriorityBadge = (priority) => {
-    const baseClasses = "px-2 py-1 rounded text-xs font-medium";
-    switch (priority) {
-      case 'Urgent':
-        return `${baseClasses} bg-red-100 text-red-800`;
-      case 'High':
-        return `${baseClasses} bg-orange-100 text-orange-800`;
-      case 'Normal':
-        return `${baseClasses} bg-blue-100 text-blue-800`;
-      case 'Low':
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
-  };
-
-  // Filter movements by selected project
-  const filteredMovements = selectedProject 
-    ? movements.filter(m => m.project_name === selectedProject)
-    : movements;
-
-  // Create project options for filter dropdown from projects and movements
-  const projectOptions = ['', ...new Set([
-    ...projects.map(p => p.name),
-    ...movements.map(m => m.project_name)
-  ])];
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-8"></div>
+            <TableSkeleton />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -816,27 +724,30 @@ const DecoMovements = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold theme-text">Deco Movements</h1>
-            <p className="theme-text-secondary">Project ledgers and disbursement orders</p>
+            <p className="theme-text-secondary">Project management and financial tracking</p>
           </div>
           <div className="flex space-x-4">
-            <button
-              onClick={() => setIsProjectModalOpen(true)}
-              className="btn-secondary"
+            <select
+              className="form-input"
+              value={selectedProject?.id || ''}
+              onChange={(e) => {
+                const project = projects.find(p => p.id === e.target.value);
+                setSelectedProject(project);
+              }}
             >
-              Create Project
-            </button>
-            <button
-              onClick={() => setIsMovementModalOpen(true)}
-              className="btn-primary"
-            >
-              Add Movement
-            </button>
-            <button
-              onClick={() => setIsDisbursementModalOpen(true)}
-              className="btn-secondary"
-            >
-              Request Disbursement
-            </button>
+              <option value="">Select Project</option>
+              {projects.map(project => (
+                <option key={project.id} value={project.id}>{project.name}</option>
+              ))}
+            </select>
+            {selectedProject && (
+              <button
+                onClick={() => setIsMovementModalOpen(true)}
+                className="btn-primary"
+              >
+                Add Movement
+              </button>
+            )}
           </div>
         </div>
 
@@ -844,291 +755,264 @@ const DecoMovements = () => {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
             {error}
-            <button 
-              onClick={() => setError('')}
-              className="float-right text-red-900 hover:text-red-700"
-            >
-              ×
-            </button>
           </div>
         )}
 
-        {/* Summary Cards */}
-        {summary && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Total Projects</h3>
-              <p className="text-2xl font-bold theme-text">{summary.total_projects}</p>
-              <p className="text-xs theme-text-secondary mt-1">{projects.length} managed</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Total Movements</h3>
-              <p className="text-2xl font-bold text-blue-600">{summary.total_movements}</p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Balance USD</h3>
-              <p className={`text-2xl font-bold ${summary.total_balance_usd >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(summary.total_balance_usd, 'USD')}
-              </p>
-            </div>
-            <div className="card">
-              <h3 className="text-sm font-medium theme-text-secondary">Pending Disbursements</h3>
-              <p className="text-2xl font-bold text-yellow-600">{summary.pending_disbursements}</p>
-            </div>
-          </div>
-        )}
+        {selectedProject ? (
+          <>
+            {/* Project Header */}
+            <DecoProjectHeader project={selectedProject} />
 
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Monthly Movement Trend */}
-          {chartData.length > 0 && (
-            <div className="card">
-              <div className="border-b theme-border pb-4 mb-6">
-                <h2 className="text-xl font-semibold theme-text">Monthly Movement Trend (USD)</h2>
-                <p className="text-sm theme-text-secondary">Income vs expense over time</p>
-              </div>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
-                      axisLine={{ stroke: '#d1d5db' }}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
-                      axisLine={{ stroke: '#d1d5db' }}
-                      tickFormatter={(value) => `$${value.toLocaleString()}`}
-                    />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        `USD ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
-                        name === 'income_usd' ? 'Income' : name === 'expense_usd' ? 'Expense' : 'Balance'
-                      ]}
-                      labelStyle={{ color: '#374151' }}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '0.5rem'
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="income_usd" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="expense_usd" name="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-
-          {/* Project Balance Distribution */}
-          {projectBalanceData.length > 0 && (
-            <div className="card">
-              <div className="border-b theme-border pb-4 mb-6">
-                <h2 className="text-xl font-semibold theme-text">Project Balance Distribution</h2>
-                <p className="text-sm theme-text-secondary">Current balance by project (USD)</p>
-              </div>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={projectBalanceData.filter(p => p.balance_usd > 0)}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="balance_usd"
+            {/* Tabs */}
+            <div className="mb-6">
+              <div className="border-b theme-border">
+                <nav className="-mb-px flex space-x-8">
+                  {tabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                        activeTab === tab.id
+                          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                          : 'border-transparent theme-text-secondary hover:theme-text hover:border-gray-300'
+                      }`}
                     >
-                      {projectBalanceData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={`hsl(${180 + (index * 45)}, 60%, 50%)`} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value) => [`USD ${value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'Balance']}
-                      labelStyle={{ color: '#374151' }}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '0.5rem'
-                      }}
-                    />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                      {tab.name}
+                    </button>
+                  ))}
+                </nav>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Project Filter */}
-        <div className="card mb-6">
-          <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium theme-text">Filter by Project:</label>
-            <select
-              className="form-input"
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
-            >
-              <option value="">All Projects</option>
-              {projectOptions.slice(1).map(project => (
-                <option key={project} value={project}>{project}</option>
-              ))}
-            </select>
-            {selectedProject && (
-              <button
-                onClick={() => setSelectedProject('')}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
-                Clear Filter
-              </button>
-            )}
-          </div>
-        </div>
+            {/* Tab Content */}
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <FinancialStatusPanel project={selectedProject} movements={movements} />
+                
+                {movements.length > 0 && (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Recent Movements */}
+                    <div className="card">
+                      <h3 className="text-lg font-semibold theme-text mb-4">Recent Movements</h3>
+                      <div className="space-y-3">
+                        {movements.slice(0, 5).map((movement) => (
+                          <div key={movement.id} className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div>
+                              <p className="font-medium theme-text">{movement.description}</p>
+                              <p className="text-sm theme-text-secondary">{format(new Date(movement.date), 'dd/MM/yyyy')}</p>
+                            </div>
+                            <div className="text-right">
+                              {movement.income_usd && (
+                                <p className="text-green-600 font-medium">+${movement.income_usd}</p>
+                              )}
+                              {movement.expense_usd && (
+                                <p className="text-red-600 font-medium">-${movement.expense_usd}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-        {/* Movements Table */}
-        <div className="card mb-8">
-          <div className="border-b theme-border pb-4 mb-4">
-            <h2 className="text-xl font-semibold theme-text">
-              Movement Records {selectedProject && `- ${selectedProject}`}
-            </h2>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="table-header">
-                  <th className="text-left p-4 font-medium theme-text">Date</th>
-                  <th className="text-left p-4 font-medium theme-text">Project</th>
-                  <th className="text-left p-4 font-medium theme-text">Description</th>
-                  <th className="text-left p-4 font-medium theme-text">Supplier</th>
-                  <th className="text-right p-4 font-medium theme-text">Income USD</th>
-                  <th className="text-right p-4 font-medium theme-text">Expense USD</th>
-                  <th className="text-right p-4 font-medium theme-text">Balance USD</th>
-                  <th className="text-center p-4 font-medium theme-text">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="8" className="p-0">
-                      <TableSkeleton />
-                    </td>
-                  </tr>
-                ) : filteredMovements.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-12 theme-text-secondary">
-                      {selectedProject 
-                        ? `No movements found for ${selectedProject}.`
-                        : 'No movements found. Create your first movement to get started.'
-                      }
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMovements.map((movement) => (
-                    <tr key={movement._id} className="table-row">
-                      <td className="p-4 theme-text">
-                        {format(new Date(movement.date), 'dd/MM/yyyy')}
-                      </td>
-                      <td className="p-4 theme-text font-medium">{movement.project_name}</td>
-                      <td className="p-4 theme-text">{movement.description}</td>
-                      <td className="p-4 theme-text">{movement.supplier || '-'}</td>
-                      <td className="p-4 theme-text text-right table-cell-numeric">
-                        {formatCurrency(movement.income_usd, 'USD')}
-                      </td>
-                      <td className="p-4 theme-text text-right table-cell-numeric">
-                        {formatCurrency(movement.expense_usd, 'USD')}
-                      </td>
-                      <td className="p-4 theme-text text-right table-cell-numeric font-medium">
-                        {formatCurrency(movement.running_balance_usd, 'USD')}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                          Active
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                    {/* Quick Stats */}
+                    <div className="card">
+                      <h3 className="text-lg font-semibold theme-text mb-4">Quick Statistics</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-green-600">{movements.filter(m => m.income_usd > 0).length}</p>
+                          <p className="text-sm theme-text-secondary">Income Entries</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-red-600">{movements.filter(m => m.expense_usd > 0).length}</p>
+                          <p className="text-sm theme-text-secondary">Expense Entries</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold theme-text">{new Set(movements.map(m => m.supplier)).size}</p>
+                          <p className="text-sm theme-text-secondary">Suppliers</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold theme-text">
+                            ${movements.length > 0 ? (movements.reduce((sum, m) => sum + (m.expense_usd || 0), 0) / movements.filter(m => m.expense_usd > 0).length).toFixed(0) : '0'}
+                          </p>
+                          <p className="text-sm theme-text-secondary">Avg Expense</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </div>
+            )}
 
-        {/* Disbursement Orders Table */}
-        {disbursementOrders.length > 0 && (
-          <div className="card">
-            <div className="border-b theme-border pb-4 mb-4">
-              <h2 className="text-xl font-semibold theme-text">Disbursement Orders</h2>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="table-header">
-                    <th className="text-left p-4 font-medium theme-text">Project</th>
-                    <th className="text-left p-4 font-medium theme-text">Type</th>
-                    <th className="text-left p-4 font-medium theme-text">Supplier</th>
-                    <th className="text-right p-4 font-medium theme-text">Amount</th>
-                    <th className="text-center p-4 font-medium theme-text">Priority</th>
-                    <th className="text-center p-4 font-medium theme-text">Due Date</th>
-                    <th className="text-center p-4 font-medium theme-text">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {disbursementOrders.map((order) => (
-                    <tr key={order.id} className="table-row">
-                      <td className="p-4 theme-text font-medium">{order.project_name}</td>
-                      <td className="p-4 theme-text">{order.disbursement_type}</td>
-                      <td className="p-4 theme-text">{order.supplier}</td>
-                      <td className="p-4 theme-text text-right table-cell-numeric">
-                        {order.amount_usd ? formatCurrency(order.amount_usd, 'USD') : 
-                         order.amount_ars ? formatCurrency(order.amount_ars, 'ARS') : '-'}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className={getPriorityBadge(order.priority)}>
-                          {order.priority}
-                        </span>
-                      </td>
-                      <td className="p-4 theme-text text-center">
-                        {order.due_date ? format(new Date(order.due_date), 'dd/MM/yyyy') : '-'}
-                      </td>
-                      <td className="p-4 text-center">
-                        <span className={getStatusBadge(order.status)}>
-                          {order.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {activeTab === 'movements' && (
+              <div className="space-y-6">
+                {/* Movements Table */}
+                <div className="card">
+                  <div className="table-container">
+                    <table className="min-w-full">
+                      <thead className="table-header">
+                        <tr>
+                          <th className="table-header-cell">Date</th>
+                          <th className="table-header-cell">Description</th>
+                          <th className="table-header-cell">Supplier</th>
+                          <th className="table-header-cell">Income USD</th>
+                          <th className="table-header-cell">Expense USD</th>
+                          <th className="table-header-cell">Income ARS</th>
+                          <th className="table-header-cell">Expense ARS</th>
+                          <th className="table-header-cell">Reference</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {movements.map((movement) => (
+                          <tr key={movement.id} className="table-row">
+                            <td className="table-cell font-medium">
+                              {format(new Date(movement.date), 'dd/MM/yyyy')}
+                            </td>
+                            <td className="table-cell">
+                              <div>
+                                <p className="font-medium theme-text">{movement.description}</p>
+                                {movement.notes && (
+                                  <p className="text-sm theme-text-secondary">{movement.notes}</p>
+                                )}
+                              </div>
+                            </td>
+                            <td className="table-cell theme-text-secondary">
+                              {movement.supplier || '-'}
+                            </td>
+                            <td className="table-cell">
+                              <span className="text-green-600 font-medium">
+                                {movement.income_usd ? `$${movement.income_usd.toFixed(2)}` : '-'}
+                              </span>
+                            </td>
+                            <td className="table-cell">
+                              <span className="text-red-600 font-medium">
+                                {movement.expense_usd ? `$${movement.expense_usd.toFixed(2)}` : '-'}
+                              </span>
+                            </td>
+                            <td className="table-cell">
+                              <span className="text-green-600 font-medium">
+                                {movement.income_ars ? `AR$${movement.income_ars.toFixed(2)}` : '-'}
+                              </span>
+                            </td>
+                            <td className="table-cell">
+                              <span className="text-red-600 font-medium">
+                                {movement.expense_ars ? `AR$${movement.expense_ars.toFixed(2)}` : '-'}
+                              </span>
+                            </td>
+                            <td className="table-cell theme-text-secondary">
+                              {movement.reference_number || '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    {movements.length === 0 && (
+                      <div className="text-center py-12">
+                        <p className="theme-text-secondary">No movements found for this project</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'profits-fees' && (
+              <ProfitsFeesTab 
+                selectedProject={selectedProject} 
+                onUpdateProject={handleUpdateProject}
+              />
+            )}
+
+            {activeTab === 'analytics' && (
+              <div className="space-y-6">
+                {movements.length > 0 ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Monthly Trend Chart */}
+                    <div className="chart-container">
+                      <h3 className="text-lg font-semibold theme-text mb-4">Monthly Financial Trend</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={movements.reduce((acc, movement) => {
+                          const month = format(new Date(movement.date), 'MMM yyyy');
+                          const existing = acc.find(item => item.month === month);
+                          if (existing) {
+                            existing.income += (movement.income_usd || 0);
+                            existing.expense += (movement.expense_usd || 0);
+                          } else {
+                            acc.push({
+                              month,
+                              income: movement.income_usd || 0,
+                              expense: movement.expense_usd || 0
+                            });
+                          }
+                          return acc;
+                        }, [])}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="income" stroke="#10b981" name="Income USD" />
+                          <Line type="monotone" dataKey="expense" stroke="#ef4444" name="Expense USD" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    {/* Expense by Supplier */}
+                    <div className="chart-container">
+                      <h3 className="text-lg font-semibold theme-text mb-4">Expenses by Supplier</h3>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={movements.reduce((acc, movement) => {
+                              if (movement.expense_usd && movement.supplier) {
+                                const existing = acc.find(item => item.name === movement.supplier);
+                                if (existing) {
+                                  existing.value += movement.expense_usd;
+                                } else {
+                                  acc.push({
+                                    name: movement.supplier,
+                                    value: movement.expense_usd
+                                  });
+                                }
+                              }
+                              return acc;
+                            }, [])}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={100}
+                            dataKey="value"
+                            label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          >
+                            {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'].map((color, index) => (
+                              <Cell key={`cell-${index}`} fill={color} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Amount']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="theme-text-secondary">No data available for analytics</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <p className="theme-text-secondary">Please select a project to view its details</p>
           </div>
         )}
 
-        {/* Modals */}
+        {/* Movement Entry Modal */}
         <MovementEntryModal
           isOpen={isMovementModalOpen}
           onClose={() => setIsMovementModalOpen(false)}
           onSubmit={handleCreateMovement}
           loading={isSubmitting}
-          projects={projects}
-        />
-
-        <DisbursementOrderModal
-          isOpen={isDisbursementModalOpen}
-          onClose={() => setIsDisbursementModalOpen(false)}
-          onSubmit={handleCreateDisbursementOrder}
-          loading={isSubmitting}
-          projects={projects}
-        />
-
-        <ProjectCreateModal
-          isOpen={isProjectModalOpen}
-          onClose={() => setIsProjectModalOpen(false)}
-          onSubmit={handleCreateProject}
-          loading={isSubmitting}
+          selectedProject={selectedProject}
         />
       </div>
     </div>
