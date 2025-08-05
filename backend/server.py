@@ -1180,6 +1180,136 @@ async def get_providers_summary(
     
     return ProviderSummary(**summary_data)
 
+# ===============================
+# APPLICATION CATEGORIES MODULE API
+# ===============================
+
+@app.post("/api/application-categories", response_model=ApplicationCategory)
+async def create_application_category(
+    category_data: ApplicationCategoryCreate,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new application category"""
+    # Check if category name already exists
+    existing_category = await db.application_categories.find_one({"name": category_data.name, "is_active": True})
+    if existing_category:
+        raise HTTPException(status_code=400, detail="Category name already exists")
+    
+    category_dict = category_data.dict()
+    category_dict["created_by"] = current_user.username
+    category_dict["created_at"] = datetime.utcnow()
+    category_dict["updated_at"] = datetime.utcnow()
+    category_dict["id"] = str(__import__('uuid').uuid4())
+    
+    category = ApplicationCategory(**category_dict)
+    await db.application_categories.insert_one(category.dict(by_alias=True))
+    return category
+
+@app.get("/api/application-categories", response_model=List[ApplicationCategory])
+async def get_application_categories(
+    category_type: Optional[str] = Query(None, regex="^(Income|Expense|Both)$"),
+    active_only: bool = Query(True),
+    current_user: User = Depends(get_current_user)
+):
+    """Get application categories list"""
+    query = {}
+    if active_only:
+        query["is_active"] = True
+    if category_type:
+        query["category_type"] = {"$in": [category_type, "Both"]}
+    
+    cursor = db.application_categories.find(query).sort("usage_count", -1)  # Sort by most used
+    categories = await cursor.to_list(length=100)
+    
+    return [ApplicationCategory(**category) for category in categories]
+
+@app.get("/api/application-categories/autocomplete")
+async def get_application_categories_autocomplete(
+    q: str = Query(..., min_length=1, description="Search query"),
+    category_type: Optional[str] = Query(None, regex="^(Income|Expense|Both)$"),
+    limit: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user)
+):
+    """Get application categories for autocomplete with search"""
+    query = {
+        "is_active": True,
+        "name": {"$regex": f".*{q}.*", "$options": "i"}
+    }
+    
+    if category_type:
+        query["category_type"] = {"$in": [category_type, "Both"]}
+    
+    cursor = db.application_categories.find(query).limit(limit).sort("usage_count", -1)
+    categories = await cursor.to_list(length=limit)
+    
+    return [{"name": cat["name"], "category_type": cat["category_type"], "usage_count": cat.get("usage_count", 0)} for cat in categories]
+
+@app.patch("/api/application-categories/{category_id}/increment-usage")
+async def increment_category_usage(
+    category_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Increment usage count for a category"""
+    result = await db.application_categories.update_one(
+        {"$or": [{"_id": category_id}, {"id": category_id}]},
+        {"$inc": {"usage_count": 1}, "$set": {"updated_at": datetime.utcnow()}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"message": "Usage count incremented"}
+
+@app.get("/api/application-categories/summary", response_model=ApplicationCategorySummary)
+async def get_application_categories_summary(
+    current_user: User = Depends(get_current_user)
+):
+    """Get application categories summary statistics"""
+    # Aggregate pipeline for category statistics
+    pipeline = [
+        {"$match": {"is_active": True}},
+        {
+            "$group": {
+                "_id": None,
+                "total_categories": {"$sum": 1},
+                "income_categories": {
+                    "$sum": {"$cond": [{"$in": ["$category_type", ["Income", "Both"]]}, 1, 0]}
+                },
+                "expense_categories": {
+                    "$sum": {"$cond": [{"$in": ["$category_type", ["Expense", "Both"]]}, 1, 0]}
+                },
+                "most_used": {"$max": "$usage_count"}
+            }
+        }
+    ]
+    
+    result = await db.application_categories.aggregate(pipeline).to_list(1)
+    
+    # Get most used category name
+    most_used_category = None
+    if result and result[0].get("most_used", 0) > 0:
+        most_used = await db.application_categories.find_one(
+            {"usage_count": result[0]["most_used"]},
+            sort=[("usage_count", -1)]
+        )
+        most_used_category = most_used["name"] if most_used else None
+    
+    # Get recent categories (last 5 created)
+    recent_categories = await db.application_categories.find(
+        {"is_active": True}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    
+    summary_data = result[0] if result else {
+        "total_categories": 0,
+        "income_categories": 0,
+        "expense_categories": 0
+    }
+    
+    summary_data["most_used_category"] = most_used_category
+    summary_data["recent_categories"] = [cat["name"] for cat in recent_categories]
+    
+    return ApplicationCategorySummary(**summary_data)
+
 @app.get("/api/providers/{provider_id}", response_model=Provider)
 async def get_provider(
     provider_id: str,
