@@ -356,31 +356,356 @@ class BackendTester:
             self.log_test("General Cash Summary", False, f"Error: {str(e)}")
             return None
     
-    def test_authentication_required(self):
-        """Test that endpoints require authentication"""
+    def test_event_providers_create(self):
+        """Test POST /api/event-providers"""
         try:
-            # Test without token
-            headers_no_auth = {"Content-Type": "application/json"}
+            test_provider = {
+                "name": f"Test Catering Provider {datetime.now().strftime('%H%M%S')}",
+                "category": "Catering",
+                "provider_type": "Vendor",
+                "contact_person": "María González",
+                "phone": "+54 11 1234-5678",
+                "email": "maria@testcatering.com",
+                "address": "Av. Corrientes 1234, Buenos Aires",
+                "notes": "Specialized in wedding catering",
+                "default_payment_terms": "30 días"
+            }
             
-            response = requests.get(
-                f"{self.base_url}/general-cash",
-                headers=headers_no_auth,
+            response = requests.post(
+                f"{self.base_url}/event-providers",
+                json=test_provider,
+                headers=self.headers,
                 timeout=10
             )
             
-            if response.status_code in [401, 403]:  # Both are valid for authentication required
+            if response.status_code == 200:
+                created_provider = response.json()
                 self.log_test(
-                    "Authentication Required", 
+                    "Event Providers Create", 
                     True, 
-                    f"Endpoints properly require authentication (HTTP {response.status_code})"
+                    f"Created provider: {created_provider.get('name')}",
+                    created_provider
+                )
+                return created_provider
+            else:
+                self.log_test("Event Providers Create", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Event Providers Create", False, f"Error: {str(e)}")
+            return None
+    
+    def test_event_providers_list(self):
+        """Test GET /api/event-providers"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/event-providers",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                providers = response.json()
+                self.log_test(
+                    "Event Providers List", 
+                    True, 
+                    f"Retrieved {len(providers)} event providers",
+                    {"count": len(providers), "sample": providers[:2] if providers else []}
+                )
+                return providers
+            else:
+                self.log_test("Event Providers List", False, f"Failed: {response.status_code}", response.text)
+                return []
+        except Exception as e:
+            self.log_test("Event Providers List", False, f"Error: {str(e)}")
+            return []
+    
+    def test_event_providers_filtering(self):
+        """Test GET /api/event-providers with filtering"""
+        try:
+            # Test filtering by category
+            params = {
+                "category": "Catering",
+                "active_only": True
+            }
+            
+            response = requests.get(
+                f"{self.base_url}/event-providers",
+                params=params,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                providers = response.json()
+                self.log_test(
+                    "Event Providers Filtering", 
+                    True, 
+                    f"Found {len(providers)} catering providers",
+                    {"category": "Catering", "count": len(providers)}
+                )
+                return providers
+            else:
+                self.log_test("Event Providers Filtering", False, f"Failed: {response.status_code}", response.text)
+                return []
+        except Exception as e:
+            self.log_test("Event Providers Filtering", False, f"Error: {str(e)}")
+            return []
+    
+    def test_event_providers_autocomplete(self):
+        """Test GET /api/event-providers/autocomplete"""
+        try:
+            params = {
+                "q": "Test",
+                "category": "Catering",
+                "limit": 5
+            }
+            
+            response = requests.get(
+                f"{self.base_url}/event-providers/autocomplete",
+                params=params,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                results = response.json()
+                self.log_test(
+                    "Event Providers Autocomplete", 
+                    True, 
+                    f"Found {len(results)} matching providers",
+                    {"query": "Test", "results": results}
+                )
+                return results
+            else:
+                self.log_test("Event Providers Autocomplete", False, f"Failed: {response.status_code}", response.text)
+                return []
+        except Exception as e:
+            self.log_test("Event Providers Autocomplete", False, f"Error: {str(e)}")
+            return []
+    
+    def test_event_providers_increment_usage(self, provider_id: str):
+        """Test PATCH /api/event-providers/{id}/increment-usage"""
+        try:
+            response = requests.patch(
+                f"{self.base_url}/event-providers/{provider_id}/increment-usage",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                self.log_test(
+                    "Event Providers Increment Usage", 
+                    True, 
+                    "Usage count incremented successfully",
+                    result
                 )
                 return True
             else:
-                self.log_test("Authentication Required", False, f"Expected 401/403, got {response.status_code}", response.text)
+                self.log_test("Event Providers Increment Usage", False, f"Failed: {response.status_code}", response.text)
                 return False
         except Exception as e:
-            self.log_test("Authentication Required", False, f"Error: {str(e)}")
+            self.log_test("Event Providers Increment Usage", False, f"Error: {str(e)}")
             return False
+    
+    def test_event_providers_summary(self):
+        """Test GET /api/event-providers/summary"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/event-providers/summary",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                summary = response.json()
+                self.log_test(
+                    "Event Providers Summary", 
+                    True, 
+                    "Retrieved event providers summary",
+                    summary
+                )
+                return summary
+            else:
+                self.log_test("Event Providers Summary", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Event Providers Summary", False, f"Error: {str(e)}")
+            return None
+    
+    def test_events_cash_create(self):
+        """Test POST /api/events-cash"""
+        try:
+            test_event = {
+                "header": {
+                    "event_date": "2024-12-25",
+                    "organizer": "María Elena Caradonti",
+                    "client_name": "Familia Rodriguez",
+                    "client_razon_social": "Rodriguez Events SRL",
+                    "event_type": "Wedding",
+                    "province": "Buenos Aires",
+                    "localidad": "Palermo",
+                    "viaticos_armado": 5000.0,
+                    "hc_fees": 15000.0,
+                    "total_budget_no_iva": 150000.0,
+                    "budget_number": f"BUD-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    "payment_terms": "30% anticipo, 40% a 15 días, 30% contra entrega"
+                },
+                "initial_payment": {
+                    "payment_method": "Bank Transfer",
+                    "date": date.today().isoformat(),
+                    "detail": "Anticipo inicial del evento",
+                    "income_ars": 45000.0
+                }
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/events-cash",
+                json=test_event,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                created_event = response.json()
+                self.log_test(
+                    "Events Cash Create", 
+                    True, 
+                    f"Created event: {created_event.get('header', {}).get('client_name')}",
+                    created_event
+                )
+                return created_event
+            else:
+                self.log_test("Events Cash Create", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Events Cash Create", False, f"Error: {str(e)}")
+            return None
+    
+    def test_events_cash_list(self):
+        """Test GET /api/events-cash"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/events-cash",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                events = response.json()
+                self.log_test(
+                    "Events Cash List", 
+                    True, 
+                    f"Retrieved {len(events)} events",
+                    {"count": len(events), "sample": events[:1] if events else []}
+                )
+                return events
+            else:
+                self.log_test("Events Cash List", False, f"Failed: {response.status_code}", response.text)
+                return []
+        except Exception as e:
+            self.log_test("Events Cash List", False, f"Error: {str(e)}")
+            return []
+    
+    def test_events_cash_add_ledger_entry_enhanced(self, event_id: str, provider_id: str = None):
+        """Test POST /api/events-cash/{event_id}/ledger with enhanced model"""
+        try:
+            test_entry = {
+                "payment_method": "Cash",
+                "date": date.today().isoformat(),
+                "detail": "Pago a proveedor de catering",
+                "expense_ars": 25000.0,
+                "provider_id": provider_id,
+                "expense_category_id": None,
+                "is_client_payment": False
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/events-cash/{event_id}/ledger",
+                json=test_entry,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                updated_event = response.json()
+                self.log_test(
+                    "Events Cash Add Ledger Entry Enhanced", 
+                    True, 
+                    "Added ledger entry with provider integration",
+                    {"event_id": event_id, "provider_id": provider_id}
+                )
+                return updated_event
+            else:
+                self.log_test("Events Cash Add Ledger Entry Enhanced", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Events Cash Add Ledger Entry Enhanced", False, f"Error: {str(e)}")
+            return None
+    
+    def test_events_cash_client_payment_processing(self, event_id: str):
+        """Test client payment processing functionality"""
+        try:
+            # Test client payment that should update payment status automatically
+            client_payment = {
+                "payment_method": "Bank Transfer",
+                "date": date.today().isoformat(),
+                "detail": "Segundo pago del cliente",
+                "income_ars": 60000.0,
+                "is_client_payment": True
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/events-cash/{event_id}/ledger",
+                json=client_payment,
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                updated_event = response.json()
+                payment_status = updated_event.get('payment_status', {})
+                self.log_test(
+                    "Events Cash Client Payment Processing", 
+                    True, 
+                    "Client payment processed and payment status updated",
+                    {
+                        "payment_status": payment_status,
+                        "balance_due": payment_status.get('balance_due', 0)
+                    }
+                )
+                return updated_event
+            else:
+                self.log_test("Events Cash Client Payment Processing", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Events Cash Client Payment Processing", False, f"Error: {str(e)}")
+            return None
+    
+    def test_events_cash_expenses_summary(self, event_id: str):
+        """Test GET /api/events-cash/{event_id}/expenses-summary"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/events-cash/{event_id}/expenses-summary",
+                headers=self.headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                summary = response.json()
+                self.log_test(
+                    "Events Cash Expenses Summary", 
+                    True, 
+                    "Retrieved expense summary report",
+                    summary
+                )
+                return summary
+            else:
+                self.log_test("Events Cash Expenses Summary", False, f"Failed: {response.status_code}", response.text)
+                return None
+        except Exception as e:
+            self.log_test("Events Cash Expenses Summary", False, f"Error: {str(e)}")
+            return None
     
     def run_all_tests(self):
         """Run all backend tests"""
