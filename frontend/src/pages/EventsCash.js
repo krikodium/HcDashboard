@@ -973,4 +973,227 @@ const EventsCash = () => {
   );
 };
 
+// Expense Report View Component
+const ExpenseReportView = ({ selectedEvent }) => {
+  const [expenseData, setExpenseData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({
+    start_date: '',
+    end_date: '',
+    category: ''
+  });
+
+  const categories = ['Catering', 'Decoration', 'Music', 'Photography', 'Venue', 'Transportation', 'Lighting', 'Flowers', 'Security', 'Cleaning', 'Equipment Rental', 'Other'];
+
+  const fetchExpenseData = async () => {
+    if (!selectedEvent) return;
+
+    try {
+      setLoading(true);
+      const params = {};
+      if (filters.start_date) params.start_date = filters.start_date;
+      if (filters.end_date) params.end_date = filters.end_date;
+      if (filters.category) params.category = filters.category;
+
+      const response = await axios.get(`/api/events-cash/${selectedEvent._id}/expenses-summary`, { params });
+      setExpenseData(response.data);
+    } catch (error) {
+      console.error('Error fetching expense data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedEvent) {
+      fetchExpenseData();
+    }
+  }, [selectedEvent, filters]);
+
+  const formatCurrency = (amount, currency = 'ARS') => {
+    if (!amount) return `${currency} 0.00`;
+    return `${currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+  };
+
+  const prepareChartData = () => {
+    if (!expenseData || !expenseData.expenses_by_date) return [];
+    
+    return Object.entries(expenseData.expenses_by_date).map(([date, data]) => ({
+      date: format(new Date(date), 'dd/MM'),
+      ars: data.ars,
+      usd: data.usd,
+      count: data.count
+    })).sort((a, b) => new Date(a.date) - new Date(b.date));
+  };
+
+  if (!selectedEvent) {
+    return (
+      <div className="card">
+        <div className="text-center py-12">
+          <h3 className="text-xl font-semibold theme-text mb-4">No Event Selected</h3>
+          <p className="theme-text-secondary">Please select an event to view expense reports.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Filters */}
+      <div className="card">
+        <h3 className="text-lg font-semibold theme-text mb-4">Expense Report Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Start Date</label>
+            <input
+              type="date"
+              className="form-input w-full"
+              value={filters.start_date}
+              onChange={(e) => setFilters({...filters, start_date: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">End Date</label>
+            <input
+              type="date"
+              className="form-input w-full"
+              value={filters.end_date}
+              onChange={(e) => setFilters({...filters, end_date: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Category</label>
+            <select
+              className="form-input w-full"
+              value={filters.category}
+              onChange={(e) => setFilters({...filters, category: e.target.value})}
+            >
+              <option value="">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={() => setFilters({ start_date: '', end_date: '', category: '' })}
+              className="btn-secondary w-full"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="card">
+          <div className="animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : expenseData ? (
+        <>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="card">
+              <h3 className="text-sm font-medium theme-text-secondary">Total Expenses</h3>
+              <div className="space-y-1">
+                <p className="text-lg font-bold text-red-600">{formatCurrency(expenseData.total_expenses_ars, 'ARS')}</p>
+                <p className="text-lg font-bold text-red-600">{formatCurrency(expenseData.total_expenses_usd, 'USD')}</p>
+              </div>
+            </div>
+            
+            <div className="card">
+              <h3 className="text-sm font-medium theme-text-secondary">Expense Entries</h3>
+              <p className="text-2xl font-bold theme-text">{expenseData.total_entries}</p>
+            </div>
+            
+            <div className="card">
+              <h3 className="text-sm font-medium theme-text-secondary">Budget Used</h3>
+              <p className="text-2xl font-bold theme-accent">{expenseData.percentage_of_budget.toFixed(1)}%</p>
+            </div>
+            
+            <div className="card">
+              <h3 className="text-sm font-medium theme-text-secondary">Event</h3>
+              <p className="text-lg font-bold theme-text">{expenseData.event_name}</p>
+            </div>
+          </div>
+
+          {/* Expense Chart */}
+          {prepareChartData().length > 0 && (
+            <div className="card">
+              <h3 className="text-lg font-semibold theme-text mb-4">Expense Trends</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Expense by Date Chart (ARS) */}
+                <div>
+                  <h4 className="text-md font-medium theme-text mb-2">Daily Expenses (ARS)</h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={prepareChartData()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`AR$ ${value.toLocaleString()}`, 'Amount']} />
+                      <Bar dataKey="ars" fill="#ef4444" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Expense by Date Chart (USD) */}
+                <div>
+                  <h4 className="text-md font-medium theme-text mb-2">Daily Expenses (USD)</h4>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={prepareChartData()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`$ ${value.toLocaleString()}`, 'Amount']} />
+                      <Bar dataKey="usd" fill="#f59e0b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Filter Information */}
+          {(filters.start_date || filters.end_date || filters.category) && (
+            <div className="card bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+              <h3 className="text-md font-medium text-blue-700 dark:text-blue-300 mb-2">Active Filters</h3>
+              <div className="flex flex-wrap gap-2">
+                {filters.start_date && (
+                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded text-sm">
+                    From: {format(new Date(filters.start_date), 'dd/MM/yyyy')}
+                  </span>
+                )}
+                {filters.end_date && (
+                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded text-sm">
+                    To: {format(new Date(filters.end_date), 'dd/MM/yyyy')}
+                  </span>
+                )}
+                {filters.category && (
+                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 rounded text-sm">
+                    Category: {filters.category}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="card">
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold theme-text mb-4">No Expense Data</h3>
+            <p className="theme-text-secondary">No expense entries found for the selected filters.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default EventsCash;
