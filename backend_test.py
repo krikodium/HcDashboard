@@ -826,6 +826,32 @@ class BackendTester:
             self.log_test("Integration Test - Event Providers with Events Cash", False, f"Error: {str(e)}")
             return False
     
+    def test_authentication_required(self):
+        """Test that endpoints require authentication"""
+        try:
+            # Test without token
+            headers_no_auth = {"Content-Type": "application/json"}
+            
+            response = requests.get(
+                f"{self.base_url}/general-cash",
+                headers=headers_no_auth,
+                timeout=10
+            )
+            
+            if response.status_code in [401, 403]:  # Both are valid for authentication required
+                self.log_test(
+                    "Authentication Required", 
+                    True, 
+                    f"Endpoints properly require authentication (HTTP {response.status_code})"
+                )
+                return True
+            else:
+                self.log_test("Authentication Required", False, f"Expected 401/403, got {response.status_code}", response.text)
+                return False
+        except Exception as e:
+            self.log_test("Authentication Required", False, f"Error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests for Phase 2.2: Event Providers and Enhanced Events Cash"""
         print("🚀 Starting Backend API Tests for Phase 2.2: Event Providers and Enhanced Events Cash")
