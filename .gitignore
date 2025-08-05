@@ -3,6 +3,16 @@
 **/.env
 backend/.env
 frontend/.env
+*.env
+.env.*
+env.*
+
+# Credentials and secrets - DO NOT COMMIT  
+**/credentials.*
+**/secrets.*
+**/*secret*
+**/*credential*
+**/config/production.*
 
 # Dependencies and cache folders
 /node_modules
@@ -19,3 +29,13 @@ frontend/.env
 __pycache__/
 venv/
 *.pyc
+
+# Git and version control
+.git/
+*.orig
+
+# Temporary and backup files
+*.tmp
+*.bak
+*~
+.#*
