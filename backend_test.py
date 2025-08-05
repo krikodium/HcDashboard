@@ -407,11 +407,12 @@ class BackendTester:
         
         # Test increment usage if we have a category
         if categories and len(categories) > 0:
-            category_id = categories[0].get('id')
+            category_id = categories[0].get('id') or categories[0].get('_id')
             if category_id:
                 self.test_application_categories_increment_usage(category_id)
             else:
                 print("⚠️  No category ID found for increment usage test")
+                print(f"   Category keys: {list(categories[0].keys()) if categories else 'No categories'}")
         
         # Test General Cash API
         print("\n💰 Testing General Cash API...")
@@ -420,11 +421,13 @@ class BackendTester:
         self.test_general_cash_summary()
         
         # Test approval if we have an entry
-        if created_entry and created_entry.get('id'):
-            self.test_general_cash_approve(created_entry['id'])
-        elif entries and len(entries) > 0 and entries[0].get('id'):
+        if created_entry and (created_entry.get('id') or created_entry.get('_id')):
+            entry_id = created_entry.get('id') or created_entry.get('_id')
+            self.test_general_cash_approve(entry_id)
+        elif entries and len(entries) > 0 and (entries[0].get('id') or entries[0].get('_id')):
             # Try with an existing entry
-            self.test_general_cash_approve(entries[0]['id'])
+            entry_id = entries[0].get('id') or entries[0].get('_id')
+            self.test_general_cash_approve(entry_id)
         
         # Print summary
         self.print_test_summary()
