@@ -8,9 +8,9 @@ const Dashboard = () => {
     const checkBackend = async () => {
       try {
         const response = await axios.get('/api/test');
-        setBackendStatus('✅ Connected');
+        setBackendStatus('Connected');
       } catch (error) {
-        setBackendStatus('❌ Disconnected');
+        setBackendStatus('Disconnected');
       }
     };
     
