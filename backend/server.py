@@ -58,7 +58,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "https://localhost:3000", 
-        "https://1df6413f-d3b2-45f2-ace0-9cd4a825711a.preview.emergentagent.com",
+        "https://231fb371-62f5-4f18-8306-0edc3eeac6de.preview.emergentagent.com",
         "*"  # Fallback for other environments
     ],
     allow_credentials=True,
