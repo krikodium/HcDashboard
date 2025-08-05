@@ -326,6 +326,50 @@ async def startup_event():
         
         await db.providers.insert_many(initial_providers)
         logger.info("✅ Initial providers created successfully")
+    
+    # Create initial application categories if none exist
+    existing_categories = await db.application_categories.count_documents({"is_active": True})
+    if existing_categories == 0:
+        initial_categories = [
+            # Income Categories
+            {"id": str(__import__('uuid').uuid4()), "name": "Cobranza obras", "category_type": "Income", "description": "Cobros por trabajos de obra realizados", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Ingreso administracion", "category_type": "Income", "description": "Ingresos administrativos", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Ingreso socia LOLA", "category_type": "Income", "description": "Aportes de la socia LOLA", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Ingreso socia PAZ", "category_type": "Income", "description": "Aportes de la socia PAZ", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Ingreso socia AGUSTINA", "category_type": "Income", "description": "Aportes de la socia AGUSTINA", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Cobranzas Eventos", "category_type": "Income", "description": "Cobros por eventos realizados", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Aportes Socias", "category_type": "Income", "description": "Aportes generales de socias", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Cobranza Deco", "category_type": "Income", "description": "Cobros por trabajos de decoración", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Cobranzas HCHome", "category_type": "Income", "description": "Cobros por HC Home", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Anticipos de Clientes", "category_type": "Income", "description": "Anticipos recibidos de clientes", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Venta USD", "category_type": "Income", "description": "Venta de dólares", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Compra USD", "category_type": "Income", "description": "Compra de dólares", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            
+            # Expense Categories
+            {"id": str(__import__('uuid').uuid4()), "name": "Retiro de socia AC", "category_type": "Expense", "description": "Retiros de la socia AC", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Retiro de socia PC", "category_type": "Expense", "description": "Retiros de la socia PC", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Retiro de socia DC", "category_type": "Expense", "description": "Retiros de la socia DC", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Sueldos Deposito", "category_type": "Expense", "description": "Sueldos del personal de depósito", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Sueldos Administracion", "category_type": "Expense", "description": "Sueldos del personal administrativo", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Viaticos", "category_type": "Expense", "description": "Gastos de viáticos", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Gastos Administracion", "category_type": "Expense", "description": "Gastos administrativos generales", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Retiros MEA", "category_type": "Expense", "description": "Retiros MEA", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Eventos Proveedores", "category_type": "Expense", "description": "Pagos a proveedores de eventos", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Deco Proveedores", "category_type": "Expense", "description": "Pagos a proveedores de decoración", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Comidas", "category_type": "Expense", "description": "Gastos en comidas", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Libreria", "category_type": "Expense", "description": "Gastos en librería", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Ferreteria", "category_type": "Expense", "description": "Gastos en ferretería", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Arreglos", "category_type": "Expense", "description": "Gastos en arreglos", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Alquiler de deposito", "category_type": "Expense", "description": "Alquiler del depósito", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Sindicatos", "category_type": "Expense", "description": "Pagos a sindicatos", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Utileros", "category_type": "Expense", "description": "Gastos de utileros", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Compra (USD)", "category_type": "Expense", "description": "Compra en dólares", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Venta (USD)", "category_type": "Expense", "description": "Venta en dólares", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()},
+            {"id": str(__import__('uuid').uuid4()), "name": "Gastos HCHome", "category_type": "Expense", "description": "Gastos de HC Home", "is_active": True, "usage_count": 0, "created_by": "system", "created_at": datetime.utcnow(), "updated_at": datetime.utcnow()}
+        ]
+        
+        await db.application_categories.insert_many(initial_categories)
+        logger.info("✅ Initial application categories created successfully")
 
 # Authentication routes
 @app.post("/api/auth/register", response_model=User)
