@@ -898,59 +898,91 @@ const EventsCash = () => {
             {/* Payment Status Panel */}
             <PaymentStatusPanel event={selectedEvent} />
             
-            {/* Ledger Table */}
-            <div className="card">
-              <div className="border-b theme-border pb-4 mb-4">
-                <h2 className="text-xl font-semibold theme-text">Transaction Ledger</h2>
-              </div>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="table-header">
-                      <th className="text-left p-4 font-medium theme-text">Date</th>
-                      <th className="text-left p-4 font-medium theme-text">Payment Method</th>
-                      <th className="text-left p-4 font-medium theme-text">Detail</th>
-                      <th className="text-right p-4 font-medium theme-text">Income ARS</th>
-                      <th className="text-right p-4 font-medium theme-text">Expense ARS</th>
-                      <th className="text-right p-4 font-medium theme-text">Balance ARS</th>
-                      <th className="text-right p-4 font-medium theme-text">Balance USD</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedEvent.ledger_entries.length === 0 ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-12 theme-text-secondary">
-                          No ledger entries found. Add your first transaction to get started.
-                        </td>
-                      </tr>
-                    ) : (
-                      selectedEvent.ledger_entries.map((entry, index) => (
-                        <tr key={entry.id || index} className="table-row">
-                          <td className="p-4 theme-text">
-                            {format(new Date(entry.date), 'dd/MM/yyyy')}
-                          </td>
-                          <td className="p-4 theme-text">{entry.payment_method}</td>
-                          <td className="p-4 theme-text">{entry.detail}</td>
-                          <td className="p-4 theme-text text-right table-cell-numeric">
-                            {formatCurrency(entry.income_ars, 'ARS')}
-                          </td>
-                          <td className="p-4 theme-text text-right table-cell-numeric">
-                            {formatCurrency(entry.expense_ars, 'ARS')}
-                          </td>
-                          <td className="p-4 theme-text text-right table-cell-numeric font-medium">
-                            {formatCurrency(entry.running_balance_ars, 'ARS')}
-                          </td>
-                          <td className="p-4 theme-text text-right table-cell-numeric font-medium">
-                            {formatCurrency(entry.running_balance_usd, 'USD')}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+            {/* Tab Navigation */}
+            <div className="card mb-6">
+              <div className="border-b theme-border">
+                <nav className="-mb-px flex space-x-8">
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'overview'
+                        ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Transaction Ledger
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('expenses')}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      activeTab === 'expenses'
+                        ? 'border-teal-500 text-teal-600 dark:text-teal-400'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Expense Reports
+                  </button>
+                </nav>
               </div>
             </div>
+
+            {/* Tab Content */}
+            {activeTab === 'overview' ? (
+              <div className="card">
+                <div className="border-b theme-border pb-4 mb-4">
+                  <h2 className="text-xl font-semibold theme-text">Transaction Ledger</h2>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="table-header">
+                        <th className="text-left p-4 font-medium theme-text">Date</th>
+                        <th className="text-left p-4 font-medium theme-text">Payment Method</th>
+                        <th className="text-left p-4 font-medium theme-text">Detail</th>
+                        <th className="text-right p-4 font-medium theme-text">Income ARS</th>
+                        <th className="text-right p-4 font-medium theme-text">Expense ARS</th>
+                        <th className="text-right p-4 font-medium theme-text">Balance ARS</th>
+                        <th className="text-right p-4 font-medium theme-text">Balance USD</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedEvent.ledger_entries.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="text-center py-12 theme-text-secondary">
+                            No ledger entries found. Add your first transaction to get started.
+                          </td>
+                        </tr>
+                      ) : (
+                        selectedEvent.ledger_entries.map((entry, index) => (
+                          <tr key={entry.id || index} className="table-row">
+                            <td className="p-4 theme-text">
+                              {format(new Date(entry.date), 'dd/MM/yyyy')}
+                            </td>
+                            <td className="p-4 theme-text">{entry.payment_method}</td>
+                            <td className="p-4 theme-text">{entry.detail}</td>
+                            <td className="p-4 theme-text text-right table-cell-numeric">
+                              {formatCurrency(entry.income_ars, 'ARS')}
+                            </td>
+                            <td className="p-4 theme-text text-right table-cell-numeric">
+                              {formatCurrency(entry.expense_ars, 'ARS')}
+                            </td>
+                            <td className="p-4 theme-text text-right table-cell-numeric font-medium">
+                              {formatCurrency(entry.running_balance_ars, 'ARS')}
+                            </td>
+                            <td className="p-4 theme-text text-right table-cell-numeric font-medium">
+                              {formatCurrency(entry.running_balance_usd, 'USD')}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <ExpenseReportView selectedEvent={selectedEvent} />
+            )}
           </>
         ) : null}
 
