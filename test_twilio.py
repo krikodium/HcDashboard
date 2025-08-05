@@ -23,7 +23,9 @@ try:
     # Check if Twilio client is initialized
     if notification_service.twilio_client:
         print("✅ Twilio client is initialized (LIVE MODE)")
-        print(f"   Account SID: {notification_service.twilio_client.api.account_sid}")
+        # Get account SID from environment since client.api.account_sid doesn't work the same way
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        print(f"   Account SID: {account_sid[:10]}...{account_sid[-4:] if account_sid else 'unknown'}")
     else:
         print("⚠️ Twilio client not initialized (MOCK MODE)")
         print("   Checking credentials...")
