@@ -1575,6 +1575,65 @@ async def get_event_providers_summary(
     
     return EventProviderSummary(**summary_data)
 
+# Enhanced Events Cash Summary with Expense Reporting
+@app.get("/api/events-cash/{event_id}/expenses-summary")
+async def get_event_expenses_summary(
+    event_id: str,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    category: Optional[EventProviderCategory] = None,
+    current_user: User = Depends(get_current_user)
+):
+    """Get detailed expense summary for an event"""
+    # Get the event
+    event = await db.events_cash.find_one({"$or": [{"_id": event_id}, {"id": event_id}]})
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    event_obj = EventsCash.from_mongo(event)
+    
+    # Filter entries by date range if provided
+    filtered_entries = event_obj.ledger_entries
+    if start_date:
+        filtered_entries = [e for e in filtered_entries if e.date >= start_date]
+    if end_date:
+        filtered_entries = [e for e in filtered_entries if e.date <= end_date]
+    
+    # Get expense entries only
+    expense_entries = [e for e in filtered_entries if (e.expense_ars or 0) > 0 or (e.expense_usd or 0) > 0]
+    
+    # Calculate totals
+    total_expenses_ars = sum(e.expense_ars or 0 for e in expense_entries)
+    total_expenses_usd = sum(e.expense_usd or 0 for e in expense_entries)
+    
+    # Group by provider category (this would require provider lookup)
+    expenses_by_category = {}
+    expenses_by_date = {}
+    
+    for entry in expense_entries:
+        # Group by date
+        date_key = entry.date.strftime('%Y-%m-%d')
+        if date_key not in expenses_by_date:
+            expenses_by_date[date_key] = {"ars": 0.0, "usd": 0.0, "count": 0}
+        expenses_by_date[date_key]["ars"] += entry.expense_ars or 0
+        expenses_by_date[date_key]["usd"] += entry.expense_usd or 0
+        expenses_by_date[date_key]["count"] += 1
+    
+    return {
+        "event_id": event_id,
+        "event_name": f"{event_obj.header.client_name} - {event_obj.header.event_type}",
+        "total_entries": len(expense_entries),
+        "total_expenses_ars": total_expenses_ars,
+        "total_expenses_usd": total_expenses_usd,
+        "expenses_by_category": expenses_by_category,
+        "expenses_by_date": expenses_by_date,
+        "date_range": {
+            "start": start_date.isoformat() if start_date else None,
+            "end": end_date.isoformat() if end_date else None
+        },
+        "percentage_of_budget": (total_expenses_ars / event_obj.header.total_budget_no_iva * 100) if event_obj.header.total_budget_no_iva > 0 else 0
+    }
+
 @app.get("/api/providers/{provider_id}", response_model=Provider)
 async def get_provider(
     provider_id: str,
