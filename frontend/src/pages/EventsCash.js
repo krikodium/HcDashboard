@@ -342,8 +342,12 @@ const LedgerEntryModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
     income_ars: '',
     expense_ars: '',
     income_usd: '',
-    expense_usd: ''
+    expense_usd: '',
+    provider_name: '',
+    is_client_payment: false
   });
+  
+  const [selectedProvider, setSelectedProvider] = useState(null);
 
   const paymentMethods = ['Efectivo', 'Transferencia', 'Tarjeta'];
 
@@ -355,19 +359,48 @@ const LedgerEntryModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
       expense_ars: formData.expense_ars ? parseFloat(formData.expense_ars) : null,
       income_usd: formData.income_usd ? parseFloat(formData.income_usd) : null,
       expense_usd: formData.expense_usd ? parseFloat(formData.expense_usd) : null,
+      provider_id: selectedProvider?.id || null,
+      is_client_payment: formData.is_client_payment
     };
     onSubmit(submitData);
   };
+
+  const resetForm = () => {
+    setFormData({
+      payment_method: 'Efectivo',
+      date: new Date().toISOString().split('T')[0],
+      detail: '',
+      income_ars: '',
+      expense_ars: '',
+      income_usd: '',
+      expense_usd: '',
+      provider_name: '',
+      is_client_payment: false
+    });
+    setSelectedProvider(null);
+  };
+
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleProviderSelect = (provider) => {
+    setSelectedProvider(provider);
+  };
+
+  const isIncomeTransaction = formData.income_ars || formData.income_usd;
+  const isExpenseTransaction = formData.expense_ars || formData.expense_usd;
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="card max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="card max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold theme-text">Add Ledger Entry</h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 text-2xl"
           >
             ×
@@ -413,6 +446,23 @@ const LedgerEntryModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
               required
             />
           </div>
+
+          {/* Provider Selection - Only show for expense transactions */}
+          {isExpenseTransaction && (
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">
+                Provider/Vendor
+              </label>
+              <EventProviderAutocomplete
+                value={formData.provider_name}
+                onChange={(value) => setFormData({...formData, provider_name: value})}
+                onProviderSelect={handleProviderSelect}
+              />
+              <p className="text-xs theme-text-secondary mt-1">
+                Select a provider for expense tracking and reporting
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
@@ -464,6 +514,29 @@ const LedgerEntryModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
             </div>
           </div>
 
+          {/* Client Payment Checkbox - Only show for income transactions */}
+          {isIncomeTransaction && (
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="client_payment"
+                  className="form-checkbox h-4 w-4 text-green-600"
+                  checked={formData.is_client_payment}
+                  onChange={(e) => setFormData({...formData, is_client_payment: e.target.checked})}
+                />
+                <label htmlFor="client_payment" className="text-sm font-medium text-green-700 dark:text-green-300">
+                  This is a client payment
+                </label>
+              </div>
+              {formData.is_client_payment && (
+                <div className="mt-2 text-xs text-green-600 dark:text-green-400">
+                  ✓ This payment will automatically update the Payment Status Panel and reduce the outstanding balance
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex space-x-4 pt-4">
             <button
               type="submit"
@@ -474,7 +547,7 @@ const LedgerEntryModal = ({ isOpen, onClose, onSubmit, loading, eventId }) => {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="btn-secondary flex-1"
             >
               Cancel
