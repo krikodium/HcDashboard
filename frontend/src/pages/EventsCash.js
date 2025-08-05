@@ -754,6 +754,7 @@ const EventsCash = () => {
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('overview'); // New state for tab management
 
   useEffect(() => {
     fetchEvents();
