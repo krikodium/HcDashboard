@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backend API Testing for Hermanas Caradonti Admin Tool
-Testing General Cash Module and Application Categories functionality
+Testing Phase 2.2: Event Providers API and Enhanced Events Cash functionality
 """
 
 import requests
