@@ -342,7 +342,6 @@ code {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-}
 
 .theme-text-secondary {
   color: var(--color-text-secondary);
