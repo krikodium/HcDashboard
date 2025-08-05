@@ -5,6 +5,7 @@ Simple test to verify Twilio integration and send a test notification
 
 import sys
 import os
+import asyncio
 sys.path.append("/app/backend")
 
 # Set environment to ensure proper imports
@@ -21,23 +22,38 @@ try:
         print(f"   Account SID: {notification_service.twilio_client.api.account_sid}")
     else:
         print("⚠️ Twilio client not initialized (MOCK MODE)")
+        print("   Checking credentials...")
+        account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+        print(f"   Account SID present: {'Yes' if account_sid else 'No'}")
+        print(f"   Auth Token present: {'Yes' if auth_token else 'No'}")
+        if account_sid:
+            print(f"   Account SID starts with: {account_sid[:10]}...")
     
-    # Try to send a test notification
+    # Try to send a test WhatsApp notification
     print("\n📱 Sending test WhatsApp notification...")
     
-    test_result = notification_service.send_whatsapp_notification(
-        to_number="+5491112345678",  # Test number
-        message="🎉 Test notification from Hermanas Caradonti Admin Tool!\n\nThis is a test of the notification system integration."
-    )
+    async def test_whatsapp():
+        result = await notification_service.send_whatsapp(
+            to="+5491112345678",  # Test number
+            message="🎉 Test notification from Hermanas Caradonti Admin Tool!\n\nThis is a test of the notification system integration.",
+        )
+        return result
     
-    if test_result:
+    whatsapp_result = asyncio.run(test_whatsapp())
+    
+    if whatsapp_result and whatsapp_result.get("success"):
         print("✅ Test WhatsApp notification sent successfully")
+        print(f"   Status: {whatsapp_result.get('status', 'unknown')}")
+        if "message_id" in whatsapp_result:
+            print(f"   Message ID: {whatsapp_result['message_id']}")
     else:
         print("❌ Test WhatsApp notification failed")
+        if whatsapp_result:
+            print(f"   Error: {whatsapp_result.get('error', 'unknown')}")
     
     # Test the full notification service
     print("\n📧 Testing full notification service...")
-    import asyncio
     
     async def test_full_notification():
         result = await notification_service.send_notification(
@@ -52,10 +68,14 @@ try:
     # Run the async test
     full_result = asyncio.run(test_full_notification())
     
-    if full_result:
+    if full_result and full_result.get("success"):
         print("✅ Full notification service test passed")
+        print(f"   WhatsApp: {full_result.get('whatsapp', {}).get('success', False)}")
+        print(f"   Email: {full_result.get('email', {}).get('success', False)}")
     else:
         print("❌ Full notification service test failed")
+        if full_result:
+            print(f"   Error: {full_result.get('error', 'unknown')}")
     
     print("\n🎊 Notification system verification complete!")
     
