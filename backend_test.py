@@ -648,7 +648,7 @@ class BackendTester:
         try:
             # Test client payment that should update payment status automatically
             client_payment = {
-                "payment_method": "Bank Transfer",
+                "payment_method": "Transferencia",
                 "date": date.today().isoformat(),
                 "detail": "Segundo pago del cliente",
                 "income_ars": 60000.0,
