@@ -888,8 +888,8 @@ async def get_products(
     provider_name: Optional[str] = None,
     stock_status: Optional[StockStatus] = None,
     active_only: bool = Query(True),
-    sort_by: str = Query("name", regex="^(name|sku|category|current_stock|total_sold|provider_name|created_at)$"),
-    sort_order: str = Query("asc", regex="^(asc|desc)$"),
+    sort_by: str = Query("name", pattern="^(name|sku|category|current_stock|total_sold|provider_name|created_at)$"),
+    sort_order: str = Query("asc", pattern="^(asc|desc)$"),
     current_user: User = Depends(get_current_user)
 ):
     """Get products with filtering and sorting"""
