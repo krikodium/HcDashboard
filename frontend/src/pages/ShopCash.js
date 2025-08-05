@@ -1666,4 +1666,553 @@ const InventoryManagement = () => {
   );
 };
 
+// Product Modal Component for Add/Edit
+const ProductModal = ({ isOpen, onClose, onSubmit, product = null, title }) => {
+  const [formData, setFormData] = useState({
+    sku: '',
+    name: '',
+    description: '',
+    category: 'Décor',
+    provider_name: '',
+    cost_ars: '',
+    cost_usd: '',
+    selling_price_ars: '',
+    selling_price_usd: '',
+    current_stock: '0',
+    min_stock_threshold: '5',
+    location: '',
+    condition: 'New',
+    notes: ''
+  });
+  const [loading, setLoading] = useState(false);
+
+  const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Tableware', 'Seasonal', 'Other'];
+  const conditions = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        sku: product.sku || '',
+        name: product.name || '',
+        description: product.description || '',
+        category: product.category || 'Décor',
+        provider_name: product.provider_name || '',
+        cost_ars: product.cost_ars?.toString() || '',
+        cost_usd: product.cost_usd?.toString() || '',
+        selling_price_ars: product.selling_price_ars?.toString() || '',
+        selling_price_usd: product.selling_price_usd?.toString() || '',
+        current_stock: product.current_stock?.toString() || '0',
+        min_stock_threshold: product.min_stock_threshold?.toString() || '5',
+        location: product.location || '',
+        condition: product.condition || 'New',
+        notes: product.notes || ''
+      });
+    } else {
+      setFormData({
+        sku: '',
+        name: '',
+        description: '',
+        category: 'Décor',
+        provider_name: '',
+        cost_ars: '',
+        cost_usd: '',
+        selling_price_ars: '',
+        selling_price_usd: '',
+        current_stock: '0',
+        min_stock_threshold: '5',
+        location: '',
+        condition: 'New',
+        notes: ''
+      });
+    }
+  }, [product, isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const submitData = {
+        ...formData,
+        cost_ars: formData.cost_ars ? parseFloat(formData.cost_ars) : null,
+        cost_usd: formData.cost_usd ? parseFloat(formData.cost_usd) : null,
+        selling_price_ars: formData.selling_price_ars ? parseFloat(formData.selling_price_ars) : null,
+        selling_price_usd: formData.selling_price_usd ? parseFloat(formData.selling_price_usd) : null,
+        current_stock: parseInt(formData.current_stock) || 0,
+        min_stock_threshold: parseInt(formData.min_stock_threshold) || 5
+      };
+
+      await onSubmit(submitData);
+    } catch (error) {
+      console.error('Error submitting product:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="card max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold theme-text">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">SKU *</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.sku}
+                onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                placeholder="PROD-001"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Product Name *</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Product name"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Description</label>
+            <textarea
+              className="form-input w-full"
+              rows="3"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              placeholder="Product description"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Category *</label>
+              <select
+                className="form-input w-full"
+                value={formData.category}
+                onChange={(e) => setFormData({...formData, category: e.target.value})}
+                required
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Provider</label>
+              <input
+                type="text"
+                className="form-input w-full"
+                value={formData.provider_name}
+                onChange={(e) => setFormData({...formData, provider_name: e.target.value})}
+                placeholder="Provider name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Condition</label>
+              <select
+                className="form-input w-full"
+                value={formData.condition}
+                onChange={(e) => setFormData({...formData, condition: e.target.value})}
+              >
+                {conditions.map(condition => (
+                  <option key={condition} value={condition}>{condition}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div className="border theme-border rounded-lg p-4">
+            <h3 className="text-lg font-medium theme-text mb-4">Pricing</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Cost ARS</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.cost_ars}
+                  onChange={(e) => setFormData({...formData, cost_ars: e.target.value})}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Cost USD</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.cost_usd}
+                  onChange={(e) => setFormData({...formData, cost_usd: e.target.value})}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Selling Price ARS</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.selling_price_ars}
+                  onChange={(e) => setFormData({...formData, selling_price_ars: e.target.value})}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Selling Price USD</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input w-full"
+                  value={formData.selling_price_usd}
+                  onChange={(e) => setFormData({...formData, selling_price_usd: e.target.value})}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Stock Management */}
+          <div className="border theme-border rounded-lg p-4">
+            <h3 className="text-lg font-medium theme-text mb-4">Stock Management</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Current Stock</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-input w-full"
+                  value={formData.current_stock}
+                  onChange={(e) => setFormData({...formData, current_stock: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Min Stock Threshold</label>
+                <input
+                  type="number"
+                  min="0"
+                  className="form-input w-full"
+                  value={formData.min_stock_threshold}
+                  onChange={(e) => setFormData({...formData, min_stock_threshold: e.target.value})}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium theme-text mb-2">Location</label>
+                <input
+                  type="text"
+                  className="form-input w-full"
+                  value={formData.location}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  placeholder="Warehouse A - Shelf 1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium theme-text mb-2">Notes</label>
+            <textarea
+              className="form-input w-full"
+              rows="3"
+              value={formData.notes}
+              onChange={(e) => setFormData({...formData, notes: e.target.value})}
+              placeholder="Additional notes"
+            />
+          </div>
+
+          <div className="flex space-x-4 pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex-1 disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : (product ? 'Update Product' : 'Create Product')}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary flex-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Bulk Import Modal Component
+const BulkImportModal = ({ isOpen, onClose, onSuccess }) => {
+  const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState(null);
+  const [updateExisting, setUpdateExisting] = useState(false);
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.type === 'text/csv') {
+      setFile(selectedFile);
+      setResults(null);
+    } else {
+      alert('Please select a valid CSV file');
+      e.target.value = '';
+    }
+  };
+
+  const handleImport = async () => {
+    if (!file) {
+      alert('Please select a CSV file');
+      return;
+    }
+
+    setLoading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('update_existing', updateExisting);
+
+    try {
+      const response = await axios.post('/api/inventory/bulk-import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        params: {
+          update_existing: updateExisting
+        }
+      });
+
+      setResults(response.data);
+      if (response.data.successful_imports > 0) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('Error importing products:', error);
+      alert('Failed to import products. Please check your file format.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadTemplate = () => {
+    const csvHeaders = [
+      'sku', 'name', 'description', 'category', 'provider_name',
+      'cost_ars', 'cost_usd', 'selling_price_ars', 'selling_price_usd',
+      'current_stock', 'min_stock_threshold', 'location', 'condition', 'notes'
+    ];
+    
+    const sampleData = [
+      'VASE-001', 'Decorative Ceramic Vase', 'Beautiful ceramic vase for events', 'Décor', 'Ceramicas SA',
+      '2500', '15', '4000', '25', '10', '3', 'Warehouse A - Shelf 1', 'New', 'Handle with care'
+    ];
+
+    const csvContent = [
+      csvHeaders.join(','),
+      sampleData.join(',')
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'inventory_template.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const resetModal = () => {
+    setFile(null);
+    setResults(null);
+    setUpdateExisting(false);
+  };
+
+  const handleClose = () => {
+    resetModal();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="card max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold theme-text">Bulk Import Products</h2>
+          <button
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+
+        {!results ? (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium theme-text mb-3">Import Instructions</h3>
+              <ul className="list-disc list-inside text-sm theme-text-secondary space-y-1">
+                <li>Upload a CSV file with product information</li>
+                <li>The CSV must include headers: sku, name, category, etc.</li>
+                <li>SKU field is required and must be unique</li>
+                <li>Category must be one of: Décor, Furniture, Lighting, Textiles, Accessories, Plants, Art, Tableware, Seasonal, Other</li>
+                <li>Numeric fields should contain valid numbers (costs, prices, stock)</li>
+              </ul>
+            </div>
+
+            <div>
+              <button
+                onClick={downloadTemplate}
+                className="btn-secondary mb-4"
+              >
+                Download CSV Template
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium theme-text mb-2">Select CSV File</label>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="form-input w-full"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="update_existing"
+                checked={updateExisting}
+                onChange={(e) => setUpdateExisting(e.target.checked)}
+                className="form-checkbox"
+              />
+              <label htmlFor="update_existing" className="text-sm theme-text">
+                Update existing products (if SKU matches)
+              </label>
+            </div>
+
+            <div className="flex space-x-4">
+              <button
+                onClick={handleImport}
+                disabled={!file || loading}
+                className="btn-primary flex-1 disabled:opacity-50"
+              >
+                {loading ? 'Importing...' : 'Import Products'}
+              </button>
+              <button
+                onClick={handleClose}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <h3 className="text-lg font-medium theme-text">Import Results</h3>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div className="card bg-blue-50 dark:bg-blue-900/20">
+                <h4 className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Rows</h4>
+                <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{results.total_rows}</p>
+              </div>
+              <div className="card bg-green-50 dark:bg-green-900/20">
+                <h4 className="text-sm font-medium text-green-700 dark:text-green-300">Successful</h4>
+                <p className="text-2xl font-bold text-green-800 dark:text-green-200">{results.successful_imports}</p>
+              </div>
+              <div className="card bg-red-50 dark:bg-red-900/20">
+                <h4 className="text-sm font-medium text-red-700 dark:text-red-300">Failed</h4>
+                <p className="text-2xl font-bold text-red-800 dark:text-red-200">{results.failed_imports}</p>
+              </div>
+            </div>
+
+            {results.created_products.length > 0 && (
+              <div>
+                <h4 className="font-medium theme-text mb-2">Created Products ({results.created_products.length})</h4>
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded max-h-32 overflow-y-auto">
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    {results.created_products.join(', ')}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {results.updated_products.length > 0 && (
+              <div>
+                <h4 className="font-medium theme-text mb-2">Updated Products ({results.updated_products.length})</h4>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded max-h-32 overflow-y-auto">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    {results.updated_products.join(', ')}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {results.errors.length > 0 && (
+              <div>
+                <h4 className="font-medium theme-text mb-2">Errors ({results.errors.length})</h4>
+                <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded max-h-32 overflow-y-auto">
+                  {results.errors.map((error, index) => (
+                    <p key={index} className="text-sm text-red-700 dark:text-red-300">
+                      Row {error.row} (SKU: {error.sku}): {error.error}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex space-x-4">
+              <button
+                onClick={() => {
+                  resetModal();
+                }}
+                className="btn-secondary flex-1"
+              >
+                Import More
+              </button>
+              <button
+                onClick={handleClose}
+                className="btn-primary flex-1"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default ShopCash;
