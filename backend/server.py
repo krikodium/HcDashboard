@@ -827,6 +827,18 @@ async def create_shop_cash_entry(
     
     await db.shop_cash.insert_one(entry_doc)
     
+    # Send notification for completed sale
+    try:
+        await notify_sale_completed(
+            DEFAULT_ADMIN_PREFERENCES,
+            entry_data.client,
+            entry_data.item_description,
+            entry_data.sold_amount_ars or 0,
+            "ARS"
+        )
+    except Exception as e:
+        logger.error(f"Failed to send sale notification: {e}")
+    
     # Update inventory if SKU is provided
     if entry_data.sku:
         product = await db.inventory.find_one({"sku": entry_data.sku})
