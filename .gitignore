@@ -1,46 +1,42 @@
-# Environment variables - DO NOT COMMIT
+# Dependencies
+node_modules/
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+
+# Production builds
+frontend/build/
+dist/
+
+# Environment variables
 .env
-**/.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 backend/.env
 frontend/.env
-*.env
-.env.*
-env.*
 
-# Credentials and secrets - DO NOT COMMIT  
-**/credentials.*
-**/secrets.*
-**/*secret*
-**/*credential*
-**/config/production.*
+# IDE
+.vscode/
+.idea/
 
-# Specific secret patterns detected by GitGuardian
-*AC8b9f373bea952991e559e9f599b4707d*
-*105bae06472e0410fce73c87259673a5*
-*hermanas-caradonti-super-secret-key*
-
-# Dependencies and cache folders
-/node_modules
-/frontend/node_modules
-/build
-/frontend/build
-/dist
-/frontend/dist
+# OS
 .DS_Store
-*.pem
+Thumbs.db
+
+# Logs
 *.log
+logs/
 
-# Python specific
-__pycache__/
-venv/
-*.pyc
+# Test files
+test_*.py
+*_test.py
+backend_test.py
+notification_test.py
+test_twilio.py
+test_result.md
 
-# Git and version control
-.git/
-*.orig
-
-# Temporary and backup files
-*.tmp
-*.bak
-*~
-.#*
+# Deployment
+.vercel
+.emergent
