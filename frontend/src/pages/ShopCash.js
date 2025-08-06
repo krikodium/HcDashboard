@@ -340,7 +340,7 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
 
   useEffect(() => {
     filterProducts();
-  }, [products, searchTerm, categoryFilter]);
+  }, [products, searchTerm, categoryFilter, filterProducts]);
 
   const fetchProducts = async () => {
     setLoading(true);
