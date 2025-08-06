@@ -1342,7 +1342,6 @@ const InventoryManagement = () => {
   const [error, setError] = useState('');
 
   const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Tableware', 'Seasonal', 'Other'];
-  const stockStatuses = ['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK'];
   const sortOptions = [
     { value: 'name', label: 'Name' },
     { value: 'sku', label: 'SKU' },
