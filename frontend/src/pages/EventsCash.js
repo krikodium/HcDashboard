@@ -1041,7 +1041,7 @@ const ExpenseReportView = ({ selectedEvent }) => {
     if (selectedEvent) {
       fetchExpenseData();
     }
-  }, [selectedEvent, filters]);
+  }, [selectedEvent, filters, fetchExpenseData]);
 
   const formatCurrency = (amount, currency = 'ARS') => {
     if (!amount) return `${currency} 0.00`;
