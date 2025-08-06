@@ -945,13 +945,7 @@ const ShopCash = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('sales'); // New state for tab management
 
-  useEffect(() => {
-    if (activeTab === 'sales') {
-      fetchData();
-    }
-  }, [activeTab, fetchData]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/shop-cash');
@@ -975,7 +969,13 @@ const ShopCash = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'sales') {
+      fetchData();
+    }
+  }, [activeTab, fetchData]);
 
   const processMonthlyProfitData = (entries) => {
     const monthlyMap = {};
