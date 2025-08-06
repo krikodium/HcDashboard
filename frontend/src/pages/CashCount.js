@@ -606,7 +606,7 @@ const CashCount = () => {
     }
   };
 
-  const fetchModuleProjects = async () => {
+  const fetchModuleProjects = useCallback(async () => {
     if (!selectedModule) return;
 
     try {
@@ -625,7 +625,7 @@ const CashCount = () => {
       console.error('Error fetching module projects:', error);
       setProjects([]);
     }
-  };
+  }, [selectedModule]);
 
   const handleCreateCashCount = async (formData) => {
     try {
