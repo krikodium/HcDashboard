@@ -1018,7 +1018,7 @@ const ExpenseReportView = ({ selectedEvent }) => {
 
   const categories = ['Catering', 'Decoration', 'Music', 'Photography', 'Venue', 'Transportation', 'Lighting', 'Flowers', 'Security', 'Cleaning', 'Equipment Rental', 'Other'];
 
-  const fetchExpenseData = async () => {
+  const fetchExpenseData = useCallback(async () => {
     if (!selectedEvent) return;
 
     try {
@@ -1035,7 +1035,7 @@ const ExpenseReportView = ({ selectedEvent }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEvent, filters]);
 
   useEffect(() => {
     if (selectedEvent) {
