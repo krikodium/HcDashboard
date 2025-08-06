@@ -590,7 +590,7 @@ const CashCount = () => {
     if (selectedModule) {
       fetchModuleProjects();
     }
-  }, [selectedModule, fetchModuleProjects]);
+  }, [fetchModuleProjects]);
 
   const fetchData = async () => {
     try {
