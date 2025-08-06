@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -30,17 +30,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setAuthToken(token);
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
+  // Se envuelve la función `logout` en useCallback para que no se vuelva a crear en cada render.
+  const logout = useCallback(() => {
+    setAuthToken(null);
+    setUser(null);
   }, []);
 
-  const fetchUser = async () => {
+  // Se envuelve `fetchUser` en useCallback y se declara `logout` como su dependencia.
+  const fetchUser = useCallback(async () => {
     try {
       const response = await axios.get('/api/auth/me');
       setUser(response.data);
@@ -50,7 +47,18 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [logout]);
+
+  // El hook principal ahora incluye `fetchUser` en su array de dependencias.
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setAuthToken(token);
+      fetchUser();
+    } else {
+      setLoading(false);
+    }
+  }, [fetchUser]);
 
   const login = async (credentials) => {
     try {
@@ -68,11 +76,6 @@ export const AuthProvider = ({ children }) => {
         error: error.response?.data?.detail || 'Login failed' 
       };
     }
-  };
-
-  const logout = () => {
-    setAuthToken(null);
-    setUser(null);
   };
 
   return (
