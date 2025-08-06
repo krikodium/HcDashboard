@@ -649,7 +649,7 @@ const DecoMovements = () => {
     }
   };
 
-  const fetchMovements = async () => {
+  const fetchMovements = useCallback(async () => {
     if (!selectedProject) return;
     
     try {
@@ -659,7 +659,7 @@ const DecoMovements = () => {
       console.error('Error fetching movements:', error);
       setError('Failed to load movements');
     }
-  };
+  }, [selectedProject]);
 
   useEffect(() => {
     fetchProjects();
