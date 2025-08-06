@@ -27,24 +27,24 @@ def convert_dates_for_mongo(data):
         return datetime.combine(data, datetime.min.time())
     return data
 
-# Import all models with relative imports
-from .models.base import BaseDocument
-from .models.general_cash import GeneralCashEntry, GeneralCashEntryCreate, GeneralCashEntrySummary, ApplicationCategory, ApplicationCategoryCreate, ApplicationCategorySummary
-from .models.events_cash import EventsCash, EventsCashCreate, EventsLedgerEntry, PaymentMethod
-from .models.shop_cash import ShopCashEntry, ShopCashEntryCreate, ShopCashEntrySummary
-from .models.deco_movements import DecoMovement, DecoMovementCreate, DecoMovementSummary, DisbursementStatus
-from .models.deco_cash_count import DecoCashCount, DecoCashCountCreate
-from .models.projects import Project, ProjectCreate, ProjectUpdate, ProjectSummary
-from .models.providers import Provider, ProviderCreate, ProviderUpdate, ProviderSummary, ProviderAutocomplete
-from .models.event_providers import (
+# Import all models with absolute imports
+from models.base import BaseDocument
+from models.general_cash import GeneralCashEntry, GeneralCashEntryCreate, GeneralCashEntrySummary, ApplicationCategory, ApplicationCategoryCreate, ApplicationCategorySummary
+from models.events_cash import EventsCash, EventsCashCreate, EventsLedgerEntry, PaymentMethod
+from models.shop_cash import ShopCashEntry, ShopCashEntryCreate, ShopCashEntrySummary
+from models.deco_movements import DecoMovement, DecoMovementCreate, DecoMovementSummary, DisbursementStatus
+from models.deco_cash_count import DecoCashCount, DecoCashCountCreate
+from models.projects import Project, ProjectCreate, ProjectUpdate, ProjectSummary
+from models.providers import Provider, ProviderCreate, ProviderUpdate, ProviderSummary, ProviderAutocomplete
+from models.event_providers import (
     EventProvider, EventProviderCreate, EventProviderUpdate, EventProviderSummary, EventProviderAutocomplete,
     EventProviderCategory, EventProviderType, ExpenseCategory, ExpenseCategoryCreate, ExpenseCategorySummary
 )
-from .models.inventory import (
+from models.inventory import (
     Product, ProductCreate, ProductUpdate, ProductAutocomplete, InventorySummary, StockAdjustment,
     StockMovement, BulkImportResult, ProductCSVRow, ProductCategory, StockStatus, ProductCondition
 )
-from .services.notification_service import (
+from services.notification_service import (
     notification_service, notify_payment_approval_needed, notify_payment_approved,
     notify_low_stock, notify_reconciliation_discrepancy, notify_event_payment_received,
     notify_sale_completed, notify_deco_movement_created, notify_large_expense,
