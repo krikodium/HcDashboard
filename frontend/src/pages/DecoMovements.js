@@ -633,7 +633,7 @@ const DecoMovements = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/projects?project_type=Deco');
@@ -647,7 +647,7 @@ const DecoMovements = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProject]);
 
   const fetchMovements = useCallback(async () => {
     if (!selectedProject) return;
@@ -663,7 +663,7 @@ const DecoMovements = () => {
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, [fetchProjects]);
 
   useEffect(() => {
     if (selectedProject) {
