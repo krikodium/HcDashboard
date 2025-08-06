@@ -756,7 +756,7 @@ const EventsCash = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview'); // New state for tab management
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/events-cash');
@@ -771,11 +771,11 @@ const EventsCash = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEvent]);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   const handleCreateEvent = async (formData) => {
     try {
