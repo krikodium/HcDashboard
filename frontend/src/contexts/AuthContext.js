@@ -31,6 +31,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const logout = useCallback(() => {
+    setAuthToken(null);
+    setUser(null);
+  }, []);
+
   const fetchUser = useCallback(async () => {
     try {
       const response = await axios.get('/api/auth/me');
@@ -41,12 +46,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  const logout = useCallback(() => {
-    setAuthToken(null);
-    setUser(null);
-  }, []);
+  }, [logout]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -71,11 +71,6 @@ export const AuthProvider = ({ children }) => {
       console.error('Login error:', error);
       return { success: false, error: 'Invalid credentials' };
     }
-  };
-
-  const logout = () => {
-    setAuthToken(null);
-    setUser(null);
   };
 
   const value = {
