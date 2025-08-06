@@ -529,7 +529,7 @@ const GeneralCash = () => {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...entries];
     
     if (selectedYear) {
@@ -541,7 +541,7 @@ const GeneralCash = () => {
     }
     
     setFilteredEntries(filtered);
-  };
+  }, [entries, selectedYear, selectedMonth]);
 
   const handleCreateEntry = async (formData) => {
     try {
