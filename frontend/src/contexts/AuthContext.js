@@ -13,22 +13,23 @@ export const useAuth = () => {
 
 // API configuration
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-axios.defaults.baseURL = API_BASE_URL;
 
-// Set default authorization header
-const setAuthToken = (token) => {
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    localStorage.setItem('token', token);
-  } else {
-    delete axios.defaults.headers.common['Authorization'];
-    localStorage.removeItem('token');
-  }
-};
+// Configure axios defaults
+axios.defaults.baseURL = API_BASE_URL;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const setAuthToken = (token) => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      localStorage.setItem('token', token);
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+      localStorage.removeItem('token');
+    }
+  };
 
   const fetchUser = async () => {
     try {
@@ -50,7 +51,6 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (credentials) => {
@@ -64,10 +64,7 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.detail || 'Login failed' 
-      };
+      return { success: false, error: 'Invalid credentials' };
     }
   };
 
@@ -76,8 +73,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const value = {
+    user,
+    login,
+    logout,
+    loading
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
