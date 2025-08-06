@@ -380,24 +380,6 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
     setLoading(false);
   };
 
-  const filterProducts = useCallback(() => {
-    let filtered = products;
-
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (categoryFilter) {
-      filtered = filtered.filter(product => product.category === categoryFilter);
-    }
-
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, [products, searchTerm, categoryFilter]);
-
   const getCurrentPageItems = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
