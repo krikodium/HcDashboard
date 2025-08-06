@@ -1352,12 +1352,7 @@ const InventoryManagement = () => {
     { value: 'created_at', label: 'Date Added' }
   ];
 
-  useEffect(() => {
-    fetchProducts();
-    fetchInventorySummary();
-  }, [filters, fetchProducts, fetchInventorySummary]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -1377,16 +1372,21 @@ const InventoryManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, searchTerm]);
 
-  const fetchInventorySummary = async () => {
+  const fetchInventorySummary = useCallback(async () => {
     try {
       const response = await axios.get('/api/inventory/summary');
       setInventorySummary(response.data);
     } catch (error) {
       console.error('Error fetching inventory summary:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchInventorySummary();
+  }, [fetchProducts, fetchInventorySummary]);
 
   const handleAddProduct = async (productData) => {
     try {
