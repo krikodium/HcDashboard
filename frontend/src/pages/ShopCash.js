@@ -1356,7 +1356,7 @@ const InventoryManagement = () => {
   useEffect(() => {
     fetchProducts();
     fetchInventorySummary();
-  }, [filters]);
+  }, [filters, fetchProducts, fetchInventorySummary]);
 
   const fetchProducts = async () => {
     try {
