@@ -633,18 +633,6 @@ const DecoMovements = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchProjects();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (selectedProject) {
-      fetchMovements();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProject]);
-
   const fetchProjects = async () => {
     try {
       setLoading(true);
@@ -672,6 +660,16 @@ const DecoMovements = () => {
       setError('Failed to load movements');
     }
   };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    if (selectedProject) {
+      fetchMovements();
+    }
+  }, [selectedProject, fetchMovements]);
 
   const handleCreateMovement = async (formData) => {
     try {
