@@ -949,7 +949,7 @@ const ShopCash = () => {
     if (activeTab === 'sales') {
       fetchData();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchData]);
 
   const fetchData = async () => {
     try {
