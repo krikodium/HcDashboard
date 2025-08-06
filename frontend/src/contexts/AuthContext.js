@@ -38,7 +38,8 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, [fetchUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchUser = useCallback(async () => {
     try {
