@@ -329,8 +329,27 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [error, setError] = useState('');
 
   const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Other'];
+
+  const filterProducts = useCallback(() => {
+    let filtered = products;
+
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (categoryFilter) {
+      filtered = filtered.filter(product => product.category === categoryFilter);
+    }
+
+    setFilteredProducts(filtered);
+    setCurrentPage(1);
+  }, [products, searchTerm, categoryFilter]);
 
   useEffect(() => {
     if (isOpen) {
