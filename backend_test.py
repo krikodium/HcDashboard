@@ -12,7 +12,7 @@ import sys
 import os
 
 # Configuration
-BACKEND_URL = "https://231fb371-62f5-4f18-8306-0edc3eeac6de.preview.emergentagent.com/api"
+BACKEND_URL = "https://28ce6753-d6e3-45d9-b7dd-28de95c32168.preview.emergentagent.com/api"
 TEST_USERNAME = "admin"
 TEST_PASSWORD = "changeme123"
 
