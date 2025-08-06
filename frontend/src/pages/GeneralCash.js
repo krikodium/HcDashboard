@@ -508,7 +508,7 @@ const GeneralCash = () => {
 
   useEffect(() => {
     applyFilters();
-  }, [entries, selectedYear, selectedMonth, applyFilters]);
+  }, [applyFilters]);
 
   const fetchEntries = async () => {
     try {
