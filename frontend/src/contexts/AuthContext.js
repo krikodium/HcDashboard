@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, [fetchUser]);
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const response = await axios.get('/api/auth/me');
       setUser(response.data);
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const login = async (credentials) => {
     try {
