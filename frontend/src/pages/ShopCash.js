@@ -333,11 +333,33 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
 
   const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Other'];
 
+  const filterProducts = useCallback(() => {
+    let filtered = products;
+
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (categoryFilter) {
+      filtered = filtered.filter(product => product.category === categoryFilter);
+    }
+
+    setFilteredProducts(filtered);
+    setCurrentPage(1);
+  }, [products, searchTerm, categoryFilter]);
+
   useEffect(() => {
     if (isOpen) {
       fetchProducts();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    filterProducts();
+  }, [filterProducts]);
 
   const fetchProducts = async () => {
     setLoading(true);
