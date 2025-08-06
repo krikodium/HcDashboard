@@ -543,20 +543,6 @@ const GeneralCash = () => {
     }
   };
 
-  const applyFilters = useCallback(() => {
-    let filtered = [...entries];
-    
-    if (selectedYear) {
-      filtered = filtered.filter(entry => new Date(entry.date).getFullYear().toString() === selectedYear);
-    }
-    
-    if (selectedMonth) {
-      filtered = filtered.filter(entry => (new Date(entry.date).getMonth() + 1).toString() === selectedMonth);
-    }
-    
-    setFilteredEntries(filtered);
-  }, [entries, selectedYear, selectedMonth]);
-
   const handleCreateEntry = async (formData) => {
     try {
       setIsSubmitting(true);
