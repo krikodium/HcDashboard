@@ -29,6 +29,6 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "installCommand": "cd frontend && npm install",
   "env": {
-    "REACT_APP_BACKEND_URL": "https://hc-dashboard.vercel.app"
+    "REACT_APP_BACKEND_URL": "@vercel_url"
   }
 }
