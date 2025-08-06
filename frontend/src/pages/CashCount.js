@@ -627,27 +627,6 @@ const CashCount = () => {
     }
   };
 
-  const fetchModuleProjects = useCallback(async () => {
-    if (!selectedModule) return;
-
-    try {
-      let endpoint = '/api/projects';
-      if (selectedModule.id === 'deco') {
-        endpoint += '?project_type=Deco';
-      } else if (selectedModule.id === 'events') {
-        endpoint += '?project_type=Event';
-      } else if (selectedModule.id === 'shop') {
-        endpoint = '/api/providers'; // For shop, we might use providers or locations
-      }
-      
-      const response = await axios.get(endpoint);
-      setProjects(response.data);
-    } catch (error) {
-      console.error('Error fetching module projects:', error);
-      setProjects([]);
-    }
-  }, [selectedModule]);
-
   const handleCreateCashCount = async (formData) => {
     try {
       setIsSubmitting(true);
