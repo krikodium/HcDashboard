@@ -756,10 +756,6 @@ const EventsCash = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview'); // New state for tab management
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
   const fetchEvents = async () => {
     try {
       setLoading(true);
@@ -776,6 +772,10 @@ const EventsCash = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const handleCreateEvent = async (formData) => {
     try {
