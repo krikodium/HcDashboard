@@ -1426,17 +1426,6 @@ const InventoryManagement = () => {
     }
   };
 
-  const handleStockAdjustment = async (productId, adjustment) => {
-    try {
-      await axios.post(`/api/inventory/products/${productId}/stock-adjustment`, adjustment);
-      fetchProducts();
-      fetchInventorySummary();
-    } catch (error) {
-      console.error('Error adjusting stock:', error);
-      setError('Failed to adjust stock');
-    }
-  };
-
   const formatCurrency = (amount, currency) => {
     if (!amount) return '-';
     return `${currency} ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
