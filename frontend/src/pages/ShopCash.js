@@ -361,7 +361,7 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
     setLoading(false);
   };
 
-  const filterProducts = () => {
+  const filterProducts = useCallback(() => {
     let filtered = products;
 
     if (searchTerm) {
@@ -377,7 +377,7 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
 
     setFilteredProducts(filtered);
     setCurrentPage(1);
-  };
+  }, [products, searchTerm, categoryFilter]);
 
   const getCurrentPageItems = () => {
     const startIndex = (currentPage - 1) * itemsPerPage;
