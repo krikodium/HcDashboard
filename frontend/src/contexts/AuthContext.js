@@ -12,7 +12,11 @@ export const useAuth = () => {
 };
 
 // API configuration
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || (
+  process.env.NODE_ENV === 'production' 
+    ? '' // In production, use same domain (relative URLs)
+    : 'http://localhost:8001' // In development, use local backend
+);
 
 // Configure axios defaults
 axios.defaults.baseURL = API_BASE_URL;
