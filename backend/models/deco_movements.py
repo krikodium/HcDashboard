@@ -155,7 +155,7 @@ class DecoMovement(BaseDocument):
     def net_amount_ars(self) -> float:
         return (self.income_ars or 0.0) - (self.expense_ars or 0.0)
 
-class DecoProject_v2(BaseDocument):
+class DecoProjectV2(BaseDocument):
     """Deco Project container with movements and orders"""
     project_name: str  # Changed to string for dynamic projects
     description: Optional[str] = None
