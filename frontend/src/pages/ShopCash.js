@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -332,6 +332,24 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
 
   const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Other'];
 
+  const filterProducts = useCallback(() => {
+    let filtered = products;
+
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (categoryFilter) {
+      filtered = filtered.filter(product => product.category === categoryFilter);
+    }
+
+    setFilteredProducts(filtered);
+    setCurrentPage(1);
+  }, [products, searchTerm, categoryFilter]);
+
   useEffect(() => {
     if (isOpen) {
       fetchProducts();
@@ -340,7 +358,7 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
 
   useEffect(() => {
     filterProducts();
-  }, [products, searchTerm, categoryFilter]);
+  }, [filterProducts]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -359,24 +377,6 @@ const InventoryModal = ({ isOpen, onClose, onSelectItem }) => {
     ];
     setProducts(mockProducts);
     setLoading(false);
-  };
-
-  const filterProducts = () => {
-    let filtered = products;
-
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (categoryFilter) {
-      filtered = filtered.filter(product => product.category === categoryFilter);
-    }
-
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
   };
 
   const getCurrentPageItems = () => {
@@ -945,13 +945,7 @@ const ShopCash = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('sales'); // New state for tab management
 
-  useEffect(() => {
-    if (activeTab === 'sales') {
-      fetchData();
-    }
-  }, [activeTab]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/shop-cash');
@@ -975,7 +969,13 @@ const ShopCash = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'sales') {
+      fetchData();
+    }
+  }, [activeTab, fetchData]);
 
   const processMonthlyProfitData = (entries) => {
     const monthlyMap = {};
@@ -1342,7 +1342,6 @@ const InventoryManagement = () => {
   const [error, setError] = useState('');
 
   const categories = ['Décor', 'Furniture', 'Lighting', 'Textiles', 'Accessories', 'Plants', 'Art', 'Tableware', 'Seasonal', 'Other'];
-  const stockStatuses = ['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK'];
   const sortOptions = [
     { value: 'name', label: 'Name' },
     { value: 'sku', label: 'SKU' },
@@ -1353,12 +1352,7 @@ const InventoryManagement = () => {
     { value: 'created_at', label: 'Date Added' }
   ];
 
-  useEffect(() => {
-    fetchProducts();
-    fetchInventorySummary();
-  }, [filters]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -1378,16 +1372,21 @@ const InventoryManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, searchTerm]);
 
-  const fetchInventorySummary = async () => {
+  const fetchInventorySummary = useCallback(async () => {
     try {
       const response = await axios.get('/api/inventory/summary');
       setInventorySummary(response.data);
     } catch (error) {
       console.error('Error fetching inventory summary:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchInventorySummary();
+  }, [fetchProducts, fetchInventorySummary]);
 
   const handleAddProduct = async (productData) => {
     try {
@@ -1424,17 +1423,6 @@ const InventoryManagement = () => {
         console.error('Error deleting product:', error);
         setError('Failed to delete product');
       }
-    }
-  };
-
-  const handleStockAdjustment = async (productId, adjustment) => {
-    try {
-      await axios.post(`/api/inventory/products/${productId}/stock-adjustment`, adjustment);
-      fetchProducts();
-      fetchInventorySummary();
-    } catch (error) {
-      console.error('Error adjusting stock:', error);
-      setError('Failed to adjust stock');
     }
   };
 

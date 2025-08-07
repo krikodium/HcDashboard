@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -506,9 +506,23 @@ const GeneralCash = () => {
     fetchEntries();
   }, []);
 
+  const applyFilters = useCallback(() => {
+    let filtered = [...entries];
+    
+    if (selectedYear) {
+      filtered = filtered.filter(entry => new Date(entry.date).getFullYear().toString() === selectedYear);
+    }
+    
+    if (selectedMonth) {
+      filtered = filtered.filter(entry => (new Date(entry.date).getMonth() + 1).toString() === selectedMonth);
+    }
+    
+    setFilteredEntries(filtered);
+  }, [entries, selectedYear, selectedMonth]);
+
   useEffect(() => {
     applyFilters();
-  }, [entries, selectedYear, selectedMonth]);
+  }, [applyFilters]);
 
   const fetchEntries = async () => {
     try {
@@ -527,20 +541,6 @@ const GeneralCash = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const applyFilters = () => {
-    let filtered = [...entries];
-    
-    if (selectedYear) {
-      filtered = filtered.filter(entry => new Date(entry.date).getFullYear().toString() === selectedYear);
-    }
-    
-    if (selectedMonth) {
-      filtered = filtered.filter(entry => (new Date(entry.date).getMonth() + 1).toString() === selectedMonth);
-    }
-    
-    setFilteredEntries(filtered);
   };
 
   const handleCreateEntry = async (formData) => {

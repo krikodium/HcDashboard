@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
@@ -586,27 +586,7 @@ const CashCount = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (selectedModule) {
-      fetchModuleProjects();
-    }
-  }, [selectedModule]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get('/api/deco-cash-count');
-      setCashCounts(response.data);
-      setError('');
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('Failed to load data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchModuleProjects = async () => {
+  const fetchModuleProjects = useCallback(async () => {
     if (!selectedModule) return;
 
     try {
@@ -624,6 +604,26 @@ const CashCount = () => {
     } catch (error) {
       console.error('Error fetching module projects:', error);
       setProjects([]);
+    }
+  }, [selectedModule]);
+
+  useEffect(() => {
+    if (selectedModule) {
+      fetchModuleProjects();
+    }
+  }, [selectedModule, fetchModuleProjects]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/deco-cash-count');
+      setCashCounts(response.data);
+      setError('');
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Failed to load data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 

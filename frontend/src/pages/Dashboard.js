@@ -7,7 +7,7 @@ const Dashboard = () => {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await axios.get('/api/test');
+        await axios.get('/api/test');
         setBackendStatus('Connected');
       } catch (error) {
         setBackendStatus('Disconnected');

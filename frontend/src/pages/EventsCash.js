@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 // Loading skeleton component
 const TableSkeleton = () => (
@@ -756,11 +756,7 @@ const EventsCash = () => {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('overview'); // New state for tab management
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/events-cash');
@@ -775,7 +771,11 @@ const EventsCash = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const handleCreateEvent = async (formData) => {
     try {
@@ -1018,7 +1018,7 @@ const ExpenseReportView = ({ selectedEvent }) => {
 
   const categories = ['Catering', 'Decoration', 'Music', 'Photography', 'Venue', 'Transportation', 'Lighting', 'Flowers', 'Security', 'Cleaning', 'Equipment Rental', 'Other'];
 
-  const fetchExpenseData = async () => {
+  const fetchExpenseData = useCallback(async () => {
     if (!selectedEvent) return;
 
     try {
@@ -1035,13 +1035,13 @@ const ExpenseReportView = ({ selectedEvent }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedEvent, filters]);
 
   useEffect(() => {
     if (selectedEvent) {
       fetchExpenseData();
     }
-  }, [selectedEvent, filters]);
+  }, [selectedEvent, filters, fetchExpenseData]);
 
   const formatCurrency = (amount, currency = 'ARS') => {
     if (!amount) return `${currency} 0.00`;

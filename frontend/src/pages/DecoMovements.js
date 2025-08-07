@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LineChart, Line } from 'recharts';
 
 // Loading skeleton component
 const TableSkeleton = () => (
@@ -633,17 +633,7 @@ const DecoMovements = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    if (selectedProject) {
-      fetchMovements();
-    }
-  }, [selectedProject]);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/projects?project_type=Deco');
@@ -657,9 +647,9 @@ const DecoMovements = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProject]);
 
-  const fetchMovements = async () => {
+  const fetchMovements = useCallback(async () => {
     if (!selectedProject) return;
     
     try {
@@ -669,7 +659,17 @@ const DecoMovements = () => {
       console.error('Error fetching movements:', error);
       setError('Failed to load movements');
     }
-  };
+  }, [selectedProject]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  useEffect(() => {
+    if (selectedProject) {
+      fetchMovements();
+    }
+  }, [selectedProject, fetchMovements]);
 
   const handleCreateMovement = async (formData) => {
     try {
