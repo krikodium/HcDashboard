@@ -185,10 +185,10 @@ async def create_general_cash_entry(
         user_prefs = {}
         await notify_large_expense(
             user_prefs=user_prefs,
-            amount=amount_ars,
-            currency="ARS",
             module="General Cash",
-            description=entry.description
+            description=entry.description,
+            amount=amount_ars,
+            currency="ARS"
         )
     
     return entry
