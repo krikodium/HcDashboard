@@ -31,7 +31,7 @@ def convert_dates_for_mongo(data):
 from models.base import BaseDocument
 from models.general_cash import GeneralCashEntry, GeneralCashEntryCreate, GeneralCashSummary, ApplicationCategory, ApplicationCategoryCreate, ApplicationCategorySummary
 from models.events_cash import EventsCash, EventsCashCreate, EventsLedgerEntry, PaymentMethod
-from models.shop_cash import ShopCashEntry, ShopCashEntryCreate, ShopCashEntrySummary
+from models.shop_cash import ShopCashEntry, ShopCashEntryCreate, ShopCashSummary
 from models.deco_movements import DecoMovement, DecoMovementCreate, DecoMovementSummary, DisbursementStatus
 from models.deco_cash_count import DecoCashCount, DecoCashCountCreate
 from models.projects import Project, ProjectCreate, ProjectUpdate, ProjectSummary
@@ -360,4 +360,27 @@ async def get_general_cash_summary(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    import os
+    
+    # Load environment variables
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    environment = os.getenv("ENVIRONMENT", "development")
+    debug = os.getenv("DEBUG", "false").lower() == "true"
+    
+    print("🔥 Starting Hermanas Caradonti Admin API")
+    print(f"📊 Environment: {environment}")
+    print(f"🔧 Debug Mode: {debug}")
+    print(f"🌐 Server: http://localhost:8001")
+    print(f"📖 API Docs: http://localhost:8001/docs")
+    print(f"👤 Login: {os.getenv('SEED_USERNAME', 'admin')} / {os.getenv('SEED_PASSWORD', 'admin123')}")
+    print("=" * 50)
+    
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8001,
+        reload=debug,  # Enable hot reload in development
+        log_level="debug" if debug else "info"
+    )
