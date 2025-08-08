@@ -225,10 +225,13 @@ async def approve_general_cash_entry(
     await db.general_cash.update_one({"_id": entry_id}, {"$set": update_data})
     
     # Notification
+    user_prefs = {}
+    amount = (entry.get("income_ars", 0) or 0) + (entry.get("expense_ars", 0) or 0) + (entry.get("income_usd", 0) or 0) + (entry.get("expense_usd", 0) or 0)
+    currency = "ARS" if (entry.get("income_ars") or entry.get("expense_ars")) else "USD"
     await notify_payment_approved(
-        amount=entry.get("amount_ars", 0) or entry.get("amount_usd", 0),
-        currency="ARS" if entry.get("amount_ars") else "USD",
-        description=entry.get("description", ""),
+        user_prefs=user_prefs,
+        amount=amount,
+        currency=currency,
         approved_by=current_user.username
     )
     
