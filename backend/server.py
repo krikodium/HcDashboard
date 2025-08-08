@@ -32,7 +32,7 @@ from models.base import BaseDocument
 from models.general_cash import GeneralCashEntry, GeneralCashEntryCreate, GeneralCashSummary, ApplicationCategory, ApplicationCategoryCreate, ApplicationCategorySummary
 from models.events_cash import EventsCash, EventsCashCreate, EventsLedgerEntry, PaymentMethod
 from models.shop_cash import ShopCashEntry, ShopCashEntryCreate, ShopCashSummary
-from models.deco_movements import DecoMovement, DecoMovementCreate, DecoMovementSummary, DisbursementStatus
+from models.deco_movements import DecoMovement, DecoMovementCreate, DecoMovementsSummary, DisbursementStatus
 from models.deco_cash_count import DecoCashCount, DecoCashCountCreate
 from models.projects import Project, ProjectCreate, ProjectUpdate, ProjectSummary
 from models.providers import Provider, ProviderCreate, ProviderUpdate, ProviderSummary, ProviderAutocomplete
