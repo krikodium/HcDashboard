@@ -216,7 +216,7 @@ async def approve_general_cash_entry(
         raise HTTPException(status_code=404, detail="Entry not found")
     
     update_data = {
-        "approval_status": "APPROVED",
+        "approval_status": "Approved by Sisters",  # Use proper enum value
         "approved_by": current_user.username,
         "approved_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
