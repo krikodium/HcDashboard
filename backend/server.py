@@ -48,8 +48,7 @@ from models.inventory import (
 from services.notification_service import (
     notification_service, notify_payment_approval_needed, notify_payment_approved,
     notify_low_stock, notify_reconciliation_discrepancy, notify_event_payment_received,
-    notify_sale_completed, notify_deco_movement_created, notify_large_expense,
-    NOTIFICATION_TEMPLATES
+    notify_sale_completed, notify_deco_movement_created, notify_large_expense
 )
 
 # Configure logging
