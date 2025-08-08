@@ -274,9 +274,9 @@ class BackendTester:
             if not created_entry:
                 return False
             
-            entry_id = created_entry.get('id')
+            entry_id = created_entry.get('id') or created_entry.get('_id')
             if not entry_id:
-                self.log_test("General Cash Workflow", False, "Created entry has no ID")
+                self.log_test("General Cash Workflow", False, "Created entry has no ID", {"entry_keys": list(created_entry.keys())})
                 return False
             
             # Approve the entry
