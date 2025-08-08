@@ -18,14 +18,24 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('theme', JSON.stringify(isDark));
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    
+    // Apply theme to document
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+    }
   }, [isDark]);
 
   const toggleTheme = () => setIsDark(!isDark);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      {children}
+      <div className={isDark ? 'dark' : ''}>
+        {children}
+      </div>
     </ThemeContext.Provider>
   );
 };

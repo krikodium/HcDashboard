@@ -19,10 +19,10 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center theme-background">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-theme-accent mx-auto mb-4"></div>
-          <p className="theme-text-secondary">Loading...</p>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -45,8 +45,8 @@ const AppContent = () => {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="general-cash" element={<GeneralCash />} />
-          <Route path="events" element={<EventsCash />} />
-          <Route path="shop" element={<ShopCash />} />
+          <Route path="events-cash" element={<EventsCash />} />
+          <Route path="shop-cash" element={<ShopCash />} />
           <Route path="deco-movements" element={<DecoMovements />} />
           <Route path="cash-count" element={<CashCount />} />
         </Route>
