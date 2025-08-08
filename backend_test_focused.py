@@ -134,9 +134,8 @@ class BackendTester:
             test_entry = {
                 "date": date.today().isoformat(),
                 "description": f"Test entry created at {datetime.now().strftime('%H:%M:%S')}",
-                "entry_type": "INCOME",
-                "amount_ars": 15000.0,
-                "approval_status": "PENDING"
+                "application": "Test Application Category",
+                "income_ars": 15000.0
             }
             
             response = requests.post(
