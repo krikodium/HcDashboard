@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
-    "start": "cd frontend && npm start"
+    "start": "cd frontend && npm start",
+    "dev:backend": "cd backend && python server.py",
+    "dev:frontend": "cd frontend && yarn start",
+    "dev:setup": "pip install -r backend/requirements.txt && cd frontend && yarn install",
+    "dev:verify": "./verify-setup.sh"
   }
 }
