@@ -170,22 +170,25 @@ async def create_general_cash_entry(
     if entry.needs_approval():
         amount = (entry.income_ars or 0) + (entry.expense_ars or 0) + (entry.income_usd or 0) + (entry.expense_usd or 0)
         currency = "ARS" if (entry.income_ars or entry.expense_ars) else "USD"
+        # For now, use empty user preferences - this could be enhanced to load actual user preferences
+        user_prefs = {}
         await notify_payment_approval_needed(
+            user_prefs=user_prefs,
             amount=amount,
             currency=currency,
-            description=entry.description,
-            created_by=current_user.username
+            description=entry.description
         )
     
     # Large expense notification
     amount_ars = (entry.income_ars or 0) + (entry.expense_ars or 0)
     if amount_ars >= 10000:  # Large expense threshold
+        user_prefs = {}
         await notify_large_expense(
+            user_prefs=user_prefs,
             amount=amount_ars,
             currency="ARS",
             module="General Cash",
-            description=entry.description,
-            created_by=current_user.username
+            description=entry.description
         )
     
     return entry
