@@ -168,15 +168,17 @@ async def create_general_cash_entry(
     
     # Notification logic
     if entry.needs_approval():
+        amount = (entry.income_ars or 0) + (entry.expense_ars or 0) + (entry.income_usd or 0) + (entry.expense_usd or 0)
+        currency = "ARS" if (entry.income_ars or entry.expense_ars) else "USD"
         await notify_payment_approval_needed(
-            amount=entry.amount_ars or entry.amount_usd or 0,
-            currency="ARS" if entry.amount_ars else "USD",
+            amount=amount,
+            currency=currency,
             description=entry.description,
             created_by=current_user.username
         )
     
     # Large expense notification
-    amount_ars = entry.amount_ars or 0
+    amount_ars = (entry.income_ars or 0) + (entry.expense_ars or 0)
     if amount_ars >= 10000:  # Large expense threshold
         await notify_large_expense(
             amount=amount_ars,
