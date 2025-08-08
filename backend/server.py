@@ -75,7 +75,7 @@ class UserLogin(BaseModel):
     password: str
 
 # Initialize FastAPI
-app = FastAPI(title="Hermanas Caradonti Admin API")
+app = FastAPI(title="HermanasCaradontiAdminAPI")
 
 # CORS configuration
 app.add_middleware(

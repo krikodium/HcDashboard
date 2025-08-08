@@ -56,7 +56,7 @@ from .deco_movements import (
     DisbursementOrder,
     DisbursementOrderCreate,
     ProjectBalance,
-    DecoProject_v2,
+    DecoProjectV2,
     DecoMovementsSummary
 )
 
@@ -113,7 +113,7 @@ __all__ = [
     # Deco Movements
     "DisbursementType", "DisbursementStatus", "DecoMovement",
     "DecoMovementCreate", "DecoMovementUpdate", "DisbursementOrder", 
-    "DisbursementOrderCreate", "ProjectBalance", "DecoProject_v2", "DecoMovementsSummary",
+    "DisbursementOrderCreate", "ProjectBalance", "DecoProjectV2", "DecoMovementsSummary",
     
     # Deco Cash Count
     "ReconciliationStatus", "DiscrepancyType", "CashCountType", "DecoCashCount",
