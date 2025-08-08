@@ -256,32 +256,32 @@ async def get_general_cash_summary(
                 "total_income_ars": {
                     "$sum": {
                         "$cond": [
-                            {"$and": [{"$gt": ["$amount_ars", 0]}, {"$eq": ["$entry_type", "INCOME"]}]},
-                            "$amount_ars", 0
+                            {"$gt": ["$income_ars", 0]},
+                            "$income_ars", 0
                         ]
                     }
                 },
                 "total_expense_ars": {
                     "$sum": {
                         "$cond": [
-                            {"$and": [{"$gt": ["$amount_ars", 0]}, {"$eq": ["$entry_type", "EXPENSE"]}]},
-                            "$amount_ars", 0
+                            {"$gt": ["$expense_ars", 0]},
+                            "$expense_ars", 0
                         ]
                     }
                 },
                 "total_income_usd": {
                     "$sum": {
                         "$cond": [
-                            {"$and": [{"$gt": ["$amount_usd", 0]}, {"$eq": ["$entry_type", "INCOME"]}]},
-                            "$amount_usd", 0
+                            {"$gt": ["$income_usd", 0]},
+                            "$income_usd", 0
                         ]
                     }
                 },
                 "total_expense_usd": {
                     "$sum": {
                         "$cond": [
-                            {"$and": [{"$gt": ["$amount_usd", 0]}, {"$eq": ["$entry_type", "EXPENSE"]}]},
-                            "$amount_usd", 0
+                            {"$gt": ["$expense_usd", 0]},
+                            "$expense_usd", 0
                         ]
                     }
                 },
