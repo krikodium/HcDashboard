@@ -313,6 +313,13 @@ async def get_general_cash_summary(
     summary_data["net_balance_ars"] = summary_data["total_income_ars"] - summary_data["total_expense_ars"]
     summary_data["net_balance_usd"] = summary_data["total_income_usd"] - summary_data["total_expense_usd"]
     
+    # Add missing fields for the model
+    summary_data["by_application"] = {}  # Could be populated with aggregation if needed
+    summary_data["date_range"] = {
+        "start_date": start_date.isoformat() if start_date else None,
+        "end_date": end_date.isoformat() if end_date else None
+    }
+    
     return GeneralCashSummary(**summary_data)
 
 if __name__ == "__main__":
