@@ -151,7 +151,7 @@ class BackendTester:
                     "General Cash Create", 
                     True, 
                     f"Created entry: {created_entry.get('description')}",
-                    created_entry
+                    {"entry_keys": list(created_entry.keys()), "entry_id": created_entry.get('id') or created_entry.get('_id')}
                 )
                 return created_entry
             else:
