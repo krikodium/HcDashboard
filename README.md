@@ -2,6 +2,27 @@
 
 A comprehensive administrative dashboard for Hermanas Caradonti, an events and décor company managing three business lines: Decos (interior décor), Events (private parties), and Shop (showroom retail).
 
+## 🚀 Quick Start
+
+### For Local Development
+```bash
+# Quick setup (macOS/Linux)
+./setup-local.sh
+
+# Quick setup (Windows)
+setup-local.bat
+
+# Verify setup
+./verify-setup.sh  # or verify-setup.bat
+```
+
+**📖 Full local development guide:** [README-LOCAL.md](README-LOCAL.md)
+
+### For Production Deployment
+**📖 Complete deployment guide:** See deployment instructions below.
+
+---
+
 ## Features
 
 ### Core Modules
